@@ -72,7 +72,7 @@ struct ServerSettings {
 	bool SkiingEnabled = true;
 	bool CTFBlitzAllFlagsMove = false;
 
-	void ApplyToGame(ATrServerSettingsInfo* gameServerSettings);
+	void ApplyToGame(ATrGameReplicationInfo* gri);
 };
 
 class Config {
