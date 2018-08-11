@@ -23,7 +23,7 @@
     <ProjectGuid>{BF082296-3D84-4336-8577-07573FB75EB1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>TAModsServer</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -84,7 +84,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
@@ -98,67 +98,247 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>
+      </SDLCheck>
       <PreprocessorDefinitions>_DEBUG;TAMODSSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;TAMODSSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <SDLCheck>
+      </SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;TAMODSSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;TAMODSSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <SDLCheck>
+      </SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;TAMODSSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="Data.h" />
+    <ClInclude Include="dllmain.h" />
+    <ClInclude Include="Geom.h" />
+    <ClInclude Include="Hooks.h" />
+    <ClInclude Include="libpng\png.h" />
+    <ClInclude Include="libpng\pngconf.h" />
+    <ClInclude Include="libpng\pngdebug.h" />
+    <ClInclude Include="libpng\pnginfo.h" />
+    <ClInclude Include="libpng\pnglibconf.h" />
+    <ClInclude Include="libpng\pngpriv.h" />
+    <ClInclude Include="libpng\pngstruct.h" />
+    <ClInclude Include="Logger.h" />
+    <ClInclude Include="Lua.h" />
+    <ClInclude Include="LuaAPI.h" />
+    <ClInclude Include="lua_src\lapi.h" />
+    <ClInclude Include="lua_src\lauxlib.h" />
+    <ClInclude Include="lua_src\lcode.h" />
+    <ClInclude Include="lua_src\lctype.h" />
+    <ClInclude Include="lua_src\ldebug.h" />
+    <ClInclude Include="lua_src\ldo.h" />
+    <ClInclude Include="lua_src\lfunc.h" />
+    <ClInclude Include="lua_src\lgc.h" />
+    <ClInclude Include="lua_src\llex.h" />
+    <ClInclude Include="lua_src\llimits.h" />
+    <ClInclude Include="lua_src\lmem.h" />
+    <ClInclude Include="lua_src\lobject.h" />
+    <ClInclude Include="lua_src\lopcodes.h" />
+    <ClInclude Include="lua_src\lparser.h" />
+    <ClInclude Include="lua_src\lprefix.h" />
+    <ClInclude Include="lua_src\lstate.h" />
+    <ClInclude Include="lua_src\lstring.h" />
+    <ClInclude Include="lua_src\ltable.h" />
+    <ClInclude Include="lua_src\ltm.h" />
+    <ClInclude Include="lua_src\lua.h" />
+    <ClInclude Include="lua_src\lua.hpp" />
+    <ClInclude Include="lua_src\luaconf.h" />
+    <ClInclude Include="lua_src\lualib.h" />
+    <ClInclude Include="lua_src\lundump.h" />
+    <ClInclude Include="lua_src\lvm.h" />
+    <ClInclude Include="lua_src\lzio.h" />
+    <ClInclude Include="NameCryptor.h" />
+    <ClInclude Include="Profiler.h" />
+    <ClInclude Include="SdkHeaders.h" />
+    <ClInclude Include="SDK_HEADERS\Core_classes.h" />
+    <ClInclude Include="SDK_HEADERS\Core_f_structs.h" />
+    <ClInclude Include="SDK_HEADERS\Core_structs.h" />
+    <ClInclude Include="SDK_HEADERS\Engine_classes.h" />
+    <ClInclude Include="SDK_HEADERS\Engine_f_structs.h" />
+    <ClInclude Include="SDK_HEADERS\Engine_structs.h" />
+    <ClInclude Include="SDK_HEADERS\GameFramework_classes.h" />
+    <ClInclude Include="SDK_HEADERS\GameFramework_f_structs.h" />
+    <ClInclude Include="SDK_HEADERS\GameFramework_structs.h" />
+    <ClInclude Include="SDK_HEADERS\GFxUI_classes.h" />
+    <ClInclude Include="SDK_HEADERS\GFxUI_f_structs.h" />
+    <ClInclude Include="SDK_HEADERS\GFxUI_structs.h" />
+    <ClInclude Include="SDK_HEADERS\IpDrv_classes.h" />
+    <ClInclude Include="SDK_HEADERS\IpDrv_f_structs.h" />
+    <ClInclude Include="SDK_HEADERS\IpDrv_structs.h" />
+    <ClInclude Include="SDK_HEADERS\OnlineSubsystemMcts_classes.h" />
+    <ClInclude Include="SDK_HEADERS\OnlineSubsystemMcts_f_structs.h" />
+    <ClInclude Include="SDK_HEADERS\OnlineSubsystemMcts_structs.h" />
+    <ClInclude Include="SDK_HEADERS\PlatformCommon_classes.h" />
+    <ClInclude Include="SDK_HEADERS\PlatformCommon_f_structs.h" />
+    <ClInclude Include="SDK_HEADERS\PlatformCommon_structs.h" />
+    <ClInclude Include="SDK_HEADERS\TribesGameContent_classes.h" />
+    <ClInclude Include="SDK_HEADERS\TribesGameContent_f_structs.h" />
+    <ClInclude Include="SDK_HEADERS\TribesGameContent_structs.h" />
+    <ClInclude Include="SDK_HEADERS\TribesGame_classes.h" />
+    <ClInclude Include="SDK_HEADERS\TribesGame_f_structs.h" />
+    <ClInclude Include="SDK_HEADERS\TribesGame_structs.h" />
+    <ClInclude Include="SDK_HEADERS\UDKBase_classes.h" />
+    <ClInclude Include="SDK_HEADERS\UDKBase_f_structs.h" />
+    <ClInclude Include="SDK_HEADERS\UDKBase_structs.h" />
+    <ClInclude Include="SDK_HEADERS\UTGame_classes.h" />
+    <ClInclude Include="SDK_HEADERS\UTGame_f_structs.h" />
+    <ClInclude Include="SDK_HEADERS\UTGame_structs.h" />
+    <ClInclude Include="SDK_HEADERS\WinDrv_classes.h" />
+    <ClInclude Include="SDK_HEADERS\WinDrv_f_structs.h" />
+    <ClInclude Include="SDK_HEADERS\WinDrv_structs.h" />
+    <ClInclude Include="SDK_HEADERS\XAudio2_classes.h" />
+    <ClInclude Include="SDK_HEADERS\XAudio2_f_structs.h" />
+    <ClInclude Include="SDK_HEADERS\XAudio2_structs.h" />
+    <ClInclude Include="buildconfig.h" />
+    <ClInclude Include="stdlibs.h" />
+    <ClInclude Include="Utils.h" />
+    <ClInclude Include="zlib\crc32.h" />
+    <ClInclude Include="zlib\deflate.h" />
+    <ClInclude Include="zlib\inffast.h" />
+    <ClInclude Include="zlib\inffixed.h" />
+    <ClInclude Include="zlib\inflate.h" />
+    <ClInclude Include="zlib\inftrees.h" />
+    <ClInclude Include="zlib\trees.h" />
+    <ClInclude Include="zlib\zconf.h" />
+    <ClInclude Include="zlib\zlib.h" />
+    <ClInclude Include="zlib\zutil.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="Data.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="Geom.cpp" />
+    <ClCompile Include="Hooks.cpp" />
+    <ClCompile Include="libpng\png.c" />
+    <ClCompile Include="libpng\pngerror.c" />
+    <ClCompile Include="libpng\pngget.c" />
+    <ClCompile Include="libpng\pngmem.c" />
+    <ClCompile Include="libpng\pngpread.c" />
+    <ClCompile Include="libpng\pngread.c" />
+    <ClCompile Include="libpng\pngrio.c" />
+    <ClCompile Include="libpng\pngrtran.c" />
+    <ClCompile Include="libpng\pngrutil.c" />
+    <ClCompile Include="libpng\pngset.c" />
+    <ClCompile Include="libpng\pngtrans.c" />
+    <ClCompile Include="libpng\pngwio.c" />
+    <ClCompile Include="libpng\pngwrite.c" />
+    <ClCompile Include="libpng\pngwtran.c" />
+    <ClCompile Include="libpng\pngwutil.c" />
+    <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="Lua.cpp" />
+    <ClCompile Include="LuaAPI.cpp" />
+    <ClCompile Include="LuaAPI_CoreMod.cpp" />
+    <ClCompile Include="lua_src\lapi.c" />
+    <ClCompile Include="lua_src\lauxlib.c" />
+    <ClCompile Include="lua_src\lbaselib.c" />
+    <ClCompile Include="lua_src\lbitlib.c" />
+    <ClCompile Include="lua_src\lcode.c" />
+    <ClCompile Include="lua_src\lcorolib.c" />
+    <ClCompile Include="lua_src\lctype.c" />
+    <ClCompile Include="lua_src\ldblib.c" />
+    <ClCompile Include="lua_src\ldebug.c" />
+    <ClCompile Include="lua_src\ldo.c" />
+    <ClCompile Include="lua_src\ldump.c" />
+    <ClCompile Include="lua_src\lfunc.c" />
+    <ClCompile Include="lua_src\lgc.c" />
+    <ClCompile Include="lua_src\linit.c" />
+    <ClCompile Include="lua_src\liolib.c" />
+    <ClCompile Include="lua_src\llex.c" />
+    <ClCompile Include="lua_src\lmathlib.c" />
+    <ClCompile Include="lua_src\lmem.c" />
+    <ClCompile Include="lua_src\loadlib.c" />
+    <ClCompile Include="lua_src\lobject.c" />
+    <ClCompile Include="lua_src\lopcodes.c" />
+    <ClCompile Include="lua_src\loslib.c" />
+    <ClCompile Include="lua_src\lparser.c" />
+    <ClCompile Include="lua_src\lstate.c" />
+    <ClCompile Include="lua_src\lstring.c" />
+    <ClCompile Include="lua_src\lstrlib.c" />
+    <ClCompile Include="lua_src\ltable.c" />
+    <ClCompile Include="lua_src\ltablib.c" />
+    <ClCompile Include="lua_src\ltm.c" />
+    <ClCompile Include="lua_src\luac.c" />
+    <ClCompile Include="lua_src\lundump.c" />
+    <ClCompile Include="lua_src\lutf8lib.c" />
+    <ClCompile Include="lua_src\lvm.c" />
+    <ClCompile Include="lua_src\lzio.c" />
+    <ClCompile Include="NameCryptor.cpp" />
+    <ClCompile Include="Profiler.cpp" />
+    <ClCompile Include="SDK_SOURCES\Core_functions.cpp" />
+    <ClCompile Include="SDK_SOURCES\Engine_functions.cpp" />
+    <ClCompile Include="SDK_SOURCES\GameFramework_functions.cpp" />
+    <ClCompile Include="SDK_SOURCES\GFxUI_functions.cpp" />
+    <ClCompile Include="SDK_SOURCES\IpDrv_functions.cpp" />
+    <ClCompile Include="SDK_SOURCES\OnlineSubsystemMcts_functions.cpp" />
+    <ClCompile Include="SDK_SOURCES\PlatformCommon_functions.cpp" />
+    <ClCompile Include="SDK_SOURCES\TribesGameContent_functions.cpp" />
+    <ClCompile Include="SDK_SOURCES\TribesGame_functions.cpp" />
+    <ClCompile Include="SDK_SOURCES\UDKBase_functions.cpp" />
+    <ClCompile Include="SDK_SOURCES\UTGame_functions.cpp" />
+    <ClCompile Include="SDK_SOURCES\WinDrv_functions.cpp" />
+    <ClCompile Include="SDK_SOURCES\XAudio2_functions.cpp" />
     <ClCompile Include="TAMods-Server.cpp" />
+    <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="zlib\adler32.c" />
+    <ClCompile Include="zlib\compress.c" />
+    <ClCompile Include="zlib\crc32.c" />
+    <ClCompile Include="zlib\deflate.c" />
+    <ClCompile Include="zlib\gzio.c" />
+    <ClCompile Include="zlib\infback.c" />
+    <ClCompile Include="zlib\inffast.c" />
+    <ClCompile Include="zlib\inflate.c" />
+    <ClCompile Include="zlib\inftrees.c" />
+    <ClCompile Include="zlib\trees.c" />
+    <ClCompile Include="zlib\uncompr.c" />
+    <ClCompile Include="zlib\zlib-dllversion.c" />
+    <ClCompile Include="zlib\zutil.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

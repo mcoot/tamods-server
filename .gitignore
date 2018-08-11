@@ -33,3 +33,5 @@
 
 # VS stuff
 .vs/
+/x64/Debug
+/Release
