@@ -4,8 +4,8 @@ static std::string dllName = MODNAME;
 static std::string dllVersion = std::to_string(MODVERSION);
 
 namespace LuaAPI {
-	luabridge::Namespace addCoreModAPI(luabridge::Namespace ns) {
-		return ns
+	void addCoreModAPI(luabridge::Namespace ns) {
+		ns
 			// Expose the name and version of the mod via Lua
 			.beginNamespace("DLL")
 				.addVariable("name", &dllName, false)

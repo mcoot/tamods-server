@@ -194,6 +194,7 @@
     <ClInclude Include="lua_src\lundump.h" />
     <ClInclude Include="lua_src\lvm.h" />
     <ClInclude Include="lua_src\lzio.h" />
+    <ClInclude Include="Mods.h" />
     <ClInclude Include="NameCryptor.h" />
     <ClInclude Include="Profiler.h" />
     <ClInclude Include="SdkHeaders.h" />
@@ -274,7 +275,7 @@
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Lua.cpp" />
     <ClCompile Include="LuaAPI.cpp" />
-    <ClCompile Include="LuaAPI_CoreMod.cpp" />
+    <ClCompile Include="Mod_CoreMod.cpp" />
     <ClCompile Include="lua_src\lapi.c" />
     <ClCompile Include="lua_src\lauxlib.c" />
     <ClCompile Include="lua_src\lbaselib.c" />
@@ -309,6 +310,7 @@
     <ClCompile Include="lua_src\lutf8lib.c" />
     <ClCompile Include="lua_src\lvm.c" />
     <ClCompile Include="lua_src\lzio.c" />
+    <ClCompile Include="Mod_ServerSettings.cpp" />
     <ClCompile Include="NameCryptor.cpp" />
     <ClCompile Include="Profiler.cpp" />
     <ClCompile Include="SDK_SOURCES\Core_functions.cpp" />

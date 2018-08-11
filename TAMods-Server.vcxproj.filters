@@ -28,8 +28,8 @@
     <Filter Include="Source Files\libpng">
       <UniqueIdentifier>{7aabaa73-b3eb-4307-94ef-87f528ec20fc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\LuaAPI">
-      <UniqueIdentifier>{42d56639-b13b-491b-a79b-1a93c27a0171}</UniqueIdentifier>
+    <Filter Include="Source Files\Mods">
+      <UniqueIdentifier>{01dea90c-a2fe-4667-9872-d6a517b51d74}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -321,6 +321,9 @@
     <ClInclude Include="Geom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Mods.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TAMods-Server.cpp">
@@ -578,14 +581,17 @@
     <ClCompile Include="LuaAPI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LuaAPI_CoreMod.cpp">
-      <Filter>Source Files\LuaAPI</Filter>
-    </ClCompile>
     <ClCompile Include="Data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Geom.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mod_ServerSettings.cpp">
+      <Filter>Source Files\Mods</Filter>
+    </ClCompile>
+    <ClCompile Include="Mod_CoreMod.cpp">
+      <Filter>Source Files\Mods</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

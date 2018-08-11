@@ -10,3 +10,4 @@
 #include "Utils.h"
 #include "Lua.h"
 #include "Config.h"
+#include "Mods.h"

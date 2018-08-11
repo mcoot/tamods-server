@@ -4,9 +4,10 @@
 #include "Config.h"
 
 namespace LuaAPI {
-	typedef luabridge::Namespace(API)(luabridge::Namespace);
+	typedef void(API)(luabridge::Namespace ns);
 
 	extern std::vector<API*> api;
 
 	API addCoreModAPI;
+	API addServerSettingsAPI;
 }
