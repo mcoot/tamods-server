@@ -130,6 +130,84 @@ namespace Data
 		},
 	};
 
+	std::map<std::string, int> packs[3] = {
+		{
+			{ R"rx(^(thrust(pack)?)$)rx", CONST_ITEM_PACK_BLINK },
+			{ R"rx(^((light)?energy(pack)?)$)rx", CONST_ITEM_PACK_RECHARGE_PATHFINDER },
+			{ R"rx(^(stealth(pack)?)$)rx", CONST_ITEM_PACK_STEALTH },
+			{ R"rx(^((light)?utility(pack)?)$)rx", CONST_ITEM_PACK_RECHARGE_SENTINEL }
+		}, 
+		{
+			{ R"rx(^((light)?turret)$)rx", CONST_WEAPON_ID_TURRET_LIGHT },
+			{ R"rx(^(dropstation)$)rx", CONST_WEAPON_ID_DROPJAMMER },
+			{ R"rx(^(shield(pack)?)$)rx", CONST_ITEM_PACK_SHIELD },
+			{ R"rx(^(util(ity)?(pack)?)$)rx", CONST_ITEM_PACK_UTILITY_SOLDIER },
+			{ R"rx(^(jammer(pack)?)$)rx", CONST_ITEM_PACK_JAMMER },
+			{ R"rx(^(exr(turret)?)$)rx", CONST_WEAPON_ID_TURRET_EXR }
+
+		}, 
+		{
+			{ R"rx(^(forcefield)$)rx", CONST_WEAPON_ID_FORCEFIELD },
+			{ R"rx(^((heavy)?energy(pack)?)$)rx", CONST_ITEM_PACK_ENERGY_BRUTE },
+			{ R"rx(^((heavy)?shield(pack)?)$)rx", CONST_ITEM_PACK_HEAVYSHIELD },
+			{ R"rx(^((heavy)?utility(pack)?)$)rx", CONST_ITEM_PACK_SURVIVAL }
+		}
+	};
+
+	std::map<std::string, int> skins[3] = {
+		{
+			{ R"rx(^(pth|pathfinder|light|lht)$)rx", CONST_ITEM_SKIN_PATHFINDER },
+			{ R"rx(^(inf|infiltrator)$)rx", CONST_ITEM_SKIN_INFILTRATOR },
+			{ R"rx(^(sen|sentinel)$)rx", CONST_ITEM_SKIN_SENTINEL },
+			{ R"rx(^(freerunner)$)rx", CONST_ITEM_SKIN_PATHFINDER_MERC },
+			{ R"rx(^(mercenary)$)rx", CONST_ITEM_SKIN_INFILTRATOR_MERC },
+			{ R"rx(^(assassin)$)rx", CONST_ITEM_SKIN_INFILTRATOR_ASSASSIN },
+			{ R"rx(^(specter|spectre)$)rx", CONST_ITEM_SKIN_SENTINEL_MERC }
+		},
+		{
+			{ R"rx(^(sld|soldier|med(ium)?)$)rx", CONST_ITEM_SKIN_SOLDIER },
+			{ R"rx(^(tcn|technician)$)rx", CONST_ITEM_SKIN_TECHNICIAN },
+			{ R"rx(^(rdr|raider)$)rx", CONST_ITEM_SKIN_RAIDER },
+			{ R"rx(^(mercenary)$)rx", CONST_ITEM_SKIN_RAIDER_MERC },
+			{ R"rx(^(griever)$)rx", CONST_ITEM_SKIN_RAIDER_GRIEVER },
+			{ R"rx(^(specialist)$)rx", CONST_ITEM_SKIN_TECHNICIAN_MERC },
+			{ R"rx(^(synthrall)$)rx", CONST_ITEM_SKIN_SOLDIER_MERC }
+		},
+		{
+			{ R"rx(^(jug|juggernaut|heavy|hvy)$)rx", CONST_ITEM_SKIN_JUGGERNAUT },
+			{ R"rx(^(dmb|doombringer)$)rx", CONST_ITEM_SKIN_DOOMBRINGER },
+			{ R"rx(^(brt|brute)$)rx", CONST_ITEM_SKIN_BRUTE },
+			{ R"rx(^(crusher)$)rx", CONST_ITEM_SKIN_BRUTE_MERC },
+			{ R"rx(^(executioner)$)rx", CONST_ITEM_SKIN_DOOMBRINGER_MERC },
+			{ R"rx(^((the)?forlorn)$)rx", CONST_ITEM_SKIN_JUGGERNAUT_MERC }
+		}
+	};
+
+	std::map<std::string, int> voices = {
+		{ R"rx(^(light|lht)$)rx", CONST_ITEM_VOICE_LIGHT },
+		{ R"rx(^(med(ium)?)$)rx", CONST_ITEM_VOICE_MEDIUM },
+		{ R"rx(^(heavy|hvy)$)rx", CONST_ITEM_VOICE_HEAVY },
+		{ R"rx(^(battleworn)$)rx", CONST_ITEM_VOICE_DARK },
+		{ R"rx(^(femmefatale)$)rx", CONST_ITEM_VOICE_FEM1 },
+		{ R"rx(^(ms\.?wilderzone)$)rx", CONST_ITEM_VOICE_FEM2 },
+		{ R"rx(^(diskerdundee|aus(tralian)?)$)rx", CONST_ITEM_VOICE_AUS },
+		{ R"rx(^(tb|totalbiscuit)$)rx", CONST_ITEM_VOICE_TOTALBISCUIT },
+		{ R"rx(^(stowaway)$)rx", CONST_ITEM_VOICE_STOWAWAY },
+		{ R"rx(^(t2(fem(ale)?)?heroine)$)rx", CONST_ITEM_VOICE_T2FEM01 },
+		{ R"rx(^(t2(fem(ale)?)?pro(fessional)?)$)rx", CONST_ITEM_VOICE_T2FEM02 },
+		{ R"rx(^(t2(fem(ale)?)?cadet)$)rx", CONST_ITEM_VOICE_T2FEM03 },
+		{ R"rx(^(t2(fem(ale)?)?veteran)$)rx", CONST_ITEM_VOICE_T2FEM04 },
+		{ R"rx(^(t2(fem(ale)?)?amazon)$)rx", CONST_ITEM_VOICE_T2FEM05 },
+		{ R"rx(^(t2(male)?hero)$)rx", CONST_ITEM_VOICE_T2MALE01 },
+		{ R"rx(^(t2(male)?iceman)$)rx", CONST_ITEM_VOICE_T2MALE02 },
+		{ R"rx(^(t2(male)?rogue)$)rx", CONST_ITEM_VOICE_T2MALE03 },
+		{ R"rx(^(t2(male)?hardcase)$)rx", CONST_ITEM_VOICE_T2MALE04 },
+		{ R"rx(^(t2(male)?psycho)$)rx", CONST_ITEM_VOICE_T2MALE05 },
+		{ R"rx(^(t2(bioderm)?warrior)$)rx", CONST_ITEM_VOICE_T2BDERM01 },
+		{ R"rx(^(t2(bioderm)?monster)$)rx", CONST_ITEM_VOICE_T2BDERM02 },
+		{ R"rx(^(t2(bioderm)?predator)$)rx", CONST_ITEM_VOICE_T2BDERM03 }
+	};
+
 	std::map<int, std::string> weapon_id_to_name = {
 		{ CONST_WEAPON_ID_SPINFUSOR_LIGHT, "LightSpinfusor" },
 		{ CONST_WEAPON_ID_LAUNCHER_BOLT, "BoltLauncher" },

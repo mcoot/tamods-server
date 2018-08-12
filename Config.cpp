@@ -10,6 +10,9 @@ Config::Config() {
 Config::~Config() { }
 
 void Config::reset() {
+	serverSettings = ServerSettings();
+	serverMode = ServerMode::STANDALONE;
+	hardcodedLoadouts = HardCodedLoadouts();
 }
 
 void Config::parseFile() { 

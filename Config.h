@@ -15,6 +15,7 @@
 #include "Utils.h"
 #include "Hooks.h"
 #include "Data.h"
+#include "LoadoutTypes.h"
 
 struct ServerSettings {
 	int TimeLimit = 25;
@@ -75,6 +76,12 @@ struct ServerSettings {
 	void ApplyToGame(ATrGameReplicationInfo* gri);
 };
 
+enum class ServerMode {
+	STANDALONE,
+	TASERVER,
+	API
+};
+
 class Config {
 public:
 	Config();
@@ -88,6 +95,9 @@ public:
 	Lua lua;
 
 	ServerSettings serverSettings;
+
+	ServerMode serverMode;
+	HardCodedLoadouts hardcodedLoadouts;
 };
 
 extern Config g_config;

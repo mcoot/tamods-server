@@ -10,4 +10,5 @@ namespace LuaAPI {
 
 	API addCoreModAPI;
 	API addServerSettingsAPI;
+	API addLoadoutsLuaAPI;
 }

@@ -3,7 +3,8 @@
 namespace LuaAPI {
 	std::vector<API*> api = {
 		addCoreModAPI,
-		addServerSettingsAPI
+		addServerSettingsAPI,
+		addLoadoutsLuaAPI
 	};
 }
 

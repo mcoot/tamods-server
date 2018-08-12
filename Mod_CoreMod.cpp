@@ -3,14 +3,13 @@
 static std::string dllName = MODNAME;
 static std::string dllVersion = std::to_string(MODVERSION);
 
+static int serverModeStandalone = (int)ServerMode::STANDALONE;
+static int serverModeTAServer = (int)ServerMode::TASERVER;
+static int serverModeAPI = (int)ServerMode::API;
+
 namespace LuaAPI {
 	void addCoreModAPI(luabridge::Namespace ns) {
 		ns
-			// Expose the name and version of the mod via Lua
-			.beginNamespace("DLL")
-				.addVariable("name", &dllName, false)
-				.addVariable("version", &dllVersion, false)
-			.endNamespace()
 			// Logging functions
 			.beginNamespace("Logger")
 				.addFunction("debug", Logger::printDebug)
@@ -19,6 +18,19 @@ namespace LuaAPI {
 				.addFunction("error", Logger::printError)
 				.addFunction("fatal", Logger::printFatal)
 			.endNamespace()
+			.beginNamespace("Core")
+				// Expose the name and version of the mod via Lua
+				.beginNamespace("DLL")
+					.addVariable("name", &dllName, false)
+					.addVariable("version", &dllVersion, false)
+				.endNamespace()
+				// Server modes
+				.addVariable("SRV_Standalone", &serverModeStandalone, false)
+				.addVariable("SRV_TAServer", &serverModeTAServer, false)
+				.addVariable("SRV_API", &serverModeAPI, false)
+				.addVariable("ServerMode", (int*)&g_config.serverMode, true)
+			.endNamespace()
+
 			;
 	}
 }
