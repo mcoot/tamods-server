@@ -1,5 +1,7 @@
 #pragma once
 
+#include "buildconfig.h"
+
 #include <iostream>
 #include <string>
 #include <cstring>

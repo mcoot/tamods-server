@@ -123,6 +123,7 @@
       </SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;TAMODSSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\boost_1_68_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -130,6 +131,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalLibraryDirectories>C:\boost_1_68_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -240,6 +242,7 @@
     <ClInclude Include="SDK_HEADERS\XAudio2_structs.h" />
     <ClInclude Include="buildconfig.h" />
     <ClInclude Include="stdlibs.h" />
+    <ClInclude Include="TAServerClient.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="zlib\crc32.h" />
     <ClInclude Include="zlib\deflate.h" />
@@ -329,6 +332,7 @@
     <ClCompile Include="SDK_SOURCES\WinDrv_functions.cpp" />
     <ClCompile Include="SDK_SOURCES\XAudio2_functions.cpp" />
     <ClCompile Include="TAMods-Server.cpp" />
+    <ClCompile Include="TAServerClient.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="zlib\adler32.c" />
     <ClCompile Include="zlib\compress.c" />
@@ -343,6 +347,9 @@
     <ClCompile Include="zlib\uncompr.c" />
     <ClCompile Include="zlib\zlib-dllversion.c" />
     <ClCompile Include="zlib\zutil.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

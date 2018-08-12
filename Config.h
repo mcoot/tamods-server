@@ -17,6 +17,7 @@
 #include "Data.h"
 #include "LoadoutTypes.h"
 
+
 struct ServerSettings {
 	int TimeLimit = 25;
 	int WarmupTime = 20;

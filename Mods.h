@@ -3,6 +3,8 @@
 #include <sstream>
 #include <list>
 
+#include "TAServerClient.h"
+
 #include "Config.h"
 #include "Utils.h"
 #include "Data.h"
