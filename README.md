@@ -1,6 +1,8 @@
 # Introduction 
 TAMods Server
 
+## Dependencies
 
+Boost: should be located at `C:\boost_1_68_0`.
 
-Needs boost to run now sadly.
+nlohmann/json: the main json.hpp should be located at `C:\nlohmannjson\include\nlohmann`.
