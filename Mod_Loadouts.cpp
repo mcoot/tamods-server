@@ -31,7 +31,21 @@ static void applyHardcodedLoadout(ATrPlayerReplicationInfo* that, int classId, i
 			}
 		}
 	}
-	
+}
+
+static void applyTAServerLoadout(ATrPlayerReplicationInfo* that, int classId, int slot) {
+	if (g_TAServerClient.isConnected()) {
+		std::map<int, int> taserverRetrievedMap;
+		if (!g_TAServerClient.retrieveLoadout(that->UniqueId, classId, slot, taserverRetrievedMap)) {
+			Logger::warn("Failed to retrieve loadout on class %d, slot %d for UniqueID %d from TAServer.", classId, slot, that->UniqueId);
+		}
+		for (auto& eqpItem : taserverRetrievedMap) {
+			if (eqpItem.second != 0) {
+				// TODO: Should do extra validation against server settings here...
+				that->r_EquipLevels[eqpItem.first].EquipId = eqpItem.second;
+			}
+		}
+	}
 }
 
 void TrPlayerReplicationInfo_GetCharacterEquip(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execGetCharacterEquip_Parms* params, void* result, Hooks::CallInfo* callInfo) {
@@ -40,7 +54,7 @@ void TrPlayerReplicationInfo_GetCharacterEquip(ATrPlayerReplicationInfo* that, A
 	// If in a mode to retrieve loadout info from a server, do so
 	switch (g_config.serverMode) {
 	case ServerMode::TASERVER:
-		// TBA
+		applyTAServerLoadout(that, params->ClassId, params->Loadout);
 		break;
 	case ServerMode::API:
 		// TBA

@@ -62,6 +62,10 @@ namespace TAServer {
 		return true;
 	}
 
+	bool Client::isConnected() {
+		return socket->is_open();
+	}
+
 	void Client::sendMessage(std::shared_ptr<Message> message, boost::system::error_code& err) {
 		if (!socket->is_open()) {
 			err.assign(boost::system::errc::not_connected, boost::system::system_category());

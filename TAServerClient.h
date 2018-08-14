@@ -35,6 +35,7 @@ namespace TAServer {
 		}
 		bool connect(std::string host, int port);
 		bool disconnect();
+		bool isConnected();
 
 		bool retrieveLoadout(FUniqueNetId uniquePlayerId, int classId, int slot, std::map<int, int>& resultEquipMap);
 	};
