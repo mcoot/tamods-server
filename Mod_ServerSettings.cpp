@@ -24,11 +24,11 @@ void ServerSettings::ApplyToGame(ATrGameReplicationInfo* gri) {
 	s->FFDamageLimit = this->FriendlyFireDamageKickLimit;
 	s->FFKillLimit = this->FriendlyFireKillKickLimit;
 
-	//s->fEnergyMultiplier = this->EnergyMultiplier;
-	//s->fAoESizeMultiplier = this->AoESizeMultiplier;
-	//s->fAoEDamageMultiplier = this->AoEDamageMultiplier;
+	////s->fEnergyMultiplier = this->EnergyMultiplier;
+	////s->fAoESizeMultiplier = this->AoESizeMultiplier;
+	////s->fAoEDamageMultiplier = this->AoEDamageMultiplier;
 
-	//// Verify how this indexing works now...
+	////// Verify how this indexing works now...
 	s->ClassCounts[0] = this->LightCountLimit;
 	s->ClassCounts[1] = this->MediumCountLimit;
 	s->ClassCounts[2] = this->HeavyCountLimit;

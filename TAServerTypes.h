@@ -50,8 +50,8 @@ namespace TAServer {
 		}
 
 		void toJson(json& j) {
-			long long tmpA = uniquePlayerId.Uid.A;
-			unsigned long long uniqueIdNum = (tmpA << 32) | (uniquePlayerId.Uid.B);
+			long long tmpB = uniquePlayerId.Uid.B;
+			unsigned long long uniqueIdNum = (tmpB << 32) | (uniquePlayerId.Uid.A);
 			j["player_unique_id"] = uniqueIdNum;
 			j["class_id"] = classId;
 			j["loadout_number"] = slot;
@@ -61,8 +61,8 @@ namespace TAServer {
 			auto& it = j.find("player_unique_id");
 			if (it == j.end()) return false;
 			long long rawUId = j["player_unique_id"];
-			uniquePlayerId.Uid.A = rawUId >> 32;
-			uniquePlayerId.Uid.B = rawUId & 0x00000000FFFFFFFF;
+			uniquePlayerId.Uid.A = rawUId & 0x00000000FFFFFFFF;
+			uniquePlayerId.Uid.B = rawUId >> 32;
 
 			it = j.find("class_id");
 			if (it == j.end()) return false;

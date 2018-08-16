@@ -8,8 +8,10 @@ namespace TAServer {
 		switch (msgKind) {
 		case TASRV_MSG_KIND_GAME_2_LAUNCHER_LOADOUT_REQUEST:
 			msg = std::make_shared<Game2LauncherLoadoutRequest>();
+			break;
 		case TASRV_MSG_KIND_LAUNCHER_2_GAME_LOADOUT_MESSAGE:
 			msg = std::make_shared<Launcher2GameLoadoutMessage>();
+			break;
 		default:
 			msg = std::make_shared<Message>();
 		}
@@ -84,40 +86,59 @@ namespace TAServer {
 		toWrite.write(reinterpret_cast<char*>(&msgSize), sizeof(msgSize));
 		toWrite.write(reinterpret_cast<char*>(&msgKind), sizeof(msgKind));
 		toWrite << msgString;
-		socket->write_some(boost::asio::buffer(toWrite.str(), toWrite.str().length()), err);
+		size_t numBytesWritten = socket->write_some(boost::asio::buffer(toWrite.str(), toWrite.str().length()), err);
+		if (numBytesWritten != msgSize + 2) {
+			Logger::debug("Expected to send %d bytes, sent %d", msgSize + 2, numBytesWritten);
+			err.assign(boost::system::errc::io_error, boost::system::system_category());
+		}
 	}
 
 	std::shared_ptr<Message> Client::recvMessage(boost::system::error_code& err) {
-		Logger::debug("[recv] Checking socket openness...");
 		if (!socket->is_open()) {
 			err.assign(boost::system::errc::not_connected, boost::system::system_category());
-			return std::make_shared<Message>();;
+			return std::make_shared<Message>();
 		}
 
-		Logger::debug("[recv] Reading message size");
 		short msgSize;
-		socket->read_some(boost::asio::buffer(&msgSize, 2), err);
+		size_t numBytesRead = socket->read_some(boost::asio::buffer(&msgSize, 2), err);
+		if (numBytesRead != 2) {
+			err.assign(boost::system::errc::bad_message, boost::system::system_category());
+		}
 		if (err) {
-			return std::make_shared<Message>();;
+			return std::make_shared<Message>();
 		}
 
-		Logger::debug("[recv] Size = %d, Reading message kind", msgSize);
 		short msgKind;
-		socket->read_some(boost::asio::buffer(&msgKind, 2), err);
+		numBytesRead = socket->read_some(boost::asio::buffer(&msgKind, 2), err);
+		if (numBytesRead != 2) {
+			err.assign(boost::system::errc::bad_message, boost::system::system_category());
+		}
 		if (err) {
-			return std::make_shared<Message>();;
+			return std::make_shared<Message>();
 		}
 
-		Logger::debug("[recv] kind = %d, reading json", msgKind);
-		std::vector<char> rawMsg;
-		socket->read_some(boost::asio::buffer(rawMsg, msgSize - 2), err);
+		std::vector<char> rawMsg(msgSize - 2);
+		numBytesRead = socket->read_some(boost::asio::buffer(rawMsg, msgSize - 2), err);
+		if (numBytesRead != msgSize - 2) {
+			Logger::debug("Expected to read %d bytes, read %d", msgSize - 2, numBytesRead);
+			err.assign(boost::system::errc::bad_message, boost::system::system_category());
+		}
 		if (err) {
-			return std::make_shared<Message>();;
+			return std::make_shared<Message>();
 		}
 
 		std::string msgString = std::string(rawMsg.begin(), rawMsg.end());
-		Logger::debug("Received message: %s", msgString.c_str());
-		json msgJson = json::parse(msgString);
+		json msgJson;
+		try
+		{
+			msgJson = json::parse(msgString);
+		}
+		catch (const json::parse_error&)
+		{
+			err.assign(boost::system::errc::bad_message, boost::system::system_category());
+			return std::make_shared<Message>();
+		}
+		
 		std::shared_ptr<Message> msg = parseMessageFromJson(msgKind, msgJson);
 
 		return msg;

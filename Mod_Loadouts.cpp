@@ -1,6 +1,13 @@
 #include "Mods.h"
 #include "LoadoutTypes.h"
 
+void TrDevice_GetReloadTime(ATrDevice* that, ATrDevice_execGetReloadTime_Parms* params, float* result, Hooks::CallInfo* callInfo) {
+	Logger::debug("[GetReloadTime] Caller function: %s::%s", callInfo->callerObject->Name.GetName(), callInfo->caller->Name.GetName());
+	float r = that->GetReloadTime(params->PRI, params->equipPoint);
+	Logger::debug("[GetReloadTime] Reload time for %s = %f", that->Name.GetName(), r);
+	*result = r;	
+}
+
 static bool isWeaponEquipPoint(int eqp) {
 	return eqp == EQP_Primary || eqp == EQP_Secondary || eqp == EQP_Tertiary || eqp == EQP_Quaternary || eqp == EQP_Belt;
 }

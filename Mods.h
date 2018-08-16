@@ -18,3 +18,5 @@ void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrSer
 
 // Hook called when the server tries to retrieve a player's loadout
 void TrPlayerReplicationInfo_GetCharacterEquip(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execGetCharacterEquip_Parms* params, void* result, Hooks::CallInfo* callInfo);
+
+void TrDevice_GetReloadTime(ATrDevice* that, ATrDevice_execGetReloadTime_Parms* params, float* result, Hooks::CallInfo* callInfo);
