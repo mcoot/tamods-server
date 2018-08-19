@@ -40,9 +40,9 @@ struct ServerSettings {
 	int FriendlyFireDamageKickLimit = 1000;
 	int FriendlyFireKillKickLimit = 5;
 
-	float EnergyMultiplier = 1.0f;
-	float AoESizeMultiplier = 1.0f;
-	float AoEDamageMultiplier = 1.0f;
+	float EnergyMultiplier = 1000.0f;
+	float AoESizeMultiplier = 1000.0f;
+	float AoEDamageMultiplier = 1000.0f;
 
 	int LightCountLimit = 32;
 	int MediumCountLimit = 32;

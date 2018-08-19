@@ -4,6 +4,7 @@ void ServerSettings::ApplyToGame(ATrGameReplicationInfo* gri) {
 	ATrServerSettingsInfo* s = gri->r_ServerConfig;
 	// Need to do something different for timelimit...
 	gri->TimeLimit = this->TimeLimit;
+	s->TimeLimit = this->TimeLimit;
 	s->WarmupTime = this->WarmupTime;
 	s->OvertimeLimit = this->OvertimeLimit;
 	s->RespawnTime = this->RespawnTime;
@@ -24,11 +25,11 @@ void ServerSettings::ApplyToGame(ATrGameReplicationInfo* gri) {
 	s->FFDamageLimit = this->FriendlyFireDamageKickLimit;
 	s->FFKillLimit = this->FriendlyFireKillKickLimit;
 
-	////s->fEnergyMultiplier = this->EnergyMultiplier;
-	////s->fAoESizeMultiplier = this->AoESizeMultiplier;
-	////s->fAoEDamageMultiplier = this->AoEDamageMultiplier;
+	s->fEnergyMultiplier = this->EnergyMultiplier;
+	s->fAoESizeMultiplier = this->AoESizeMultiplier;
+	s->fAoEDamageMultiplier = this->AoEDamageMultiplier;
 
-	////// Verify how this indexing works now...
+	// Verify how this indexing works now...
 	s->ClassCounts[0] = this->LightCountLimit;
 	s->ClassCounts[1] = this->MediumCountLimit;
 	s->ClassCounts[2] = this->HeavyCountLimit;
@@ -61,11 +62,11 @@ void ServerSettings::ApplyToGame(ATrGameReplicationInfo* gri) {
 }
 
 void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrServerSettingsInfo_eventLoadServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo) {
-	that->eventLoadServerSettings();
-	if (!that->Outer->IsA(ATrGameReplicationInfo::StaticClass())) {
+	//that->eventLoadServerSettings();
+	if (!callInfo->callerObject->IsA(ATrGameReplicationInfo::StaticClass())) {
 		return;
 	}
-	g_config.serverSettings.ApplyToGame((ATrGameReplicationInfo*)(that->Outer));
+	g_config.serverSettings.ApplyToGame((ATrGameReplicationInfo*)(callInfo->callerObject));
 	that->ApplyServerSettings();
 }
 
