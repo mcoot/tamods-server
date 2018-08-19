@@ -11,7 +11,7 @@ Config::~Config() { }
 
 void Config::reset() {
 	serverSettings = ServerSettings();
-	serverMode = ServerMode::STANDALONE;
+	serverMode = ServerMode::TASERVER;
 	hardcodedLoadouts = HardCodedLoadouts();
 }
 

@@ -124,6 +124,8 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;TAMODSSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>C:\boost_1_68_0;C:\nlohmannjson\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>
+      </LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -244,6 +246,7 @@
     <ClInclude Include="stdlibs.h" />
     <ClInclude Include="TAServerClient.h" />
     <ClInclude Include="TAServerTypes.h" />
+    <ClInclude Include="TCP.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="zlib\crc32.h" />
     <ClInclude Include="zlib\deflate.h" />
@@ -334,6 +337,7 @@
     <ClCompile Include="SDK_SOURCES\XAudio2_functions.cpp" />
     <ClCompile Include="TAMods-Server.cpp" />
     <ClCompile Include="TAServerClient.cpp" />
+    <ClCompile Include="TCP.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="zlib\adler32.c" />
     <ClCompile Include="zlib\compress.c" />

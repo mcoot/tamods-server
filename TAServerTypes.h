@@ -17,10 +17,25 @@
 using json = nlohmann::json;
 
 #define TASRV_MSG_KIND_INVALID 0x0
-#define TASRV_MSG_KIND_GAME_2_LAUNCHER_LOADOUT_REQUEST 0x3002
+#define TASRV_MSG_KIND_GAME_2_LAUNCHER_LOADOUT_REQUEST 0x3005
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_LOADOUT_MESSAGE 0x4000
 
+#define TASRV_EQP_CODE_LOADOUTNAME "1341"
+#define TASRV_EQP_CODE_PRIMARY "1086"
+#define TASRV_EQP_CODE_SECONDARY "1087"
+#define TASRV_EQP_CODE_TERTIARY "1765"
+#define TASRV_EQP_CODE_BELT "1089"
+#define TASRV_EQP_CODE_PACK "1088"
+#define TASRV_EQP_CODE_PERKA "1090"
+#define TASRV_EQP_CODE_PERKB "1091"
+#define TASRV_EQP_CODE_SKIN "1093"
+#define TASRV_EQP_CODE_VOICE "1094"
+
 namespace TAServer {
+
+	long long netIdToLong(FUniqueNetId id);
+
+	FUniqueNetId longToNetId(long long id);
 
 	class Message {
 	public:
@@ -50,9 +65,7 @@ namespace TAServer {
 		}
 
 		void toJson(json& j) {
-			long long tmpB = uniquePlayerId.Uid.B;
-			unsigned long long uniqueIdNum = (tmpB << 32) | (uniquePlayerId.Uid.A);
-			j["player_unique_id"] = uniqueIdNum;
+			j["player_unique_id"] = netIdToLong(uniquePlayerId);
 			j["class_id"] = classId;
 			j["loadout_number"] = slot;
 		}
@@ -60,9 +73,7 @@ namespace TAServer {
 		bool fromJson(const json& j) {
 			auto& it = j.find("player_unique_id");
 			if (it == j.end()) return false;
-			long long rawUId = j["player_unique_id"];
-			uniquePlayerId.Uid.A = rawUId & 0x00000000FFFFFFFF;
-			uniquePlayerId.Uid.B = rawUId >> 32;
+			uniquePlayerId = longToNetId(j["player_unique_id"]);
 
 			it = j.find("class_id");
 			if (it == j.end()) return false;
@@ -77,18 +88,9 @@ namespace TAServer {
 	};
 
 	class Launcher2GameLoadoutMessage : public Message {
-	private:
-		const std::string CODE_LOADOUTNAME = "1341";
-		const std::string CODE_PRIMARY = "1086";
-		const std::string CODE_SECONDARY = "1087";
-		const std::string CODE_TERTIARY = "1765";
-		const std::string CODE_BELT = "1089";
-		const std::string CODE_PACK = "1088";
-		const std::string CODE_PERKA = "1090";
-		const std::string CODE_PERKB = "1091";
-		const std::string CODE_SKIN = "1093";
-		const std::string CODE_VOICE = "1094";
 	public:
+		FUniqueNetId uniquePlayerId = {};
+		int classId = 0;
 		std::string loadoutName = "";
 		int primary = 0;
 		int secondary = 0;
@@ -100,69 +102,80 @@ namespace TAServer {
 		int skin = 0;
 		int voice = 0;
 	public:
+
 		short getMessageKind() override {
 			return TASRV_MSG_KIND_LAUNCHER_2_GAME_LOADOUT_MESSAGE;
 		}
 
 		void toJson(json& j) {
+			j["player_unique_id"] = netIdToLong(uniquePlayerId);
+			j["class_id"] = classId;
 			j["loadout"] = {
-				{CODE_LOADOUTNAME, loadoutName},
-				{CODE_PRIMARY, primary},
-				{CODE_SECONDARY, secondary},
-				{CODE_TERTIARY, tertiary},
-				{CODE_BELT, belt},
-				{CODE_PACK, pack},
-				{CODE_PERKA, perkA},
-				{CODE_PERKB, perkB},
-				{CODE_SKIN, skin},
-				{CODE_VOICE, voice}
+				{TASRV_EQP_CODE_LOADOUTNAME, loadoutName },
+				{ TASRV_EQP_CODE_PRIMARY, primary },
+				{ TASRV_EQP_CODE_SECONDARY, secondary },
+				{ TASRV_EQP_CODE_TERTIARY, tertiary },
+				{ TASRV_EQP_CODE_BELT, belt },
+				{ TASRV_EQP_CODE_PACK, pack },
+				{ TASRV_EQP_CODE_PERKA, perkA },
+				{ TASRV_EQP_CODE_PERKB, perkB },
+				{ TASRV_EQP_CODE_SKIN, skin },
+				{ TASRV_EQP_CODE_VOICE, voice }
 			};
 		}
 
 		bool fromJson(const json& j) {
-			auto& it = j.find("loadout");
+			auto& it = j.find("player_unique_id");
+			if (it == j.end()) return false;
+			uniquePlayerId = longToNetId(j["player_unique_id"]);
+
+			it = j.find("class_id");
+			if (it == j.end()) return false;
+			classId = j["class_id"];
+
+			it = j.find("loadout");
 			if (it == j.end()) return false;
 			json jl = j["loadout"];
 
-			it = jl.find(CODE_LOADOUTNAME);
+			it = jl.find(TASRV_EQP_CODE_LOADOUTNAME);
 			if (it != jl.end()) {
-				loadoutName = jl[CODE_LOADOUTNAME].get<std::string>();
+				loadoutName = jl[TASRV_EQP_CODE_LOADOUTNAME].get<std::string>();
 			}
-			it = jl.find(CODE_PRIMARY);
+			it = jl.find(TASRV_EQP_CODE_PRIMARY);
 			if (it != jl.end()) {
-				primary = jl[CODE_PRIMARY];
+				primary = jl[TASRV_EQP_CODE_PRIMARY];
 			}
-			it = jl.find(CODE_SECONDARY);
+			it = jl.find(TASRV_EQP_CODE_SECONDARY);
 			if (it != jl.end()) {
-				secondary = jl[CODE_SECONDARY];
+				secondary = jl[TASRV_EQP_CODE_SECONDARY];
 			}
-			it = jl.find(CODE_TERTIARY);
+			it = jl.find(TASRV_EQP_CODE_TERTIARY);
 			if (it != jl.end()) {
-				tertiary = jl[CODE_TERTIARY];
+				tertiary = jl[TASRV_EQP_CODE_TERTIARY];
 			}
-			it = jl.find(CODE_BELT);
+			it = jl.find(TASRV_EQP_CODE_BELT);
 			if (it != jl.end()) {
-				belt = jl[CODE_BELT];
+				belt = jl[TASRV_EQP_CODE_BELT];
 			}
-			it = jl.find(CODE_PACK);
+			it = jl.find(TASRV_EQP_CODE_PACK);
 			if (it != jl.end()) {
-				pack = jl[CODE_PACK];
+				pack = jl[TASRV_EQP_CODE_PACK];
 			}
-			it = jl.find(CODE_PERKA);
+			it = jl.find(TASRV_EQP_CODE_PERKA);
 			if (it != jl.end()) {
-				perkA = jl[CODE_PERKA];
+				perkA = jl[TASRV_EQP_CODE_PERKA];
 			}
-			it = jl.find(CODE_PERKB);
+			it = jl.find(TASRV_EQP_CODE_PERKB);
 			if (it != jl.end()) {
-				perkB = jl[CODE_PERKB];
+				perkB = jl[TASRV_EQP_CODE_PERKB];
 			}
-			it = jl.find(CODE_SKIN);
+			it = jl.find(TASRV_EQP_CODE_SKIN);
 			if (it != jl.end()) {
-				skin = jl[CODE_SKIN];
+				skin = jl[TASRV_EQP_CODE_SKIN];
 			}
-			it = jl.find(CODE_VOICE);
+			it = jl.find(TASRV_EQP_CODE_VOICE);
 			if (it != jl.end()) {
-				voice = jl[CODE_VOICE];
+				voice = jl[TASRV_EQP_CODE_VOICE];
 			}
 
 			return true;
@@ -180,7 +193,4 @@ namespace TAServer {
 			m[EQP_Voice] = voice;
 		}
 	};
-
-	std::shared_ptr<Message> parseMessageFromJson(short msgKind, const json& j);
-
 }

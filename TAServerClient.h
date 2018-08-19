@@ -3,6 +3,9 @@
 #include "buildconfig.h"
 
 #include <iostream>
+#include <thread>
+#include <chrono>
+#include <mutex>
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 
@@ -12,6 +15,7 @@
 #include "Logger.h"
 #include "Utils.h"
 
+#include "TCP.h"
 #include "TAServerTypes.h"
 
 using json = nlohmann::json;
@@ -22,16 +26,18 @@ namespace TAServer {
 	class Client {
 	private:
 		boost::asio::io_service ios;
-		std::shared_ptr<tcp::socket> socket;
-		std::array<char, 1024> recvBuffer;
+		std::shared_ptr<std::thread> iosThread;
+		std::shared_ptr<TCP::Client<short> > tcpClient;
+		std::map<long long, Launcher2GameLoadoutMessage> receivedLoadouts;
+		std::mutex receivedLoadoutsMutex;
 	
 	private:
-		void sendMessage(std::shared_ptr<Message> message, boost::system::error_code& err);
-		std::shared_ptr<Message> recvMessage(boost::system::error_code& err);
+		void handler_Game2LauncherLoadoutRequest(const json& msgBody);
+		void handler_Launcher2GameLoadoutMessage(const json& msgBody);
 
+		void attachHandlers();
 	public:
 		Client() {
-			socket = std::make_shared<tcp::socket>(ios);
 		}
 		bool connect(std::string host, int port);
 		bool disconnect();
