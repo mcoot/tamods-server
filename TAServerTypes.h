@@ -17,7 +17,13 @@
 using json = nlohmann::json;
 
 #define TASRV_MSG_KIND_INVALID 0x0
+
+#define TASRV_MSG_KIND_GAME_2_LAUNCHER_TEAMINFO 0x3001
+#define TASRV_MSG_KIND_GAME_2_LAUNCHER_SCOREINFO 0x3002
+#define TASRV_MSG_KIND_GAME_2_LAUNCHER_MATCHTIME 0x3003
+#define TASRV_MSG_KIND_GAME_2_LAUNCHER_MATCHEND 0x3004
 #define TASRV_MSG_KIND_GAME_2_LAUNCHER_LOADOUT_REQUEST 0x3005
+
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_LOADOUT_MESSAGE 0x4000
 
 #define TASRV_EQP_CODE_LOADOUTNAME "1341"
@@ -191,6 +197,105 @@ namespace TAServer {
 			m[EQP_PerkB] = perkB;
 			m[EQP_Skin] = skin;
 			m[EQP_Voice] = voice;
+		}
+	};
+
+	class Game2LauncherTeamInfoMessage : public Message {
+	public:
+		std::map<long long, int> playerToTeamId;
+
+	public:
+		short getMessageKind() override {
+			return TASRV_MSG_KIND_GAME_2_LAUNCHER_TEAMINFO;
+		}
+
+		void toJson(json& j) {
+			json mapping;
+
+			for (auto& elem : playerToTeamId) {
+				mapping[std::to_string(elem.first)] = elem.second;
+			}
+
+			j["player_to_team_id"] = mapping;
+		}
+
+		bool fromJson(const json& j) {
+			auto& it = j.find("player_to_team_id");
+			if (it == j.end()) return false;
+			json mapping = j["player_to_team_id"];
+
+			for (json::iterator mapping_it = mapping.begin(); mapping_it != mapping.end(); ++mapping_it) {
+				int teamId = mapping_it.value();
+
+				long long playerIdLong;
+				try {
+					playerIdLong = std::stoll(mapping_it.key());
+				}
+				catch (std::invalid_argument&) {
+					return false;
+				}
+
+				// Must be a valid team
+				if (teamId != 0 && teamId != 1 && teamId != 255) return false;
+
+				playerToTeamId[playerIdLong] = teamId;
+			}
+			return true;
+		}
+	};
+
+	class Game2LauncherScoreInfoMessage : public Message {
+	public:
+		int beScore;
+		int dsScore;
+	public:
+		short getMessageKind() override {
+			return TASRV_MSG_KIND_GAME_2_LAUNCHER_SCOREINFO;
+		}
+
+		void toJson(json& j) {
+			j["be_score"] = beScore;
+			j["ds_score"] = dsScore;
+		}
+
+		bool fromJson(const json& j) {
+			beScore = j["be_score"];
+			dsScore = j["ds_score"];
+			return true;
+		}
+	};
+
+	class Game2LauncherMatchTimeMessage : public Message {
+	public:
+		long long secondsRemaining;
+		bool counting;
+	public:
+		short getMessageKind() override {
+			return TASRV_MSG_KIND_GAME_2_LAUNCHER_MATCHTIME;
+		}
+
+		void toJson(json& j) {
+			j["seconds_remaining"] = secondsRemaining;
+			j["counting"] = counting;
+		}
+
+		bool fromJson(const json& j) {
+			secondsRemaining = j["seconds_remaining"];
+			counting = j["counting"];
+			return true;
+		}
+	};
+
+	class Game2LauncherMatchEndMessage : public Message {
+	public:
+		short getMessageKind() override {
+			return TASRV_MSG_KIND_GAME_2_LAUNCHER_MATCHEND;
+		}
+
+		void toJson(json& j) {}
+
+		bool fromJson(const json& j) {
+			return true;
 		}
 	};
 }

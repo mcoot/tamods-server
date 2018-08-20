@@ -44,6 +44,11 @@ namespace TAServer {
 		bool isConnected();
 
 		bool retrieveLoadout(FUniqueNetId uniquePlayerId, int classId, int slot, std::map<int, int>& resultEquipMap);
+
+		void sendTeamInfo(const std::map<long long, int>& playerToTeamId);
+		void sendScoreInfo(int beScore, int dsScore);
+		void sendMatchTime(long long matchSecondsLeft, bool counting);
+		void sendMatchEnded();
 	};
 }
 

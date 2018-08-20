@@ -96,5 +96,47 @@ namespace TAServer {
 
 		return true;
 	}
+
+	void Client::sendTeamInfo(const std::map<long long, int>& playerToTeamId) {
+		Game2LauncherTeamInfoMessage msg;
+		for (auto& elem : playerToTeamId) {
+			msg.playerToTeamId[elem.first] = elem.second;
+		}
+
+		json j;
+		msg.toJson(j);
+		Logger::debug("SendTeamInfo json: %s", j.dump().c_str());
+		tcpClient->send(msg.getMessageKind(), j);
+	}
+
+	void Client::sendScoreInfo(int beScore, int dsScore) {
+		Game2LauncherScoreInfoMessage msg;
+		msg.beScore = beScore;
+		msg.dsScore = dsScore;
+
+		json j;
+		msg.toJson(j);
+		Logger::debug("SendScoreInfo json: %s", j.dump().c_str());
+		tcpClient->send(msg.getMessageKind(), j);
+	}
+
+	void Client::sendMatchTime(long long matchSecondsLeft, bool counting) {
+		Game2LauncherMatchTimeMessage msg;
+		msg.secondsRemaining = matchSecondsLeft;
+		msg.counting = counting;
+
+		json j;
+		msg.toJson(j);
+		Logger::debug("SendMatchTime json: %s", j.dump().c_str());
+		tcpClient->send(msg.getMessageKind(), j);
+	}
+
+	void Client::sendMatchEnded() {
+		Game2LauncherMatchEndMessage msg;
+
+		json j;
+		msg.toJson(j);
+		tcpClient->send(msg.getMessageKind(), j);
+	}
 }
 

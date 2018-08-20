@@ -20,26 +20,6 @@ using boost::asio::ip::tcp;
 
 namespace TCP {
 
-	//class Message {
-	//public:
-	//	static const short InvalidMessage = 0x0;
-
-	//	virtual short getMessageKind() {
-	//		return InvalidMessage;
-	//	}
-
-	//	virtual void toJson(json& j) {
-	//		throw std::runtime_error("OperationNotImplemented");
-	//	}
-	//	virtual bool fromJson(const json& j) {
-	//		throw std::runtime_error("OperationNotImplemented");
-	//	}
-
-	//	bool isInvalidMessage() {
-	//		return getMessageKind() == InvalidMessage;
-	//	}
-	//};
-
 	// Client represents an asynchronous TCP Client
 	template <typename SizeType>
 	class Client {
@@ -170,8 +150,12 @@ namespace TCP {
 
 			// Message writing is synchronous and serialised to avoid a data race
 			boost::system::error_code writeErr;
-			std::lock_guard<std::mutex> lock(write_mutex);
-			size_t bytesWritten = boost::asio::write(socket, boost::asio::buffer(out_stream.str(), out_stream.str().length()), writeErr);
+			
+			size_t bytesWritten;
+			{
+				std::lock_guard<std::mutex> lock(write_mutex);
+				bytesWritten = boost::asio::write(socket, boost::asio::buffer(out_stream.str(), out_stream.str().length()), writeErr);
+			}
 			if (!writeErr && bytesWritten != msgSize + 2) {
 				writeErr.assign(boost::system::errc::message_size, boost::system::generic_category());
 			}
