@@ -2,6 +2,12 @@
 #include "NameCryptor.h"
 #include <Shlobj.h>
 
+namespace Utils {
+
+	ATrGame* tr_game = NULL;
+
+}
+
 // Converts UE3's FString to std::string
 std::string Utils::f2std(FString &fstr)
 {

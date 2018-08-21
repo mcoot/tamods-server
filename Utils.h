@@ -21,4 +21,6 @@ namespace Utils {
 	bool fileExists(const std::string &path, const std::string &mode = "r");
 	bool dirExists(const std::string &path);
 
+	extern ATrGame* tr_game;
+
 }
