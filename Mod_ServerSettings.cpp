@@ -82,6 +82,68 @@ void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrSer
 	that->ApplyServerSettings();
 }
 
+// Map codes
+static int mapCodeCTFKatabatic = CONST_MAP_ID_CTF_KATABATIC;
+static int mapCodeCTFArxNovena = CONST_MAP_ID_CTF_ARXNOVENA;
+static int mapCodeCTFDangerousCrossing = CONST_MAP_ID_CTF_DANGEROUSCROSSING;
+static int mapCodeCTFDrydock = CONST_MAP_ID_CTF_DRYDOCK;
+static int mapCodeCTFCrossfire = CONST_MAP_ID_CTF_CROSSFIRE;
+static int mapCodeCTFPermafrost = CONST_MAP_ID_CTF_PERMAFROST;
+static int mapCodeCTFTartarus = CONST_MAP_ID_CTF_TARTARUS;
+static int mapCodeCTFCCR = CONST_MAP_ID_CTF_CANYONCRUSADEREVIVAL;
+static int mapCodeCTFRaindance = CONST_MAP_ID_CTF_RAINDANCE;
+static int mapCodeCTFTempleRuins = CONST_MAP_ID_CTF_TEMPLERUINS;
+static int mapCodeCTFStonehenge = CONST_MAP_ID_CTF_STONEHENGE;
+static int mapCodeCTFSunstar = CONST_MAP_ID_CTF_SUNSTAR;
+static int mapCodeCTFBellaOmega = CONST_MAP_ID_CTF_BELLAOMEGA;
+static int mapCodeCTFBellaOmegaNS = CONST_MAP_ID_CTF_BELLAOMEGANS;
+static int mapCodeCTFTerminus = CONST_MAP_ID_CTF_TERMINUS;
+static int mapCodeCTFIceCoaster = CONST_MAP_ID_CTF_ICECOASTER;
+static int mapCodeCTFPerdition = CONST_MAP_ID_CTF_PERDITION;
+static int mapCodeCTFHellfire = CONST_MAP_ID_CTF_HELLFIRE;
+static int mapCodeCTFBlueshift = CONST_MAP_ID_CTF_BLUESHIFT;
+
+static int mapCodeRabbitOutskirts = CONST_MAP_ID_RABBIT_OUTSKIRTS;
+static int mapCodeRabbitQuicksand = CONST_MAP_ID_RABBIT_QUICKSAND;
+static int mapCodeRabbitCrossfire = CONST_MAP_ID_RABBIT_CROSSFIRE;
+static int mapCodeRabbitInferno = CONST_MAP_ID_RABBIT_INFERNO;
+static int mapCodeRabbitNightabatic = CONST_MAP_ID_RABBIT_NIGHTABATIC;
+static int mapCodeRabbitSulfurCove = CONST_MAP_ID_RABBIT_SULFURCOVE;
+
+static int mapCodeTDMDrydockNight = CONST_MAP_ID_TDM_DRYDOCKNIGHT;
+static int mapCodeTDMCrossfire = CONST_MAP_ID_TDM_CROSSFIRE;
+static int mapCodeTDMQuicksand = CONST_MAP_ID_TDM_QUICKSAND;
+static int mapCodeTDMNightabatic = CONST_MAP_ID_TDM_NIGHTABATIC;
+static int mapCodeTDMInferno = CONST_MAP_ID_TDM_INFERNO;
+static int mapCodeTDMSulfurCove = CONST_MAP_ID_TDM_SULFURCOVE;
+static int mapCodeTDMOutskirts = CONST_MAP_ID_TDM_OUTSKIRTS;
+static int mapCodeTDMMiasma = CONST_MAP_ID_TDM_MIASMA;
+
+static int mapCodeArenaAirArena = CONST_MAP_ID_ARENA_AIRARENA;
+static int mapCodeArenaWalledIn = CONST_MAP_ID_ARENA_WALLEDIN;
+static int mapCodeArenaLavaArena = CONST_MAP_ID_ARENA_LAVAARENA;
+static int mapCodeArenaHinterlands = CONST_MAP_ID_ARENA_HINTERLANDS;
+static int mapCodeArenaWhiteOut = CONST_MAP_ID_ARENA_WHITEOUT;
+static int mapCodeArenaFraytown = CONST_MAP_ID_ARENA_FRAYTOWN;
+static int mapCodeArenaUndercroft = CONST_MAP_ID_ARENA_UNDERCROFT;
+
+static int mapCodeCaHKatabatic = CONST_MAP_ID_CAH_KATABATIC;
+static int mapCodeCaHOutskirts = CONST_MAP_ID_CAH_OUTSKIRTS3P;
+static int mapCodeCaHRaindance = CONST_MAP_ID_CAH_RAINDANCE;
+static int mapCodeCaHDrydockNight = CONST_MAP_ID_CAH_DRYDOCKNIGHT;
+static int mapCodeCaHSulfurCove = CONST_MAP_ID_CAH_SULFURCOVE;
+static int mapCodeCaHTartarus = CONST_MAP_ID_CAH_TARTARUS;
+static int mapCodeCaHCCR = CONST_MAP_ID_CAH_CANYONCRUSADEREVIVAL;
+
+static int mapCodeBlitzCrossfire = CONST_MAP_ID_BLITZ_CROSSFIRE;
+static int mapCodeBlitzCCR = CONST_MAP_ID_BLITZ_CANYONCRUSADEREVIVAL;
+static int mapCodeBlitzBellaOmega = CONST_MAP_ID_BLITZ_BELLAOMEGA;
+static int mapCodeBlitzBlueshift = CONST_MAP_ID_BLITZ_BLUESHIFT;
+static int mapCodeBlitzHellfire = CONST_MAP_ID_BLITZ_HELLFIRE;
+static int mapCodeBlitzArxNovena = CONST_MAP_ID_BLITZ_ARXNOVENA;
+static int mapCodeBlitzKatabatic = CONST_MAP_ID_BLITZ_KATABATIC;
+static int mapCodeBlitzDrydock = CONST_MAP_ID_BLITZ_DRYDOCK;
+
 // Nasty nasty getter/setter generation
 #define SETTING_GETTERSETTER(type, var) static type get ## var ##() { \
 	return g_config.serverSettings.var; \
@@ -99,6 +161,7 @@ static void set ## var ##(type n) { \
 #define STRINGIFY(x) #x
 #define SETTING_LUAPROP(var) addProperty(STRINGIFY(var), &get ## var ## , &set ## var ## )
 
+// Server setting getter/setters
 SETTING_GETTERSETTER(int, TimeLimit);
 SETTING_GETTERSETTER(int, WarmupTime);
 SETTING_GETTERSETTER(int, OvertimeLimit);
@@ -211,6 +274,111 @@ namespace LuaAPI {
 
 				.SETTING_LUAPROP(SkiingEnabled)
 				.SETTING_LUAPROP(CTFBlitzAllFlagsMove)
+			.endNamespace()
+
+			.beginNamespace("Maps")
+				.beginNamespace("CTF")
+					.addVariable("Katabatic", &mapCodeCTFKatabatic, false)
+					.addVariable("Kata", &mapCodeCTFKatabatic, false)
+					.addVariable("ArxNovena", &mapCodeCTFArxNovena, false)
+					.addVariable("Arx", &mapCodeCTFArxNovena, false)
+					.addVariable("DangerousCrossing", &mapCodeCTFDangerousCrossing, false)
+					.addVariable("DX", &mapCodeCTFDangerousCrossing, false)
+					.addVariable("Drydock", &mapCodeCTFDrydock, false)
+					.addVariable("DD", &mapCodeCTFDrydock, false)
+					.addVariable("Crossfire", &mapCodeCTFCrossfire, false)
+					.addVariable("XF", &mapCodeCTFCrossfire, false)
+					.addVariable("XFire", &mapCodeCTFCrossfire, false)
+					.addVariable("Permafrost", &mapCodeCTFPermafrost, false)
+					.addVariable("Tartarus", &mapCodeCTFTartarus, false)
+					.addVariable("CCR", &mapCodeCTFCCR, false)
+					.addVariable("CanyonCrusade", &mapCodeCTFCCR, false)
+					.addVariable("CanyonCrusadeRevival", &mapCodeCTFCCR, false)
+					.addVariable("Raindance", &mapCodeCTFRaindance, false)
+					.addVariable("TempleRuins", &mapCodeCTFTempleRuins, false)
+					.addVariable("Temple", &mapCodeCTFTempleRuins, false)
+					.addVariable("Stonehenge", &mapCodeCTFStonehenge, false)
+					.addVariable("Sunstar", &mapCodeCTFSunstar, false)
+					.addVariable("BellaOmega", &mapCodeCTFBellaOmegaNS, false)
+					.addVariable("Bella", &mapCodeCTFBellaOmegaNS, false)
+					.addVariable("BellaOmegaNS", &mapCodeCTFBellaOmegaNS, false)
+					.addVariable("BellaOmegaSandstorm", &mapCodeCTFBellaOmega, false)
+					.addVariable("Terminus", &mapCodeCTFTerminus, false)
+					.addVariable("IceCoaster", &mapCodeCTFIceCoaster, false)
+					.addVariable("Perdition", &mapCodeCTFPerdition, false)
+					.addVariable("Hellfire", &mapCodeCTFHellfire, false)
+					.addVariable("Blueshift", &mapCodeCTFBlueshift, false)
+				.endNamespace()
+				.beginNamespace("TDM")
+					.addVariable("DrydockNight", &mapCodeTDMDrydockNight, false)
+					.addVariable("Crossfire", &mapCodeTDMCrossfire, false)
+					.addVariable("XF", &mapCodeTDMCrossfire, false)
+					.addVariable("XFire", &mapCodeTDMCrossfire, false)
+					.addVariable("Quicksand", &mapCodeTDMQuicksand, false)
+					.addVariable("Nightabatic", &mapCodeTDMNightabatic, false)
+					.addVariable("Inferno", &mapCodeTDMInferno, false)
+					.addVariable("SulfurCove", &mapCodeTDMSulfurCove, false)
+					.addVariable("Sulfur", &mapCodeTDMSulfurCove, false)
+					.addVariable("Outskirts", &mapCodeTDMOutskirts, false)
+					.addVariable("Outskirts3P", &mapCodeTDMOutskirts, false)
+					.addVariable("Miasma", &mapCodeTDMMiasma, false)
+				.endNamespace()
+				.beginNamespace("Arena")
+					.addVariable("AirArena", &mapCodeArenaAirArena, false)
+					.addVariable("Air", &mapCodeArenaAirArena, false)
+					.addVariable("WalledIn", &mapCodeArenaWalledIn, false)
+					.addVariable("LavaArena", &mapCodeArenaLavaArena, false)
+					.addVariable("Lava", &mapCodeArenaLavaArena, false)
+					.addVariable("Hinterlands", &mapCodeArenaHinterlands, false)
+					.addVariable("WhiteOut", &mapCodeArenaWhiteOut, false)
+					.addVariable("Whiteout", &mapCodeArenaWhiteOut, false)
+					.addVariable("FrayTown", &mapCodeArenaFraytown, false)
+					.addVariable("Fraytown", &mapCodeArenaFraytown, false)
+					.addVariable("Undercroft", &mapCodeArenaUndercroft, false)
+				.endNamespace()
+				.beginNamespace("Rabbit")
+					.addVariable("Outskirts", &mapCodeRabbitOutskirts, false)
+					.addVariable("Outskirts3P", &mapCodeRabbitOutskirts, false)
+					.addVariable("Quicksand", &mapCodeRabbitQuicksand, false)
+					.addVariable("Crossfire", &mapCodeRabbitCrossfire, false)
+					.addVariable("XF", &mapCodeRabbitCrossfire, false)
+					.addVariable("XFire", &mapCodeRabbitCrossfire, false)
+					.addVariable("Inferno", &mapCodeRabbitInferno, false)
+					.addVariable("Nightabatic", &mapCodeRabbitNightabatic, false)
+					.addVariable("SulfurCove", &mapCodeRabbitSulfurCove, false)
+					.addVariable("Sulfur", &mapCodeRabbitSulfurCove, false)
+				.endNamespace()
+				.beginNamespace("CaH")
+					.addVariable("Katabatic", &mapCodeCaHKatabatic, false)
+					.addVariable("Kata", &mapCodeCaHKatabatic, false)
+					.addVariable("Outskirts", &mapCodeCaHOutskirts, false)
+					.addVariable("Outskirts3P", &mapCodeCaHOutskirts, false)
+					.addVariable("Raindance", &mapCodeCaHRaindance, false)
+					.addVariable("DrydockNight", &mapCodeCaHDrydockNight, false)
+					.addVariable("SulfurCove", &mapCodeCaHSulfurCove, false)
+					.addVariable("Tartarus", &mapCodeCaHTartarus, false)
+					.addVariable("CCR", &mapCodeCaHCCR, false)
+					.addVariable("CanyonCrusade", &mapCodeCaHCCR, false)
+					.addVariable("CanyonCrusadeRevival", &mapCodeCaHCCR, false)
+				.endNamespace()
+				.beginNamespace("Blitz")
+					.addVariable("Crossfire", &mapCodeBlitzCrossfire, false)
+					.addVariable("XF", &mapCodeBlitzCrossfire, false)
+					.addVariable("XFire", &mapCodeBlitzCrossfire, false)
+					.addVariable("CCR", &mapCodeBlitzCCR, false)
+					.addVariable("CanyonCrusade", &mapCodeBlitzCCR, false)
+					.addVariable("CanyonCrusadeRevival", &mapCodeBlitzCCR, false)
+					.addVariable("BellaOmega", &mapCodeBlitzBellaOmega, false)
+					.addVariable("Bella", &mapCodeBlitzBellaOmega, false)
+					.addVariable("Blueshift", &mapCodeBlitzBlueshift, false)
+					.addVariable("Hellfire", &mapCodeBlitzHellfire, false)
+					.addVariable("ArxNovena", &mapCodeBlitzArxNovena, false)
+					.addVariable("Arx", &mapCodeBlitzArxNovena, false)
+					.addVariable("Katabatic", &mapCodeBlitzKatabatic, false)
+					.addVariable("Kata", &mapCodeBlitzKatabatic, false)
+					.addVariable("Drydock", &mapCodeBlitzDrydock, false)
+					.addVariable("DD", &mapCodeBlitzDrydock, false)
+				.endNamespace()
 			.endNamespace()
 			;
 	}
