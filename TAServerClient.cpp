@@ -26,6 +26,16 @@ namespace TAServer {
 			tcpClient->start(host, port);
 			ios.run();
 		});
+
+		gameInfoPollingThread = std::make_shared<std::thread>([&] {
+			while (true) {
+				pollForGameInfoChanges();
+				std::this_thread::sleep_for(std::chrono::seconds(2));
+				
+			}
+		});
+		gameInfoPollingThread->detach();
+
 		return true;
 	}
 
@@ -134,7 +144,7 @@ namespace TAServer {
 	void Client::sendMatchEnded() {
 		Game2LauncherMatchEndMessage msg;
 
-		json j;
+		json j = json::object();
 		msg.toJson(j);
 		tcpClient->send(msg.getMessageKind(), j);
 	}

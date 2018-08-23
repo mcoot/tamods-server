@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <mutex>
 #include <regex>
 #include <map>
 #include "SdkHeaders.h"
@@ -21,6 +22,7 @@ namespace Utils {
 	bool fileExists(const std::string &path, const std::string &mode = "r");
 	bool dirExists(const std::string &path);
 
-	extern ATrGame* tr_game;
+	extern ATrGameReplicationInfo* tr_gri;
+	extern std::mutex tr_gri_mutex;
 
 }

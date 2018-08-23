@@ -27,6 +27,7 @@ namespace TAServer {
 	private:
 		boost::asio::io_service ios;
 		std::shared_ptr<std::thread> iosThread;
+		std::shared_ptr<std::thread> gameInfoPollingThread;
 		std::shared_ptr<TCP::Client<short> > tcpClient;
 		std::map<long long, Launcher2GameLoadoutMessage> receivedLoadouts;
 		std::mutex receivedLoadoutsMutex;
@@ -51,5 +52,7 @@ namespace TAServer {
 		void sendMatchEnded();
 	};
 }
+
+void pollForGameInfoChanges();
 
 extern TAServer::Client g_TAServerClient;

@@ -62,7 +62,19 @@ void ServerSettings::ApplyToGame(ATrGameReplicationInfo* gri) {
 }
 
 void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrServerSettingsInfo_eventLoadServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo) {
-	//that->eventLoadServerSettings();
+	// Set the global GRI reference when the server loads the map
+	if (!Utils::tr_gri) {
+		Logger::debug("Want to set GRI");
+		if (that->WorldInfo->GRI && that->WorldInfo->GRI->IsA(ATrGameReplicationInfo::StaticClass())) {
+			{
+				std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+				Utils::tr_gri = (ATrGameReplicationInfo*)that->WorldInfo->GRI;
+				Logger::debug("GRI set!");
+			}
+		}
+		
+	}
+
 	if (!callInfo->callerObject->IsA(ATrGameReplicationInfo::StaticClass())) {
 		return;
 	}
@@ -75,7 +87,6 @@ void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrSer
 	return g_config.serverSettings.var; \
 } \
 static void set ## var ##(type n) { \
-	Logger::debug("SETTING"); \
 	g_config.serverSettings.var = n; \
 }
 

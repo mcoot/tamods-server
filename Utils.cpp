@@ -4,7 +4,8 @@
 
 namespace Utils {
 
-	ATrGame* tr_game = NULL;
+	ATrGameReplicationInfo* tr_gri = NULL;
+	std::mutex tr_gri_mutex;
 
 }
 
