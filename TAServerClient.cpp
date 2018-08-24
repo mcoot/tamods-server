@@ -27,6 +27,7 @@ namespace TAServer {
 			ios.run();
 		});
 
+		// Start the thread used to poll game information to send
 		gameInfoPollingThread = std::make_shared<std::thread>([&] {
 			while (true) {
 				pollForGameInfoChanges();
@@ -50,16 +51,12 @@ namespace TAServer {
 	}
 
 	void Client::attachHandlers() {
-		tcpClient->add_handler(TASRV_MSG_KIND_GAME_2_LAUNCHER_LOADOUT_REQUEST, [this](const json& j) {
-			handler_Game2LauncherLoadoutRequest(j);
-		});
 		tcpClient->add_handler(TASRV_MSG_KIND_LAUNCHER_2_GAME_LOADOUT_MESSAGE, [this](const json& j) {
 			handler_Launcher2GameLoadoutMessage(j);
 		});
-	}
-
-	void Client::handler_Game2LauncherLoadoutRequest(const json& msgBody) {
-		// This is never actually received by the gameserver, do nothing
+		tcpClient->add_handler(TASRV_MSG_KIND_LAUNCHER_2_GAME_NEXT_MAP_MESSAGE, [this](const json& j) {
+			handler_Launcher2GameNextMapMessage(j);
+		});
 	}
 
 	void Client::handler_Launcher2GameLoadoutMessage(const json& msgBody) {
@@ -75,6 +72,19 @@ namespace TAServer {
 		receivedLoadouts[netIdToLong(msg.uniquePlayerId)] = msg;
 	}
 
+	void Client::handler_Launcher2GameNextMapMessage(const json& msgBody) {
+		// This message has no body, it's just a command to switch map
+		// TODO: switch map here... figure out how to get config
+	}
+
+	void Client::sendProtocolVersion() {
+		Game2LauncherProtocolVersionMessage msg;
+		json j;
+		msg.toJson(j);
+
+		tcpClient->send(msg.getMessageKind(), j);
+	}
+
 	bool Client::retrieveLoadout(FUniqueNetId uniquePlayerId, int classId, int slot, std::map<int, int>& resultEquipMap) {
 		Game2LauncherLoadoutRequest req;
 		req.uniquePlayerId = uniquePlayerId;
@@ -84,7 +94,7 @@ namespace TAServer {
 		json j;
 		req.toJson(j);
 
-		tcpClient->send(TASRV_MSG_KIND_GAME_2_LAUNCHER_LOADOUT_REQUEST, j);
+		tcpClient->send(req.getMessageKind(), j);
 
 		// Block until a loadout is received or a timeout of 5 seconds occurs
 		auto startTime = std::chrono::system_clock::now();

@@ -1,7 +1,7 @@
 #include "LuaAPI.h"
 
 static std::string dllName = MODNAME;
-static std::string dllVersion = std::to_string(MODVERSION);
+static std::string dllVersion = MODVERSION;
 
 static int serverModeStandalone = (int)ServerMode::STANDALONE;
 static int serverModeTAServer = (int)ServerMode::TASERVER;

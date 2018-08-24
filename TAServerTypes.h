@@ -18,6 +18,7 @@ using json = nlohmann::json;
 
 #define TASRV_MSG_KIND_INVALID 0x0
 
+#define TASRV_MSG_KIND_GAME_2_LAUNCHER_PROTOCOL_VERSION 0x3000
 #define TASRV_MSG_KIND_GAME_2_LAUNCHER_TEAMINFO 0x3001
 #define TASRV_MSG_KIND_GAME_2_LAUNCHER_SCOREINFO 0x3002
 #define TASRV_MSG_KIND_GAME_2_LAUNCHER_MATCHTIME 0x3003
@@ -25,6 +26,7 @@ using json = nlohmann::json;
 #define TASRV_MSG_KIND_GAME_2_LAUNCHER_LOADOUT_REQUEST 0x3005
 
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_LOADOUT_MESSAGE 0x4000
+#define TASRV_MSG_KIND_LAUNCHER_2_GAME_NEXT_MAP_MESSAGE 0x4001
 
 #define TASRV_EQP_CODE_LOADOUTNAME "1341"
 #define TASRV_EQP_CODE_PRIMARY "1086"
@@ -293,6 +295,34 @@ namespace TAServer {
 		}
 
 		void toJson(json& j) {}
+
+		bool fromJson(const json& j) {
+			return true;
+		}
+	};
+
+	class Launcher2GameNextMapMessage : public Message {
+	public:
+		short getMessageKind() override {
+			return TASRV_MSG_KIND_LAUNCHER_2_GAME_NEXT_MAP_MESSAGE;
+		}
+
+		void toJson(json& j) {}
+
+		bool fromJson(const json& j) {
+			return true;
+		}
+	};
+
+	class Game2LauncherProtocolVersionMessage : public Message {
+	public:
+		short getMessageKind() override {
+			return TASRV_MSG_KIND_GAME_2_LAUNCHER_PROTOCOL_VERSION;
+		}
+
+		void toJson(json& j) {
+			j["version"] = MODVERSION;
+		}
 
 		bool fromJson(const json& j) {
 			return true;

@@ -74,6 +74,9 @@ struct ServerSettings {
 	bool SkiingEnabled = true;
 	bool CTFBlitzAllFlagsMove = false;
 
+	std::vector<int> mapRotation;
+	int mapRotationIndex = -1;
+
 	void ApplyToGame(ATrGameReplicationInfo* gri);
 };
 
