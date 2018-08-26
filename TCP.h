@@ -31,6 +31,7 @@ namespace TCP {
 		std::vector<SizeType> read_msgsize_buff;
 		std::mutex write_mutex;
 		tcp::socket socket;
+		std::function<void()> onConnectHandler;
 		std::map<short, RecvHandlerType> handlers;
 
 	private:
@@ -64,6 +65,11 @@ namespace TCP {
 
 			// No longer need a deadline
 			deadline.expires_from_now(boost::posix_time::pos_infin);
+
+			// Run the on-connect handler if there is one
+			if (onConnectHandler) {
+				onConnectHandler();
+			}
 
 			// Start the input actor
 			start_read();
@@ -200,8 +206,9 @@ namespace TCP {
 			write(msgKind, msgBody);
 		}
 
-		void start(std::string host, int port) {
+		void start(std::string host, int port, std::function<void()> connect_handler = NULL) {
 			stopped = false;
+			onConnectHandler = connect_handler;
 			boost::asio::ip::address addr = boost::asio::ip::address::from_string(host, error_state);
 			if (error_state) {
 				return;
@@ -216,7 +223,7 @@ namespace TCP {
 		}
 
 		void stop() {
-			Logger::debug("stopping... error code is %d", error_state.value());
+			Logger::debug("stopping... error code is %d: %s", error_state.value(), error_state.message());
 			stopped = true;
 			socket.close();
 			deadline.cancel();

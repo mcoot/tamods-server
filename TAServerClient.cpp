@@ -23,7 +23,8 @@ namespace TAServer {
 		iosThread = std::make_shared<std::thread>([&] {
 			boost::asio::io_service::work work(ios);
 			attachHandlers();
-			tcpClient->start(host, port);
+			tcpClient->start(host, port, std::bind(&Client::handler_OnConnect, this));
+
 			ios.run();
 		});
 
@@ -59,29 +60,11 @@ namespace TAServer {
 		});
 	}
 
-	void Client::handler_Launcher2GameLoadoutMessage(const json& msgBody) {
-		// Parse the message
-		Launcher2GameLoadoutMessage msg;
-		if (!msg.fromJson(msgBody)) {
-			// Failed to parse
-			Logger::error("Failed to parse loadout response: %s", msgBody.dump().c_str());
-		}
-
-		// Put it in the map
-		std::lock_guard<std::mutex> lock(receivedLoadoutsMutex);
-		receivedLoadouts[netIdToLong(msg.uniquePlayerId)] = msg;
-	}
-
-	void Client::handler_Launcher2GameNextMapMessage(const json& msgBody) {
-		// This message has no body, it's just a command to switch map
-		// TODO: switch map here... figure out how to get config
-	}
-
 	void Client::sendProtocolVersion() {
 		Game2LauncherProtocolVersionMessage msg;
 		json j;
 		msg.toJson(j);
-
+		Logger::debug("SendProtocolVersion json: %s", j.dump().c_str());
 		tcpClient->send(msg.getMessageKind(), j);
 	}
 
@@ -156,6 +139,7 @@ namespace TAServer {
 
 		json j = json::object();
 		msg.toJson(j);
+		Logger::debug("SendMatchEnd json: %s", j.dump().c_str());
 		tcpClient->send(msg.getMessageKind(), j);
 	}
 }

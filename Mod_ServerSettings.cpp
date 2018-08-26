@@ -118,6 +118,7 @@ static int mapCodeTDMInferno = CONST_MAP_ID_TDM_INFERNO;
 static int mapCodeTDMSulfurCove = CONST_MAP_ID_TDM_SULFURCOVE;
 static int mapCodeTDMOutskirts = CONST_MAP_ID_TDM_OUTSKIRTS;
 static int mapCodeTDMMiasma = CONST_MAP_ID_TDM_MIASMA;
+static int mapCodeTDMPerdition = CONST_MAP_ID_TDM_PERDITION;
 
 static int mapCodeArenaAirArena = CONST_MAP_ID_ARENA_AIRARENA;
 static int mapCodeArenaWalledIn = CONST_MAP_ID_ARENA_WALLEDIN;
@@ -143,6 +144,11 @@ static int mapCodeBlitzHellfire = CONST_MAP_ID_BLITZ_HELLFIRE;
 static int mapCodeBlitzArxNovena = CONST_MAP_ID_BLITZ_ARXNOVENA;
 static int mapCodeBlitzKatabatic = CONST_MAP_ID_BLITZ_KATABATIC;
 static int mapCodeBlitzDrydock = CONST_MAP_ID_BLITZ_DRYDOCK;
+static int mapCodeBlitzIceCoaster = CONST_MAP_ID_BLITZ_ICECOASTER;
+static int mapCodeBlitzTerminus = CONST_MAP_ID_BLITZ_TERMINUS;
+
+static int mapRotationModeSequential = (int)MapRotationMode::SEQUENTIAL;
+static int mapRotationModeRandom = (int)MapRotationMode::RANDOM;
 
 // Nasty nasty getter/setter generation
 #define SETTING_GETTERSETTER(type, var) static type get ## var ##() { \
@@ -217,6 +223,19 @@ SETTING_GETTERSETTER(bool, DeployableFriendlyFire);
 SETTING_GETTERSETTER(bool, SkiingEnabled);
 SETTING_GETTERSETTER(bool, CTFBlitzAllFlagsMove);
 
+static void addCustomToMapRotation(std::string mapName) {
+	g_config.serverSettings.mapRotation.push_back(mapName);
+}
+
+static void addToMapRotation(int mapId) {
+	auto& it = Data::map_id_to_filename.find(mapId);
+	if (it == Data::map_id_to_filename.end()) {
+		Logger::error("Failed to add map %d to rotation; no such map exists", mapId);
+		return;
+	}
+	g_config.serverSettings.mapRotation.push_back(it->second);
+}
+
 namespace LuaAPI {
 	void addServerSettingsAPI(luabridge::Namespace ns) {
 		ns
@@ -274,8 +293,16 @@ namespace LuaAPI {
 
 				.SETTING_LUAPROP(SkiingEnabled)
 				.SETTING_LUAPROP(CTFBlitzAllFlagsMove)
+				.beginNamespace("MapRotation")
+					.addVariable("Mode", (int*)&g_config.serverSettings.mapRotationMode, true)
+					.beginNamespace("Modes")
+						.addVariable("Sequential", &mapRotationModeSequential, false)
+						.addVariable("Random", &mapRotationModeRandom, false)
+					.endNamespace()
+					.addFunction("add", &addToMapRotation)
+					.addFunction("addCustom", &addCustomToMapRotation)
+				.endNamespace()
 			.endNamespace()
-
 			.beginNamespace("Maps")
 				.beginNamespace("CTF")
 					.addVariable("Katabatic", &mapCodeCTFKatabatic, false)
@@ -296,6 +323,8 @@ namespace LuaAPI {
 					.addVariable("CanyonCrusadeRevival", &mapCodeCTFCCR, false)
 					.addVariable("Raindance", &mapCodeCTFRaindance, false)
 					.addVariable("TempleRuins", &mapCodeCTFTempleRuins, false)
+					.addVariable("Harabec", &mapCodeCTFTempleRuins, false)
+					.addVariable("RuinsOfHarabec", &mapCodeCTFTempleRuins, false)
 					.addVariable("Temple", &mapCodeCTFTempleRuins, false)
 					.addVariable("Stonehenge", &mapCodeCTFStonehenge, false)
 					.addVariable("Sunstar", &mapCodeCTFSunstar, false)
@@ -322,6 +351,7 @@ namespace LuaAPI {
 					.addVariable("Outskirts", &mapCodeTDMOutskirts, false)
 					.addVariable("Outskirts3P", &mapCodeTDMOutskirts, false)
 					.addVariable("Miasma", &mapCodeTDMMiasma, false)
+					.addVariable("Perdition", &mapCodeTDMPerdition, false)
 				.endNamespace()
 				.beginNamespace("Arena")
 					.addVariable("AirArena", &mapCodeArenaAirArena, false)
@@ -378,6 +408,8 @@ namespace LuaAPI {
 					.addVariable("Kata", &mapCodeBlitzKatabatic, false)
 					.addVariable("Drydock", &mapCodeBlitzDrydock, false)
 					.addVariable("DD", &mapCodeBlitzDrydock, false)
+					.addVariable("IceCoaster", &mapCodeBlitzIceCoaster, false)
+					.addVariable("Terminus", &mapCodeBlitzTerminus, false)
 				.endNamespace()
 			.endNamespace()
 			;

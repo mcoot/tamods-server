@@ -33,8 +33,6 @@ namespace TAServer {
 		std::mutex receivedLoadoutsMutex;
 	
 	private:
-		void handler_Launcher2GameLoadoutMessage(const json& msgBody);
-		void handler_Launcher2GameNextMapMessage(const json& msgBody);
 
 		void attachHandlers();
 	public:
@@ -51,6 +49,10 @@ namespace TAServer {
 		void sendScoreInfo(int beScore, int dsScore);
 		void sendMatchTime(long long matchSecondsLeft, bool counting);
 		void sendMatchEnded();
+
+		void handler_OnConnect();
+		void handler_Launcher2GameLoadoutMessage(const json& msgBody);
+		void handler_Launcher2GameNextMapMessage(const json& msgBody);
 	};
 }
 

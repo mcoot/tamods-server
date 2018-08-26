@@ -69,6 +69,19 @@ void TrPlayerReplicationInfo_GetCharacterEquip(ATrPlayerReplicationInfo* that, A
 	}
 }
 
+void TAServer::Client::handler_Launcher2GameLoadoutMessage(const json& msgBody) {
+	// Parse the message
+	Launcher2GameLoadoutMessage msg;
+	if (!msg.fromJson(msgBody)) {
+		// Failed to parse
+		Logger::error("Failed to parse loadout response: %s", msgBody.dump().c_str());
+	}
+
+	// Put it in the map
+	std::lock_guard<std::mutex> lock(receivedLoadoutsMutex);
+	receivedLoadouts[netIdToLong(msg.uniquePlayerId)] = msg;
+}
+
 // static variables for lua enum
 static int eqpNone = EQP_NONE;
 static int eqpMelee = EQP_Melee;

@@ -17,6 +17,11 @@
 #include "Data.h"
 #include "LoadoutTypes.h"
 
+enum class MapRotationMode {
+	SEQUENTIAL = 0,
+	RANDOM,
+	MAP_ROTATION_MAX
+};
 
 struct ServerSettings {
 	int TimeLimit = 25;
@@ -74,7 +79,8 @@ struct ServerSettings {
 	bool SkiingEnabled = true;
 	bool CTFBlitzAllFlagsMove = false;
 
-	std::vector<int> mapRotation;
+	MapRotationMode mapRotationMode = MapRotationMode::SEQUENTIAL;
+	std::vector<std::string> mapRotation;
 	int mapRotationIndex = -1;
 
 	void ApplyToGame(ATrGameReplicationInfo* gri);
