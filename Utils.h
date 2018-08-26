@@ -22,6 +22,14 @@ namespace Utils {
 	bool fileExists(const std::string &path, const std::string &mode = "r");
 	bool dirExists(const std::string &path);
 
+	enum class ServerGameStatus {
+		UNKNOWN = 0,
+		PREROUND,
+		IN_PROGRESS,
+		ENDED
+	};
+
+	extern ServerGameStatus serverGameStatus;
 	extern ATrGameReplicationInfo* tr_gri;
 	extern std::mutex tr_gri_mutex;
 

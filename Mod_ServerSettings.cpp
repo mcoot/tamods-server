@@ -64,8 +64,9 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 }
 
 void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrServerSettingsInfo_eventLoadServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo) {
-	//g_config.serverSettings.ApplyToGame(that);
-	//that->ApplyServerSettings();
+	Logger::debug("[LoadServerSettings]");
+	g_config.serverSettings.ApplyToGame(that);
+	that->ApplyServerSettings();
 }
 
 // Map codes

@@ -38,6 +38,7 @@ void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bo
 		std::map<long long, int> playerToTeamId;
 		for (int i = 0; i < gri->PRIArray.Count; ++i) {
 			ATrPlayerReplicationInfo* pri = (ATrPlayerReplicationInfo*)gri->PRIArray.GetStd(i);
+			if (!pri) continue;
 			// There's always an extra 'player' with ID 0 connected; this is used by the real login servers to scrape info (we think)
 			// not useful here, ignore it
 			if (TAServer::netIdToLong(pri->UniqueId) == 0) continue;
@@ -50,10 +51,11 @@ void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bo
 
 bool UTGame_MatchInProgress_BeginState(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
 	Logger::debug("[Match start]");
+	Utils::serverGameStatus = Utils::ServerGameStatus::IN_PROGRESS;
 	if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected() && Utils::tr_gri) {
 		{
 			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
-			updateMatchTime(true);
+			g_TAServerClient.sendMatchTime(Utils::tr_gri->r_ServerConfig->TimeLimit * 60, true);
 		}
 		
 	}
@@ -62,13 +64,14 @@ bool UTGame_MatchInProgress_BeginState(int ID, UObject *dwCallingObject, UFuncti
 
 void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* result, Hooks::CallInfo* callInfo) {
 	Logger::debug("[UTGame.EndGame] called");
+	Utils::serverGameStatus = Utils::ServerGameStatus::ENDED;
 	that->EndGame(params->Winner, params->Reason);
 
 	// Tell TAServer that the game is ending
 	if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected()) {
 		{
 			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
-			updateMatchTime(false);
+			g_TAServerClient.sendMatchTime(0, false);
 		}
 		
 		g_TAServerClient.sendMatchEnded();
@@ -78,10 +81,10 @@ void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* resu
 void UTGame_ProcessServerTravel(AUTGame* that, AUTGame_execProcessServerTravel_Parms* params, void* result, Hooks::CallInfo* callInfo) {
 	// Invalidate the global GRI
 	{
-		// Ensure latest data has been sent to the login server
-		pollForGameInfoChanges();
-		// Invalidate the GRI
 		std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+		// Ensure latest data has been sent to the login server
+		checkForScoreChange();
+		// Invalidate the GRI
 		Logger::debug("Invalidating GRI");
 		Utils::tr_gri = NULL;
 	}
@@ -91,23 +94,45 @@ void UTGame_ProcessServerTravel(AUTGame* that, AUTGame_execProcessServerTravel_P
 
 static int changeMapTickCounter = -1;
 
+void TrGame_ApplyServerSettings(ATrGame* that, ATrGame_execApplyServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo) {
+	Logger::debug("[TrGame.ApplyServerSettings]");
+	that->ApplyServerSettings();
+}
+
+bool TrGameReplicationInfo_PostBeginPlay(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
+	Logger::debug("[PostBeginPlay]");
+	{
+		Utils::serverGameStatus = Utils::ServerGameStatus::PREROUND;
+		std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+
+		Utils::tr_gri = (ATrGameReplicationInfo*)dwCallingObject;
+		Logger::debug("GRI set!");
+
+		if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected()) {
+			// GRI should only be set at the start of the match -> ergo not counting down
+			g_TAServerClient.sendMatchTime(Utils::tr_gri->r_ServerConfig->TimeLimit * 60, false);
+			Utils::tr_gri->RemainingMinute = Utils::tr_gri->r_ServerConfig->TimeLimit * 60;
+		}
+	}
+
+	return false;
+}
+
 bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
-	if (!Utils::tr_gri) {
+	if (Utils::serverGameStatus == Utils::ServerGameStatus::PREROUND) {
 		{
 			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
-			Utils::tr_gri = (ATrGameReplicationInfo*)dwCallingObject;
-			Logger::debug("GRI set!");
-		}
-		if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected() && Utils::tr_gri) {
-			// GRI should only be set at the start of the match -> ergo not counting down
-			{
-				std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
-				updateMatchTime(false);
+			if (Utils::tr_gri) {
+				Utils::tr_gri->RemainingTime = 60 * Utils::tr_gri->r_ServerConfig->TimeLimit;
+				Utils::tr_gri->RemainingMinute = 60 * Utils::tr_gri->r_ServerConfig->TimeLimit;
 			}
 		}
 	}
+	
+
 	if (changeMapTickCounter > 0) changeMapTickCounter--;
 	if (changeMapTickCounter == 0) {
+		Utils::tr_gri = (ATrGameReplicationInfo*)dwCallingObject;
 		changeMapTickCounter = -1;
 		json j;
 		g_TAServerClient.handler_Launcher2GameNextMapMessage(j);

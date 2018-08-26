@@ -4,6 +4,7 @@
 
 namespace Utils {
 
+	ServerGameStatus serverGameStatus = ServerGameStatus::UNKNOWN;
 	ATrGameReplicationInfo* tr_gri = NULL;
 	std::mutex tr_gri_mutex;
 
