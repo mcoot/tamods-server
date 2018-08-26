@@ -27,17 +27,6 @@ static void updateMatchTime() {
 }
 
 void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bool* result, Hooks::CallInfo* callInfo) {
-	// Set the global GRI reference on team join (to catch case where injection happens after the map starts)
-	if (!Utils::tr_gri && that->WorldInfo->GRI && that->WorldInfo->GRI->IsA(ATrGameReplicationInfo::StaticClass())) {
-		{
-			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
-			Utils::tr_gri = (ATrGameReplicationInfo*)that->WorldInfo->GRI;
-			Logger::debug("GRI set!");
-		}
-		
-	}
-	
-
 	Logger::debug("[RequestTeam] requested team = %d", params->RequestedTeamNum);
 	*result = that->RequestTeam(params->RequestedTeamNum, params->C);
 	if (!*result) return;
@@ -60,27 +49,13 @@ void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bo
 	}
 }
 
-void TrGame_EndGame(ATrGame* that, ATrGame_execEndGame_Parms* params, void* result, Hooks::CallInfo* callInfo) {
-	// This may not actually be the end of the game, as EndGame is also called when overtime starts...
-	// So check
-	bool actuallyEnding = true;
-	if (!that->CheckEndGame(params->Winner, params->Reason) && !that->bForceEndGame) {
-		actuallyEnding = false;
-	}
-
-	// Even if the game isn't ending, call the original function (it sets the overtime timer etc. in this case)
+void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* result, Hooks::CallInfo* callInfo) {
+	Logger::debug("[UTGame.EndGame] called");
 	that->EndGame(params->Winner, params->Reason);
-	if (!actuallyEnding) return;
-
-	//// Invalidate the global GRI
-	//{
-	//	std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
-	//	Logger::debug("Invalidating GRI");
-	//	Utils::tr_gri = NULL;
-	//}
 
 	// Tell TAServer that the game is ending
 	if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected()) {
+		//updateMatchTime(false);
 		g_TAServerClient.sendMatchEnded();
 	}
 }
@@ -99,11 +74,26 @@ void UTGame_ProcessServerTravel(AUTGame* that, AUTGame_execProcessServerTravel_P
 	that->ProcessServerTravel(params->URL, params->bAbsolute);
 }
 
-void TrGameReplicationInfo_PostBeginPlay(ATrGameReplicationInfo* that, ATrGameReplicationInfo_eventPostBeginPlay_Parms* params, void* result, Hooks::CallInfo* callInfo) {
-	Logger::debug("[PostBeginPlay] called");
-	that->PostBeginPlay();
+static bool changeMapOnNextTick = false;
 
-	
+bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
+	if (!Utils::tr_gri) {
+		{
+			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+			Utils::tr_gri = (ATrGameReplicationInfo*)dwCallingObject;
+			Logger::debug("GRI set!");
+		}
+		if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected() && Utils::tr_gri) {
+			// GRI should only be set at the start of the match -> ergo not counting down
+			//updateMatchTime(false);
+		}
+	}
+	if (changeMapOnNextTick) {
+		changeMapOnNextTick = false;
+		json j;
+		g_TAServerClient.handler_Launcher2GameNextMapMessage(j);
+	}
+	return false;
 }
 
 void TAServer::Client::handler_OnConnect() {
@@ -112,7 +102,7 @@ void TAServer::Client::handler_OnConnect() {
 
 	// Force a change map message to immediately go to the first map of the rotation
 	// This also forces a reload of the server settings
-	//changeMapOnNextTick = true;
+	changeMapOnNextTick = true;
 }
 
 static void performMapChange(std::string mapName) {
@@ -131,6 +121,7 @@ static void performMapChange(std::string mapName) {
 void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) {
 	if (g_config.serverMode != ServerMode::TASERVER || !g_TAServerClient.isConnected()) return;
 	if (!Utils::tr_gri || !Utils::tr_gri->WorldInfo) return;
+
 	if (g_config.serverSettings.mapRotation.empty()) {
 		Utils::tr_gri->WorldInfo->eventServerTravel(FString(L"?restart"), false, false);
 	}
@@ -144,6 +135,7 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
 }
 
 void pollForGameInfoChanges() {
+
 	// Lock the GRI to ensure it can't be unset during polling
 	std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 	if (!Utils::tr_gri) {
@@ -151,5 +143,5 @@ void pollForGameInfoChanges() {
 	}
 	
 	checkForScoreChange();
-	updateMatchTime();
+	//updateMatchTime();
 }

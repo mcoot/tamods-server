@@ -19,11 +19,14 @@ void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrSer
 // Hook called when the server tries to retrieve a player's loadout
 void TrPlayerReplicationInfo_GetCharacterEquip(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execGetCharacterEquip_Parms* params, void* result, Hooks::CallInfo* callInfo);
 
+// Hook called on GRI tick
+bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult);
+
 // Hook called when a player wants to switch teams (or to spectator)
 void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bool* result, Hooks::CallInfo* callInfo);
 
 // Hook called on game end (or when game enters overtime!)
-void TrGame_EndGame(ATrGame* that, ATrGame_execEndGame_Parms* params, void* result, Hooks::CallInfo* callInfo);
+void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* result, Hooks::CallInfo* callInfo);
 
 // Hook called during map transition
 void UTGame_ProcessServerTravel(AUTGame* that, AUTGame_execProcessServerTravel_Parms* params, void* result, Hooks::CallInfo* callInfo);
