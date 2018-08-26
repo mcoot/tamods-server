@@ -25,6 +25,9 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 // Hook called when a player wants to switch teams (or to spectator)
 void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bool* result, Hooks::CallInfo* callInfo);
 
+// Hook called on game/round start
+bool UTGame_MatchInProgress_BeginState(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult);
+
 // Hook called on game end (or when game enters overtime!)
 void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* result, Hooks::CallInfo* callInfo);
 

@@ -18,11 +18,10 @@ static void checkForScoreChange() {
 	}
 }
 
-
-static void updateMatchTime() {
-	if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected()) {
+static void updateMatchTime(bool counting) {
+	if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected() && Utils::tr_gri) {
 		int timeLeft = Utils::tr_gri->TimeLimit != 0 ? Utils::tr_gri->RemainingTime : Utils::tr_gri->ElapsedTime;
-		g_TAServerClient.sendMatchTime(timeLeft, Utils::tr_gri->bWarmupRound);
+		g_TAServerClient.sendMatchTime(timeLeft, counting);
 	}
 }
 
@@ -49,13 +48,29 @@ void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bo
 	}
 }
 
+bool UTGame_MatchInProgress_BeginState(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
+	Logger::debug("[Match start]");
+	if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected() && Utils::tr_gri) {
+		{
+			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+			updateMatchTime(true);
+		}
+		
+	}
+	return false;
+}
+
 void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* result, Hooks::CallInfo* callInfo) {
 	Logger::debug("[UTGame.EndGame] called");
 	that->EndGame(params->Winner, params->Reason);
 
 	// Tell TAServer that the game is ending
 	if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected()) {
-		//updateMatchTime(false);
+		{
+			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+			updateMatchTime(false);
+		}
+		
 		g_TAServerClient.sendMatchEnded();
 	}
 }
@@ -74,7 +89,7 @@ void UTGame_ProcessServerTravel(AUTGame* that, AUTGame_execProcessServerTravel_P
 	that->ProcessServerTravel(params->URL, params->bAbsolute);
 }
 
-static bool changeMapOnNextTick = false;
+static int changeMapTickCounter = -1;
 
 bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
 	if (!Utils::tr_gri) {
@@ -85,11 +100,15 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 		}
 		if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected() && Utils::tr_gri) {
 			// GRI should only be set at the start of the match -> ergo not counting down
-			//updateMatchTime(false);
+			{
+				std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+				updateMatchTime(false);
+			}
 		}
 	}
-	if (changeMapOnNextTick) {
-		changeMapOnNextTick = false;
+	if (changeMapTickCounter > 0) changeMapTickCounter--;
+	if (changeMapTickCounter == 0) {
+		changeMapTickCounter = -1;
 		json j;
 		g_TAServerClient.handler_Launcher2GameNextMapMessage(j);
 	}
@@ -102,7 +121,7 @@ void TAServer::Client::handler_OnConnect() {
 
 	// Force a change map message to immediately go to the first map of the rotation
 	// This also forces a reload of the server settings
-	changeMapOnNextTick = true;
+	changeMapTickCounter = 5;
 }
 
 static void performMapChange(std::string mapName) {
@@ -134,6 +153,7 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
 
 }
 
+static bool cachedWasInOvertime = false;
 void pollForGameInfoChanges() {
 
 	// Lock the GRI to ensure it can't be unset during polling
@@ -142,6 +162,18 @@ void pollForGameInfoChanges() {
 		return;
 	}
 	
+	// Score polling
 	checkForScoreChange();
-	//updateMatchTime();
+
+	// Ensure match time is updated when overtime is entered
+	if (Utils::tr_gri->WorldInfo && Utils::tr_gri->WorldInfo->Game) {
+		if (Utils::tr_gri->WorldInfo->Game->bOverTime != cachedWasInOvertime) {
+			Logger::debug("Overtime changed!");
+			if (!cachedWasInOvertime) {
+				Logger::debug("Sending overtime time update");
+				updateMatchTime(true);
+			}
+			cachedWasInOvertime = Utils::tr_gri->WorldInfo->Game->bOverTime;
+		}
+	}
 }

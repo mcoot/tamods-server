@@ -1,9 +1,11 @@
 #include "Mods.h"
 
-void ServerSettings::ApplyToGame(ATrGameReplicationInfo* gri) {
-	ATrServerSettingsInfo* s = gri->r_ServerConfig;
-	// Need to do something different for timelimit...
-	gri->TimeLimit = this->TimeLimit;
+void ServerSettings::ApplyAsDefaults() {
+	ATrServerSettingsInfo* defaultServerSettings = ((ATrServerSettingsInfo*)ATrServerSettingsInfo::StaticClass()->Default);
+	this->ApplyToGame(defaultServerSettings);
+}
+
+void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 	s->TimeLimit = this->TimeLimit;
 	s->WarmupTime = this->WarmupTime;
 	s->OvertimeLimit = this->OvertimeLimit;
@@ -62,11 +64,8 @@ void ServerSettings::ApplyToGame(ATrGameReplicationInfo* gri) {
 }
 
 void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrServerSettingsInfo_eventLoadServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo) {
-	if (!callInfo->callerObject->IsA(ATrGameReplicationInfo::StaticClass())) {
-		return;
-	}
-	g_config.serverSettings.ApplyToGame((ATrGameReplicationInfo*)(callInfo->callerObject));
-	that->ApplyServerSettings();
+	//g_config.serverSettings.ApplyToGame(that);
+	//that->ApplyServerSettings();
 }
 
 // Map codes

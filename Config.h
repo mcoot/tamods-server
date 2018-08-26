@@ -83,7 +83,8 @@ struct ServerSettings {
 	std::vector<std::string> mapRotation;
 	int mapRotationIndex = -1;
 
-	void ApplyToGame(ATrGameReplicationInfo* gri);
+	void ApplyAsDefaults();
+	void ApplyToGame(ATrServerSettingsInfo* s);
 };
 
 enum class ServerMode {
