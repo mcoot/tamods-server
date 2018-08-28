@@ -95,8 +95,8 @@ void UTGame_ProcessServerTravel(AUTGame* that, AUTGame_execProcessServerTravel_P
 static int changeMapTickCounter = -1;
 
 void TrGame_ApplyServerSettings(ATrGame* that, ATrGame_execApplyServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo) {
-	Logger::debug("[TrGame.ApplyServerSettings]");
 	that->ApplyServerSettings();
+	Logger::debug("[TrGame.ApplyServerSettings]: autobalance = %d; gri = %d", that->m_bShouldAutoBalance, ((ATrGameReplicationInfo*)that->GameReplicationInfo)->r_ServerConfig->bAutoBalanceInGame);
 }
 
 bool TrGameReplicationInfo_PostBeginPlay(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {

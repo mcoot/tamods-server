@@ -40,10 +40,10 @@ struct ServerSettings {
 	int FlagDragDeceleration = 0;
 
 	bool FriendlyFire = false;
-	float FriendlyFireMultiplier = 1.0f;
+	float FriendlyFireMultiplier = 1000.0f;
 	int BaseDestructionKickLimit = 1000;
-	int FriendlyFireDamageKickLimit = 1000;
-	int FriendlyFireKillKickLimit = 5;
+	int FriendlyFireDamageKickLimit = 0;
+	int FriendlyFireKillKickLimit = 0;
 
 	float EnergyMultiplier = 1000.0f;
 	float AoESizeMultiplier = 1000.0f;
@@ -60,7 +60,7 @@ struct ServerSettings {
 	int RabbitScoreLimit = 30;
 	int CaHScoreLimit = 50;
 
-	float VehicleHealthMultiplier = 1.0f;
+	float VehicleHealthMultiplier = 1000.0f;
 	int GravCycleLimit = 4;
 	int BeowulfLimit = 2;
 	int ShrikeLimit = 2;

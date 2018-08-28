@@ -15,6 +15,7 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 	s->TeamAssignType = (int)this->TeamAssignType;
 	s->SpawnType = (int)this->SpawnType;
 	s->bAutoBalanceInGame = this->AutoBalanceTeams;
+	Logger::debug("AutoBalance expected: %d, got: %d", this->AutoBalanceTeams, s->bAutoBalanceInGame);
 
 	s->MaxSpeedWithFlagLight = this->FlagDragLight;
 	s->MaxSpeedWithFlagMedium = this->FlagDragMedium;
@@ -136,6 +137,13 @@ static int mapCodeBlitzTerminus = CONST_MAP_ID_BLITZ_TERMINUS;
 
 static int mapRotationModeSequential = (int)MapRotationMode::SEQUENTIAL;
 static int mapRotationModeRandom = (int)MapRotationMode::RANDOM;
+
+static int teamAssignTypeBalanced = (int)TeamAssignTypes::TAT_BALANCED;
+static int teamAssignTypeUnbalanced = (int)TeamAssignTypes::TAT_UNBALANCED;
+static int teamAssignTypeAutoAssign = (int)TeamAssignTypes::TAT_AUTOASSIGN;
+
+static int spawnTypeNormal = (int)SpawnTypes::EST_NORMAL;
+static int spawnTypeNakedLight = (int)SpawnTypes::EST_NAKEDPTH;
 
 // Nasty nasty getter/setter generation
 #define SETTING_GETTERSETTER(type, var) static type get ## var ##() { \
@@ -289,6 +297,15 @@ namespace LuaAPI {
 					.addFunction("add", &addToMapRotation)
 					.addFunction("addCustom", &addCustomToMapRotation)
 				.endNamespace()
+			.endNamespace()
+			.beginNamespace("TeamAssignTypes")
+				.addVariable("Balanced", &teamAssignTypeBalanced, false)
+				.addVariable("Unbalanced", &teamAssignTypeUnbalanced, false)
+				.addVariable("AutoAssign", &teamAssignTypeAutoAssign, false)
+			.endNamespace()
+			.beginNamespace("SpawnTypes")
+				.addVariable("Normal", &spawnTypeNormal, false)
+				.addVariable("NakedLight", &spawnTypeNakedLight, false)
 			.endNamespace()
 			.beginNamespace("Maps")
 				.beginNamespace("CTF")
