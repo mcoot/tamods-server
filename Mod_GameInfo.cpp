@@ -99,6 +99,8 @@ void TrGame_ApplyServerSettings(ATrGame* that, ATrGame_execApplyServerSettings_P
 	Logger::debug("[TrGame.ApplyServerSettings]: autobalance = %d; gri = %d", that->m_bShouldAutoBalance, ((ATrGameReplicationInfo*)that->GameReplicationInfo)->r_ServerConfig->bAutoBalanceInGame);
 }
 
+static bool shouldRemoveAllPlayersFromTeamsOnNextTick = false;
+
 bool TrGameReplicationInfo_PostBeginPlay(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
 	Logger::debug("[PostBeginPlay]");
 	{
@@ -115,6 +117,8 @@ bool TrGameReplicationInfo_PostBeginPlay(int ID, UObject *dwCallingObject, UFunc
 		}
 	}
 
+	shouldRemoveAllPlayersFromTeamsOnNextTick = true;
+
 	return false;
 }
 
@@ -126,6 +130,21 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 				Utils::tr_gri->RemainingTime = 60 * Utils::tr_gri->r_ServerConfig->TimeLimit;
 				Utils::tr_gri->RemainingMinute = 60 * Utils::tr_gri->r_ServerConfig->TimeLimit;
 			}
+		}
+	}
+
+	if (shouldRemoveAllPlayersFromTeamsOnNextTick) {
+		shouldRemoveAllPlayersFromTeamsOnNextTick = false;
+		for (int i = 0; i < Utils::tr_gri->PRIArray.Count; ++i) {
+			ATrPlayerReplicationInfo* pri = (ATrPlayerReplicationInfo*)Utils::tr_gri->PRIArray.GetStd(i);
+			if (pri->Team && pri->Owner) {
+				Logger::debug("Removing player %s from team", Utils::f2std(pri->PlayerName).c_str());
+				pri->Team->RemoveFromTeam((APlayerController*)pri->Owner);
+			}
+			else {
+				Logger::debug("PRI %s has no team or owner", Utils::f2std(pri->PlayerName).c_str());
+			}
+			
 		}
 	}
 	
