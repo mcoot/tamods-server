@@ -26,7 +26,6 @@ static void updateMatchTime(bool counting) {
 }
 
 void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bool* result, Hooks::CallInfo* callInfo) {
-	Logger::debug("[RequestTeam] requested team = %d", params->RequestedTeamNum);
 	*result = that->RequestTeam(params->RequestedTeamNum, params->C);
 	if (!*result) return;
 
@@ -88,7 +87,6 @@ void UTGame_ProcessServerTravel(AUTGame* that, AUTGame_execProcessServerTravel_P
 		Logger::debug("Invalidating GRI");
 		Utils::tr_gri = NULL;
 	}
-	Logger::debug("About to process server travel");
 	that->ProcessServerTravel(params->URL, params->bAbsolute);
 }
 
@@ -138,11 +136,11 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 		for (int i = 0; i < Utils::tr_gri->PRIArray.Count; ++i) {
 			ATrPlayerReplicationInfo* pri = (ATrPlayerReplicationInfo*)Utils::tr_gri->PRIArray.GetStd(i);
 			if (pri->Team && pri->Owner) {
-				Logger::debug("Removing player %s from team", Utils::f2std(pri->PlayerName).c_str());
+				//Logger::debug("Removing player %s from team", Utils::f2std(pri->PlayerName).c_str());
 				pri->Team->RemoveFromTeam((APlayerController*)pri->Owner);
 			}
 			else {
-				Logger::debug("PRI %s has no team or owner", Utils::f2std(pri->PlayerName).c_str());
+				//Logger::debug("PRI %s has no team or owner", Utils::f2std(pri->PlayerName).c_str());
 			}
 			
 		}
@@ -173,11 +171,9 @@ static void performMapChange(std::string mapName) {
 	std::wstring wideMapName(mapName.begin(), mapName.end());
 	wchar_t* mapNameData = new wchar_t[wideMapName.size() + 1];
 	wcscpy(mapNameData, wideMapName.c_str());
-	Logger::debug("About to trigger travel...", mapName.c_str());
 
 	Utils::tr_gri->WorldInfo->eventServerTravel(FString(mapNameData), false, false);
 
-	Logger::debug("Travel triggered...", mapName.c_str());
 	delete mapNameData;
 }
 

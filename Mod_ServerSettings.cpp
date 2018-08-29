@@ -15,7 +15,6 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 	s->TeamAssignType = (int)this->TeamAssignType;
 	s->SpawnType = (int)this->SpawnType;
 	s->bAutoBalanceInGame = this->AutoBalanceTeams;
-	Logger::debug("AutoBalance expected: %d, got: %d", this->AutoBalanceTeams, s->bAutoBalanceInGame);
 
 	s->MaxSpeedWithFlagLight = this->FlagDragLight;
 	s->MaxSpeedWithFlagMedium = this->FlagDragMedium;
@@ -246,6 +245,42 @@ static void removeFromBannedItemsList(std::string className, std::string itemNam
 	}
 }
 
+static void addToDisabledEquipPointsList(std::string className, int eqp) {
+	int classNum = Utils::searchMapId(Data::classes, className, "", false) - 1;
+	if (classNum == -1) return;
+	int classId = Data::classes_id[classNum];
+
+	switch (classId) {
+	case CONST_CLASS_TYPE_LIGHT:
+		g_config.serverSettings.disabledEquipPointsLight.insert(eqp);
+		break;
+	case CONST_CLASS_TYPE_MEDIUM:
+		g_config.serverSettings.disabledEquipPointsMedium.insert(eqp);
+		break;
+	case CONST_CLASS_TYPE_HEAVY:
+		g_config.serverSettings.disabledEquipPointsHeavy.insert(eqp);
+		break;
+	}
+}
+
+static void removeFromDisabledEquipPointsList(std::string className, int eqp) {
+	int classNum = Utils::searchMapId(Data::classes, className, "", false) - 1;
+	if (classNum == -1) return;
+	int classId = Data::classes_id[classNum];
+
+	switch (classId) {
+	case CONST_CLASS_TYPE_LIGHT:
+		g_config.serverSettings.disabledEquipPointsLight.erase(eqp);
+		break;
+	case CONST_CLASS_TYPE_MEDIUM:
+		g_config.serverSettings.disabledEquipPointsMedium.erase(eqp);
+		break;
+	case CONST_CLASS_TYPE_HEAVY:
+		g_config.serverSettings.disabledEquipPointsHeavy.erase(eqp);
+		break;
+	}
+}
+
 static void addToBannedItemsListNoClass(std::string itemName) {
 	addToBannedItemsList("Light", itemName);
 }
@@ -323,6 +358,10 @@ namespace LuaAPI {
 			.beginNamespace("BannedItems")
 				.addFunction("add", &addToBannedItemsList)
 				.addFunction("remove", &removeFromBannedItemsList)
+			.endNamespace()
+			.beginNamespace("DisabledEquipPoints")
+				.addFunction("add", &addToDisabledEquipPointsList)
+				.addFunction("remove", &removeFromDisabledEquipPointsList)
 			.endNamespace()
 			.endNamespace()
 			.beginNamespace("TeamAssignTypes")

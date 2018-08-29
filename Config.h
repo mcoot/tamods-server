@@ -85,6 +85,9 @@ struct ServerSettings {
 	int mapRotationIndex = -1;
 
 	std::set<int> bannedItems;
+	std::set<int> disabledEquipPointsLight;
+	std::set<int> disabledEquipPointsMedium;
+	std::set<int> disabledEquipPointsHeavy;
 
 	void ApplyAsDefaults();
 	void ApplyToGame(ATrServerSettingsInfo* s);

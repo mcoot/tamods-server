@@ -57,7 +57,22 @@ static void applyTAServerLoadout(ATrPlayerReplicationInfo* that, int classId, in
 
 static void applyWeaponBans(ATrPlayerReplicationInfo* that) {
 	for (int i = 0; i < EQP_MAX; ++i) {
-		if (g_config.serverSettings.bannedItems.count(that->r_EquipLevels[i].EquipId) != 0) {
+		// Check the player's class to see if that class is not allowed to have that slot
+		bool shouldBanSlot = false;
+		switch (that->m_nPlayerClassId) {
+		case CONST_CLASS_TYPE_LIGHT:
+			shouldBanSlot = g_config.serverSettings.disabledEquipPointsLight.count(i) != 0;
+			break;
+		case CONST_CLASS_TYPE_MEDIUM:
+			shouldBanSlot = g_config.serverSettings.disabledEquipPointsMedium.count(i) != 0;
+			break;
+		case CONST_CLASS_TYPE_HEAVY:
+			shouldBanSlot = g_config.serverSettings.disabledEquipPointsHeavy.count(i) != 0;
+			break;
+		}
+
+		// If the given weapon is banned or the slot is disabled, set its equipid to 0
+		if (shouldBanSlot || g_config.serverSettings.bannedItems.count(that->r_EquipLevels[i].EquipId) != 0) {
 			that->r_EquipLevels[i].EquipId = 0;
 		}
 	}
