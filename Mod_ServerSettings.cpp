@@ -231,6 +231,29 @@ static void addToMapRotation(int mapId) {
 	g_config.serverSettings.mapRotation.push_back(it->second);
 }
 
+static void addToBannedItemsList(std::string className, std::string itemName) {
+	int item = Data::getItemId(className, itemName);
+	if (item) {
+		g_config.serverSettings.bannedItems.insert(item);
+		Logger::debug("Added ban for item %d", item);
+	}
+}
+
+static void removeFromBannedItemsList(std::string className, std::string itemName) {
+	int item = Data::getItemId(className, itemName);
+	if (item) {
+		g_config.serverSettings.bannedItems.erase(item);
+	}
+}
+
+static void addToBannedItemsListNoClass(std::string itemName) {
+	addToBannedItemsList("Light", itemName);
+}
+
+static void removeFromBannedItemsListNoClass(std::string itemName) {
+	removeFromBannedItemsList("Light", itemName);
+}
+
 namespace LuaAPI {
 	void addServerSettingsAPI(luabridge::Namespace ns) {
 		ns
@@ -297,6 +320,10 @@ namespace LuaAPI {
 					.addFunction("add", &addToMapRotation)
 					.addFunction("addCustom", &addCustomToMapRotation)
 				.endNamespace()
+			.beginNamespace("BannedItems")
+				.addFunction("add", &addToBannedItemsList)
+				.addFunction("remove", &removeFromBannedItemsList)
+			.endNamespace()
 			.endNamespace()
 			.beginNamespace("TeamAssignTypes")
 				.addVariable("Balanced", &teamAssignTypeBalanced, false)

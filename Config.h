@@ -5,6 +5,7 @@
 #include <regex>
 #include <queue>
 #include <map>
+#include <set>
 
 #include "buildconfig.h"
 
@@ -82,6 +83,8 @@ struct ServerSettings {
 	MapRotationMode mapRotationMode = MapRotationMode::SEQUENTIAL;
 	std::vector<std::string> mapRotation;
 	int mapRotationIndex = -1;
+
+	std::set<int> bannedItems;
 
 	void ApplyAsDefaults();
 	void ApplyToGame(ATrServerSettingsInfo* s);

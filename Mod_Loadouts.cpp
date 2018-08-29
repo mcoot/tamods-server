@@ -55,6 +55,14 @@ static void applyTAServerLoadout(ATrPlayerReplicationInfo* that, int classId, in
 	}
 }
 
+static void applyWeaponBans(ATrPlayerReplicationInfo* that) {
+	for (int i = 0; i < EQP_MAX; ++i) {
+		if (g_config.serverSettings.bannedItems.count(that->r_EquipLevels[i].EquipId) != 0) {
+			that->r_EquipLevels[i].EquipId = 0;
+		}
+	}
+}
+
 void TrPlayerReplicationInfo_GetCharacterEquip(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execGetCharacterEquip_Parms* params, void* result, Hooks::CallInfo* callInfo) {
 	// Apply any server hardcoded loadout configuration
 	applyHardcodedLoadout(that, params->ClassId, params->Loadout);
@@ -66,6 +74,29 @@ void TrPlayerReplicationInfo_GetCharacterEquip(ATrPlayerReplicationInfo* that, A
 	case ServerMode::API:
 		// TBA
 		break;
+	}
+	applyWeaponBans(that);
+}
+
+void TrPlayerReplicationInfo_ResolveDefaultEquip(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execResolveDefaultEquip_Parms* params, void* result, Hooks::CallInfo* callInfo) {
+	// Ensure weapon bans on default weapons take place clientside by removing the defaults
+	UTrFamilyInfo* familyInfo = (UTrFamilyInfo*)params->FamilyInfo->Default;
+	FDeviceSelectionList noWeapon;
+	noWeapon.ContentDeviceClassString = FString(L"");
+	noWeapon.DeviceClass = NULL;
+	TR_EQUIP_POINT eqpsToRemove[8] = { EQP_Primary, EQP_Secondary, EQP_Tertiary, EQP_Quaternary, EQP_Pack, EQP_Belt, EQP_Skin, EQP_Voice };
+	for (int i = 0; i < familyInfo->DevSelectionList.Count; ++i) {
+		if (!familyInfo->DevSelectionList.GetStd(i).DeviceClass) continue;
+		bool found = false;
+		for (int j = 0; j < 8; ++j) {
+			if (familyInfo->DevSelectionList.GetStd(i).equipPoint == eqpsToRemove[j]) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) continue;
+		noWeapon.equipPoint = familyInfo->DevSelectionList.GetStd(i).equipPoint;
+		familyInfo->DevSelectionList.Set(i, noWeapon);
 	}
 }
 
