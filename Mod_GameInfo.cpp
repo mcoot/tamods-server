@@ -187,8 +187,16 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
 		Utils::tr_gri->WorldInfo->eventServerTravel(FString(L"?restart"), false, false);
 	}
 	else {
+		if (g_config.serverSettings.mapRotationMode == MapRotationMode::RANDOM) {
+			std::random_device rd;
+			std::mt19937 randgen(rd());
+			std::uniform_int_distribution<> rand_dist(0, g_config.serverSettings.mapRotation.size());
+			g_config.serverSettings.mapRotationIndex = rand_dist(randgen);
+		}
+		else {
+			g_config.serverSettings.mapRotationIndex = (g_config.serverSettings.mapRotationIndex + 1) % g_config.serverSettings.mapRotation.size();
+		}
 		// TODO: Implement random map mode
-		g_config.serverSettings.mapRotationIndex = (g_config.serverSettings.mapRotationIndex + 1) % g_config.serverSettings.mapRotation.size();
 		std::string nextMapName = g_config.serverSettings.mapRotation[g_config.serverSettings.mapRotationIndex];
 		performMapChange(nextMapName);
 	}
