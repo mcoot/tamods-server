@@ -179,6 +179,8 @@ static void performMapChange(std::string mapName) {
 
 void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) {
 	if (g_config.serverMode != ServerMode::TASERVER || !g_TAServerClient.isConnected()) return;
+
+	std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 	if (!Utils::tr_gri || !Utils::tr_gri->WorldInfo) return;
 
 	if (g_config.serverSettings.mapRotation.empty()) {
@@ -190,7 +192,27 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
 		std::string nextMapName = g_config.serverSettings.mapRotation[g_config.serverSettings.mapRotationIndex];
 		performMapChange(nextMapName);
 	}
+}
 
+void TAServer::Client::handler_Launcher2GamePingsMessage(const json& msgBody) {
+	// Parse the message
+	Launcher2GamePingsMessage msg;
+	if (!msg.fromJson(msgBody)) {
+		// Failed to parse
+		Logger::error("Failed to parse player pings response: %s", msgBody.dump().c_str());
+	}
+
+	std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+	if (!Utils::tr_gri) return;
+
+	for (int i = 0; i < Utils::tr_gri->PRIArray.Count; ++i) {
+		ATrPlayerReplicationInfo* pri = (ATrPlayerReplicationInfo*)Utils::tr_gri->PRIArray.GetStd(i);
+		long long playerId = TAServer::netIdToLong(pri->UniqueId);
+		auto& it = msg.playerToPing.find(playerId);
+		if (it == msg.playerToPing.end()) continue;
+
+		pri->c_fCurrentPingMS = (float)it->second;
+	}
 }
 
 static bool cachedWasInOvertime = false;

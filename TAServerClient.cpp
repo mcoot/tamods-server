@@ -58,6 +58,9 @@ namespace TAServer {
 		tcpClient->add_handler(TASRV_MSG_KIND_LAUNCHER_2_GAME_NEXT_MAP_MESSAGE, [this](const json& j) {
 			handler_Launcher2GameNextMapMessage(j);
 		});
+		tcpClient->add_handler(TASRV_MSG_KIND_LAUNCHER_2_GAME_PINGS_MESSAGE, [this](const json& j) {
+			handler_Launcher2GamePingsMessage(j);
+		});
 	}
 
 	void Client::sendProtocolVersion() {

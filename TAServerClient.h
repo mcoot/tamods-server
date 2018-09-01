@@ -53,6 +53,7 @@ namespace TAServer {
 		void handler_OnConnect();
 		void handler_Launcher2GameLoadoutMessage(const json& msgBody);
 		void handler_Launcher2GameNextMapMessage(const json& msgBody);
+		void handler_Launcher2GamePingsMessage(const json& msgBody);
 	};
 }
 

@@ -27,6 +27,7 @@ using json = nlohmann::json;
 
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_LOADOUT_MESSAGE 0x4000
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_NEXT_MAP_MESSAGE 0x4001
+#define TASRV_MSG_KIND_LAUNCHER_2_GAME_PINGS_MESSAGE 0x4002
 
 #define TASRV_EQP_CODE_LOADOUTNAME "1341"
 #define TASRV_EQP_CODE_PRIMARY "1086"
@@ -321,10 +322,50 @@ namespace TAServer {
 		}
 
 		void toJson(json& j) {
-			j["version"] = MODVERSION;
+			j["version"] = TASERVER_PROTOCOL_VERSION;
 		}
 
 		bool fromJson(const json& j) {
+			return true;
+		}
+	};
+
+	class Launcher2GamePingsMessage : public Message {
+	public:
+		std::map<long long, int> playerToPing;
+	public:
+		short getMessageKind() override {
+			return TASRV_MSG_KIND_LAUNCHER_2_GAME_PINGS_MESSAGE;
+		}
+
+		void toJson(json& j) {
+			json mapping;
+
+			for (auto& elem : playerToPing) {
+				mapping[std::to_string(elem.first)] = elem.second;
+			}
+
+			j["player_pings"] = mapping;
+		}
+
+		bool fromJson(const json& j) {
+			auto& it = j.find("player_pings");
+			if (it == j.end()) return false;
+			json mapping = j["player_pings"];
+
+			for (json::iterator mapping_it = mapping.begin(); mapping_it != mapping.end(); ++mapping_it) {
+				int pingValue = mapping_it.value();
+
+				long long playerIdLong;
+				try {
+					playerIdLong = std::stoll(mapping_it.key());
+				}
+				catch (std::invalid_argument&) {
+					return false;
+				}
+
+				playerToPing[playerIdLong] = pingValue;
+			}
 			return true;
 		}
 	};
