@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -23,7 +23,7 @@
     <ProjectGuid>{BF082296-3D84-4336-8577-07573FB75EB1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>TAModsServer</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -161,6 +161,7 @@
     <ClInclude Include="Data.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="Geom.h" />
+    <ClInclude Include="GameBalance.h" />
     <ClInclude Include="Hooks.h" />
     <ClInclude Include="libpng\png.h" />
     <ClInclude Include="libpng\pngconf.h" />
@@ -283,6 +284,7 @@
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Lua.cpp" />
     <ClCompile Include="LuaAPI.cpp" />
+    <ClCompile Include="Mod_GameBalance.cpp" />
     <ClCompile Include="Mod_GameInfo.cpp" />
     <ClCompile Include="Mod_CoreMod.cpp" />
     <ClCompile Include="lua_src\lapi.c" />
