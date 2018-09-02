@@ -11,4 +11,5 @@ namespace LuaAPI {
 	API addCoreModAPI;
 	API addServerSettingsAPI;
 	API addLoadoutsLuaAPI;
+	API addGameBalanceAPI;
 }

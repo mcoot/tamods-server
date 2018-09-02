@@ -17,6 +17,7 @@
 #include "Hooks.h"
 #include "Data.h"
 #include "LoadoutTypes.h"
+#include "GameBalance.h"
 
 enum class MapRotationMode {
 	SEQUENTIAL = 0,

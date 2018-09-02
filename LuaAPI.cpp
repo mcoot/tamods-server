@@ -4,7 +4,8 @@ namespace LuaAPI {
 	std::vector<API*> api = {
 		addCoreModAPI,
 		addServerSettingsAPI,
-		addLoadoutsLuaAPI
+		addLoadoutsLuaAPI,
+		addGameBalanceAPI
 	};
 }
 

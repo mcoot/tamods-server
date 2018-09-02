@@ -336,6 +336,9 @@
     <ClInclude Include="TCP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameBalance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TAMods-Server.cpp">
@@ -615,6 +618,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mod_GameInfo.cpp">
+      <Filter>Source Files\Mods</Filter>
+    </ClCompile>
+    <ClCompile Include="Mod_GameBalance.cpp">
       <Filter>Source Files\Mods</Filter>
     </ClCompile>
   </ItemGroup>
