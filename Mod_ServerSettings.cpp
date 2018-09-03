@@ -6,10 +6,13 @@ void ServerSettings::ApplyAsDefaults() {
 }
 
 void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
+	ATrPlayerController* defTrPC = (ATrPlayerController*)(ATrPlayerController::StaticClass()->Default);
+
 	s->TimeLimit = this->TimeLimit;
 	s->WarmupTime = this->WarmupTime;
 	s->OvertimeLimit = this->OvertimeLimit;
 	s->RespawnTime = this->RespawnTime;
+	defTrPC->fSniperRespawnDelay = (float)this->SniperRespawnDelay;
 
 	s->MaxPlayers = this->MaxPlayers;
 	s->TeamAssignType = (int)this->TeamAssignType;
@@ -67,6 +70,19 @@ void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrSer
 	Logger::debug("[LoadServerSettings]");
 	g_config.serverSettings.ApplyToGame(that);
 	that->ApplyServerSettings();
+}
+
+void TrPlayerController_GetRespawnDelayTotalTime(ATrPlayerController* that, ATrPlayerController_execGetRespawnDelayTotalTime_Parms* params, float* result, Hooks::CallInfo* callInfo) {
+	*result = that->GetRespawnDelayTotalTime();
+
+	for (int i = EQP_Primary; i <= EQP_Quaternary; ++i) {
+		int item = ((ATrPlayerReplicationInfo*)(that->PlayerReplicationInfo))->r_EquipLevels[i].EquipId;
+		if (item == CONST_WEAPON_ID_RIFLE_SNIPER || item == CONST_WEAPON_ID_RIFLE_SNIPER_MKD || item == CONST_WEAPON_ID_RIFLE_PHASE || item == CONST_WEAPON_ID_SAP20) {
+			// Player has a sniper rifle, if there's an extra sniper spawn delay, add it on
+			*result += that->fSniperRespawnDelay;
+			break;
+		}
+	}
 }
 
 // Map codes
@@ -162,60 +178,61 @@ static void set ## var ##(type n) { \
 #define SETTING_LUAPROP(var) addProperty(STRINGIFY(var), &get ## var ## , &set ## var ## )
 
 // Server setting getter/setters
-SETTING_GETTERSETTER(int, TimeLimit);
-SETTING_GETTERSETTER(int, WarmupTime);
-SETTING_GETTERSETTER(int, OvertimeLimit);
-SETTING_GETTERSETTER(int, RespawnTime);
+SETTING_GETTERSETTER(int, TimeLimit)
+SETTING_GETTERSETTER(int, WarmupTime)
+SETTING_GETTERSETTER(int, OvertimeLimit)
+SETTING_GETTERSETTER(int, RespawnTime)
+SETTING_GETTERSETTER(int, SniperRespawnDelay)
 
-SETTING_GETTERSETTER(int, MaxPlayers);
-SETTING_GETTERSETTER_CAST(int, TeamAssignTypes, TeamAssignType);
-SETTING_GETTERSETTER_CAST(int, SpawnTypes, SpawnType);
-SETTING_GETTERSETTER(bool, AutoBalanceTeams);
+SETTING_GETTERSETTER(int, MaxPlayers)
+SETTING_GETTERSETTER_CAST(int, TeamAssignTypes, TeamAssignType)
+SETTING_GETTERSETTER_CAST(int, SpawnTypes, SpawnType)
+SETTING_GETTERSETTER(bool, AutoBalanceTeams)
 
-SETTING_GETTERSETTER(int, FlagDragLight);
-SETTING_GETTERSETTER(int, FlagDragMedium);
-SETTING_GETTERSETTER(int, FlagDragHeavy);
-SETTING_GETTERSETTER(int, FlagDragDeceleration);
+SETTING_GETTERSETTER(int, FlagDragLight)
+SETTING_GETTERSETTER(int, FlagDragMedium)
+SETTING_GETTERSETTER(int, FlagDragHeavy)
+SETTING_GETTERSETTER(int, FlagDragDeceleration)
 
-SETTING_GETTERSETTER(bool, FriendlyFire);
-SETTING_GETTERSETTER(float, FriendlyFireMultiplier);
-SETTING_GETTERSETTER(int, BaseDestructionKickLimit);
-SETTING_GETTERSETTER(int, FriendlyFireDamageKickLimit);
-SETTING_GETTERSETTER(int, FriendlyFireKillKickLimit);
+SETTING_GETTERSETTER(bool, FriendlyFire)
+SETTING_GETTERSETTER(float, FriendlyFireMultiplier)
+SETTING_GETTERSETTER(int, BaseDestructionKickLimit)
+SETTING_GETTERSETTER(int, FriendlyFireDamageKickLimit)
+SETTING_GETTERSETTER(int, FriendlyFireKillKickLimit)
 
-SETTING_GETTERSETTER(float, EnergyMultiplier);
-SETTING_GETTERSETTER(float, AoESizeMultiplier);
-SETTING_GETTERSETTER(float, AoEDamageMultiplier);
+SETTING_GETTERSETTER(float, EnergyMultiplier)
+SETTING_GETTERSETTER(float, AoESizeMultiplier)
+SETTING_GETTERSETTER(float, AoEDamageMultiplier)
 
-SETTING_GETTERSETTER(int, LightCountLimit);
-SETTING_GETTERSETTER(int, MediumCountLimit);
-SETTING_GETTERSETTER(int, HeavyCountLimit);
+SETTING_GETTERSETTER(int, LightCountLimit)
+SETTING_GETTERSETTER(int, MediumCountLimit)
+SETTING_GETTERSETTER(int, HeavyCountLimit)
 
-SETTING_GETTERSETTER(int, ArenaRounds);
-SETTING_GETTERSETTER(int, CTFCapLimit);
-SETTING_GETTERSETTER(int, TDMKillLimit);
-SETTING_GETTERSETTER(int, ArenaLives);
-SETTING_GETTERSETTER(int, RabbitScoreLimit);
-SETTING_GETTERSETTER(int, CaHScoreLimit);
+SETTING_GETTERSETTER(int, ArenaRounds)
+SETTING_GETTERSETTER(int, CTFCapLimit)
+SETTING_GETTERSETTER(int, TDMKillLimit)
+SETTING_GETTERSETTER(int, ArenaLives)
+SETTING_GETTERSETTER(int, RabbitScoreLimit)
+SETTING_GETTERSETTER(int, CaHScoreLimit)
 
-SETTING_GETTERSETTER(float, VehicleHealthMultiplier);
-SETTING_GETTERSETTER(int, GravCycleLimit);
-SETTING_GETTERSETTER(int, BeowulfLimit);
-SETTING_GETTERSETTER(int, ShrikeLimit);
-SETTING_GETTERSETTER(int, GravCycleSpawnTime);
-SETTING_GETTERSETTER(int, BeowulfSpawnTime);
-SETTING_GETTERSETTER(int, ShrikeSpawnTime);
+SETTING_GETTERSETTER(float, VehicleHealthMultiplier)
+SETTING_GETTERSETTER(int, GravCycleLimit)
+SETTING_GETTERSETTER(int, BeowulfLimit)
+SETTING_GETTERSETTER(int, ShrikeLimit)
+SETTING_GETTERSETTER(int, GravCycleSpawnTime)
+SETTING_GETTERSETTER(int, BeowulfSpawnTime)
+SETTING_GETTERSETTER(int, ShrikeSpawnTime)
 
-SETTING_GETTERSETTER(bool, BaseAssets);
-SETTING_GETTERSETTER(bool, BaseUpgrades);
-SETTING_GETTERSETTER(bool, PoweredDeployables);
-SETTING_GETTERSETTER(bool, GeneratorRegen);
-SETTING_GETTERSETTER(bool, GeneratorDestroyable);
-SETTING_GETTERSETTER(bool, BaseAssetFriendlyFire);
-SETTING_GETTERSETTER(bool, DeployableFriendlyFire);
+SETTING_GETTERSETTER(bool, BaseAssets)
+SETTING_GETTERSETTER(bool, BaseUpgrades)
+SETTING_GETTERSETTER(bool, PoweredDeployables)
+SETTING_GETTERSETTER(bool, GeneratorRegen)
+SETTING_GETTERSETTER(bool, GeneratorDestroyable)
+SETTING_GETTERSETTER(bool, BaseAssetFriendlyFire)
+SETTING_GETTERSETTER(bool, DeployableFriendlyFire)
 
-SETTING_GETTERSETTER(bool, SkiingEnabled);
-SETTING_GETTERSETTER(bool, CTFBlitzAllFlagsMove);
+SETTING_GETTERSETTER(bool, SkiingEnabled)
+SETTING_GETTERSETTER(bool, CTFBlitzAllFlagsMove)
 
 static void addCustomToMapRotation(std::string mapName) {
 	g_config.serverSettings.mapRotation.push_back(mapName);
@@ -297,6 +314,7 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(WarmupTime)
 				.SETTING_LUAPROP(OvertimeLimit)
 				.SETTING_LUAPROP(RespawnTime)
+				.SETTING_LUAPROP(SniperRespawnDelay)
 
 				.SETTING_LUAPROP(MaxPlayers)
 				.SETTING_LUAPROP(TeamAssignType)

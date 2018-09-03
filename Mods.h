@@ -44,3 +44,6 @@ void TrDevice_GetReloadTime(ATrDevice* that, ATrDevice_execGetReloadTime_Parms* 
 
 // Hook called when the server attempts to update ping using the ingame mechanism (blackholed)
 void PlayerController_ServerUpdatePing(APlayerController* that, APlayerController_execServerUpdatePing_Parms* params, void* result, Hooks::CallInfo* callInfo);
+
+// Hook called when the playercontroller calculates how long the respawn time should be
+void TrPlayerController_GetRespawnDelayTotalTime(ATrPlayerController* that, ATrPlayerController_execGetRespawnDelayTotalTime_Parms* params, float* result, Hooks::CallInfo* callInfo);

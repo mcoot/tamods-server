@@ -30,6 +30,7 @@ struct ServerSettings {
 	int WarmupTime = 20;
 	int OvertimeLimit = 10;
 	int RespawnTime = 5;
+	int SniperRespawnDelay = 0;
 
 	int MaxPlayers = 32;
 	TeamAssignTypes TeamAssignType = TAT_BALANCED;
