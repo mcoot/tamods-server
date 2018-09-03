@@ -2,6 +2,8 @@
 
 static std::string dllName = MODNAME;
 static std::string dllVersion = MODVERSION;
+static std::string taserverProtocolVersion = TASERVER_PROTOCOL_VERSION;
+static std::string tamodsProtocolVersion = TAMODS_PROTOCOL_VERSION;
 
 static int serverModeStandalone = (int)ServerMode::STANDALONE;
 static int serverModeTAServer = (int)ServerMode::TASERVER;
@@ -21,14 +23,17 @@ namespace LuaAPI {
 			.beginNamespace("Core")
 				// Expose the name and version of the mod via Lua
 				.beginNamespace("DLL")
-					.addVariable("name", &dllName, false)
-					.addVariable("version", &dllVersion, false)
+					.addVariable("Name", &dllName, false)
+					.addVariable("Version", &dllVersion, false)
+					.addVariable("TAServerProtocolVersion", &taserverProtocolVersion, false)
+					.addVariable("TAModsProtocolVersion", &tamodsProtocolVersion, false)
 				.endNamespace()
 				// Server modes
 				.addVariable("SRV_Standalone", &serverModeStandalone, false)
 				.addVariable("SRV_TAServer", &serverModeTAServer, false)
 				.addVariable("SRV_API", &serverModeAPI, false)
 				.addVariable("ServerMode", (int*)&g_config.serverMode, true)
+				.addVariable("ConnectToClients", &g_config.connectToClients, true)
 			.endNamespace()
 
 			;

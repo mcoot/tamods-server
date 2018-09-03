@@ -43,7 +43,7 @@ struct ServerSettings {
 
 	bool FriendlyFire = false;
 	float FriendlyFireMultiplier = 1000.0f;
-	int BaseDestructionKickLimit = 1000;
+	int BaseDestructionKickLimit = 0;
 	int FriendlyFireDamageKickLimit = 0;
 	int FriendlyFireKillKickLimit = 0;
 
@@ -115,6 +115,7 @@ public:
 	ServerSettings serverSettings;
 
 	ServerMode serverMode;
+	bool connectToClients;
 	HardCodedLoadouts hardcodedLoadouts;
 };
 
