@@ -24,15 +24,15 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 	s->MaxSpeedWithFlagHeavy = this->FlagDragHeavy;
 	s->DecelerationRateWithFlag = this->FlagDragDeceleration;
 
-	s->bFriendlyFire = this->FriendlyFire;
+	s->bFriendlyFire = this->FriendlyFire * 1000.0f;
 	s->fFriendlyFireDamageMultiplier = this->FriendlyFireMultiplier;
 	s->BaseDestructionLimit = this->BaseDestructionKickLimit;
 	s->FFDamageLimit = this->FriendlyFireDamageKickLimit;
 	s->FFKillLimit = this->FriendlyFireKillKickLimit;
 
-	s->fEnergyMultiplier = this->EnergyMultiplier;
-	s->fAoESizeMultiplier = this->AoESizeMultiplier;
-	s->fAoEDamageMultiplier = this->AoEDamageMultiplier;
+	s->fEnergyMultiplier = this->EnergyMultiplier * 1000.0f;
+	s->fAoESizeMultiplier = this->AoESizeMultiplier * 1000.0f;
+	s->fAoEDamageMultiplier = this->AoEDamageMultiplier * 1000.0f;
 
 	// Verify how this indexing works now...
 	s->ClassCounts[0] = this->LightCountLimit;
@@ -46,7 +46,7 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 	s->GameScores[TGT_RAB] = this->RabbitScoreLimit;
 	s->GameScores[TGT_CAH] = this->CaHScoreLimit;
 
-	s->fVehicleHealthMultiplier = this->VehicleHealthMultiplier;
+	s->fVehicleHealthMultiplier = this->VehicleHealthMultiplier * 1000.0f;
 	s->VehicleLimits[VEHICLE_GravCycle] = this->GravCycleLimit;
 	s->VehicleLimits[VEHICLE_Beowulf] = this->BeowulfLimit;
 	s->VehicleLimits[VEHICLE_Shrike] = this->ShrikeLimit;
@@ -440,6 +440,7 @@ namespace LuaAPI {
 					.addVariable("AirArena", &mapCodeArenaAirArena, false)
 					.addVariable("Air", &mapCodeArenaAirArena, false)
 					.addVariable("WalledIn", &mapCodeArenaWalledIn, false)
+					.addVariable("Walledin", &mapCodeArenaWalledIn, false)
 					.addVariable("LavaArena", &mapCodeArenaLavaArena, false)
 					.addVariable("Lava", &mapCodeArenaLavaArena, false)
 					.addVariable("Hinterlands", &mapCodeArenaHinterlands, false)

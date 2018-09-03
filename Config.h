@@ -43,14 +43,14 @@ struct ServerSettings {
 	int FlagDragDeceleration = 0;
 
 	bool FriendlyFire = false;
-	float FriendlyFireMultiplier = 1000.0f;
+	float FriendlyFireMultiplier = 1.0f;
 	int BaseDestructionKickLimit = 0;
 	int FriendlyFireDamageKickLimit = 0;
 	int FriendlyFireKillKickLimit = 0;
 
-	float EnergyMultiplier = 1000.0f;
-	float AoESizeMultiplier = 1000.0f;
-	float AoEDamageMultiplier = 1000.0f;
+	float EnergyMultiplier = 1.0f;
+	float AoESizeMultiplier = 1.0f;
+	float AoEDamageMultiplier = 1.0f;
 
 	int LightCountLimit = 32;
 	int MediumCountLimit = 32;
@@ -63,13 +63,13 @@ struct ServerSettings {
 	int RabbitScoreLimit = 30;
 	int CaHScoreLimit = 50;
 
-	float VehicleHealthMultiplier = 1000.0f;
+	float VehicleHealthMultiplier = 1.0f;
 	int GravCycleLimit = 4;
 	int BeowulfLimit = 2;
 	int ShrikeLimit = 2;
 	int GravCycleSpawnTime = 30;
 	int BeowulfSpawnTime = 120;
-	int ShrikeSpawnTime = 60;
+	int ShrikeSpawnTime = 120;
 
 	bool BaseAssets = true;
 	bool BaseUpgrades = true;
