@@ -10,7 +10,7 @@ static void checkForScoreChange() {
 		beScoreCached = beScoreCurrent;
 		dsScoreCached = dsScoreCurrent;
 
-		if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected()) {
+		if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {
 			g_TAServerClient.sendScoreInfo(beScoreCurrent, dsScoreCurrent);
 		}
 	}
@@ -19,7 +19,7 @@ static void checkForScoreChange() {
 }
 
 static void updateMatchTime(bool counting) {
-	if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected() && Utils::tr_gri) {
+	if (g_config.connectToTAServer && g_TAServerClient.isConnected() && Utils::tr_gri) {
 		int timeLeft = Utils::tr_gri->TimeLimit != 0 ? Utils::tr_gri->RemainingTime : Utils::tr_gri->ElapsedTime;
 		g_TAServerClient.sendMatchTime(timeLeft, counting);
 	}
@@ -29,7 +29,7 @@ void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bo
 	*result = that->RequestTeam(params->RequestedTeamNum, params->C);
 	if (!*result) return;
 
-	if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected()) {
+	if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {
 		// Send team info
 		ATrGameReplicationInfo* gri = (ATrGameReplicationInfo*)that->WorldInfo->Game->GameReplicationInfo;
 		if (!gri) return;
@@ -51,7 +51,7 @@ void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bo
 bool UTGame_MatchInProgress_BeginState(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
 	Logger::debug("[Match start]");
 	Utils::serverGameStatus = Utils::ServerGameStatus::IN_PROGRESS;
-	if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected() && Utils::tr_gri) {
+	if (g_config.connectToTAServer && g_TAServerClient.isConnected() && Utils::tr_gri) {
 		{
 			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 			g_TAServerClient.sendMatchTime(Utils::tr_gri->r_ServerConfig->TimeLimit * 60, true);
@@ -67,7 +67,7 @@ void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* resu
 	that->EndGame(params->Winner, params->Reason);
 
 	// Tell TAServer that the game is ending
-	if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected()) {
+	if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {
 		{
 			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 			g_TAServerClient.sendMatchTime(0, false);
@@ -108,7 +108,7 @@ bool TrGameReplicationInfo_PostBeginPlay(int ID, UObject *dwCallingObject, UFunc
 		Utils::tr_gri = (ATrGameReplicationInfo*)dwCallingObject;
 		Logger::debug("GRI set!");
 
-		if (g_config.serverMode == ServerMode::TASERVER && g_TAServerClient.isConnected()) {
+		if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {
 			// GRI should only be set at the start of the match -> ergo not counting down
 			g_TAServerClient.sendMatchTime(Utils::tr_gri->r_ServerConfig->TimeLimit * 60, false);
 			Utils::tr_gri->RemainingMinute = Utils::tr_gri->r_ServerConfig->TimeLimit * 60;
@@ -178,7 +178,7 @@ static void performMapChange(std::string mapName) {
 }
 
 void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) {
-	if (g_config.serverMode != ServerMode::TASERVER || !g_TAServerClient.isConnected()) return;
+	if (g_config.connectToTAServer || !g_TAServerClient.isConnected()) return;
 
 	//std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 	if (!Utils::tr_gri || !Utils::tr_gri->WorldInfo) return;

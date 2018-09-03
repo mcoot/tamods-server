@@ -82,13 +82,11 @@ void TrPlayerReplicationInfo_GetCharacterEquip(ATrPlayerReplicationInfo* that, A
 	// Apply any server hardcoded loadout configuration
 	applyHardcodedLoadout(that, params->ClassId, params->Loadout);
 	// If in a mode to retrieve loadout info from a server, do so
-	switch (g_config.serverMode) {
-	case ServerMode::TASERVER:
+	if (g_config.connectToTAServer) {
 		applyTAServerLoadout(that, params->ClassId, params->Loadout);
-		break;
-	case ServerMode::API:
-		// TBA
-		break;
+	}
+	if (g_config.serverSettings.ForceHardcodedLoadouts) {
+		applyHardcodedLoadout(that, params->ClassId, params->Loadout);
 	}
 	applyWeaponBans(that);
 }

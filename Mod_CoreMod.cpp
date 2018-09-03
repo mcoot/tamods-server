@@ -5,10 +5,6 @@ static std::string dllVersion = MODVERSION;
 static std::string taserverProtocolVersion = TASERVER_PROTOCOL_VERSION;
 static std::string tamodsProtocolVersion = TAMODS_PROTOCOL_VERSION;
 
-static int serverModeStandalone = (int)ServerMode::STANDALONE;
-static int serverModeTAServer = (int)ServerMode::TASERVER;
-static int serverModeAPI = (int)ServerMode::API;
-
 namespace LuaAPI {
 	void addCoreModAPI(luabridge::Namespace ns) {
 		ns
@@ -29,11 +25,9 @@ namespace LuaAPI {
 					.addVariable("TAModsProtocolVersion", &tamodsProtocolVersion, false)
 				.endNamespace()
 				// Server modes
-				.addVariable("SRV_Standalone", &serverModeStandalone, false)
-				.addVariable("SRV_TAServer", &serverModeTAServer, false)
-				.addVariable("SRV_API", &serverModeAPI, false)
-				.addVariable("ServerMode", (int*)&g_config.serverMode, true)
+				.addVariable("ConnectToTAServer", &g_config.connectToTAServer, true)
 				.addVariable("ConnectToClients", &g_config.connectToClients, true)
+				.addVariable("AllowUnmoddedClients", &g_config.allowUnmoddedClients, true)
 			.endNamespace()
 
 			;

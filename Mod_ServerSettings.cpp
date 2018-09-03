@@ -16,7 +16,7 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 
 	s->MaxPlayers = this->MaxPlayers;
 	s->TeamAssignType = (int)this->TeamAssignType;
-	s->SpawnType = (int)this->SpawnType;
+	s->SpawnType = this->NakedSpawn ? EST_NAKEDPTH : EST_NORMAL;
 	s->bAutoBalanceInGame = this->AutoBalanceTeams;
 
 	s->MaxSpeedWithFlagLight = this->FlagDragLight;
@@ -157,9 +157,6 @@ static int teamAssignTypeBalanced = (int)TeamAssignTypes::TAT_BALANCED;
 static int teamAssignTypeUnbalanced = (int)TeamAssignTypes::TAT_UNBALANCED;
 static int teamAssignTypeAutoAssign = (int)TeamAssignTypes::TAT_AUTOASSIGN;
 
-static int spawnTypeNormal = (int)SpawnTypes::EST_NORMAL;
-static int spawnTypeNakedLight = (int)SpawnTypes::EST_NAKEDPTH;
-
 // Nasty nasty getter/setter generation
 #define SETTING_GETTERSETTER(type, var) static type get ## var ##() { \
 	return g_config.serverSettings.var; \
@@ -186,7 +183,7 @@ SETTING_GETTERSETTER(int, SniperRespawnDelay)
 
 SETTING_GETTERSETTER(int, MaxPlayers)
 SETTING_GETTERSETTER_CAST(int, TeamAssignTypes, TeamAssignType)
-SETTING_GETTERSETTER_CAST(int, SpawnTypes, SpawnType)
+SETTING_GETTERSETTER(bool, NakedSpawn)
 SETTING_GETTERSETTER(bool, AutoBalanceTeams)
 
 SETTING_GETTERSETTER(int, FlagDragLight)
@@ -233,6 +230,7 @@ SETTING_GETTERSETTER(bool, DeployableFriendlyFire)
 
 SETTING_GETTERSETTER(bool, SkiingEnabled)
 SETTING_GETTERSETTER(bool, CTFBlitzAllFlagsMove)
+SETTING_GETTERSETTER(bool, ForceHardcodedLoadouts)
 
 static void addCustomToMapRotation(std::string mapName) {
 	g_config.serverSettings.mapRotation.push_back(mapName);
@@ -318,7 +316,7 @@ namespace LuaAPI {
 
 				.SETTING_LUAPROP(MaxPlayers)
 				.SETTING_LUAPROP(TeamAssignType)
-				.SETTING_LUAPROP(SpawnType)
+				.SETTING_LUAPROP(NakedSpawn)
 				.SETTING_LUAPROP(AutoBalanceTeams)
 
 				.SETTING_LUAPROP(FlagDragLight)
@@ -364,6 +362,7 @@ namespace LuaAPI {
 
 				.SETTING_LUAPROP(SkiingEnabled)
 				.SETTING_LUAPROP(CTFBlitzAllFlagsMove)
+				.SETTING_LUAPROP(ForceHardcodedLoadouts)
 				.beginNamespace("MapRotation")
 					.addVariable("Mode", (int*)&g_config.serverSettings.mapRotationMode, true)
 					.beginNamespace("Modes")
@@ -386,10 +385,6 @@ namespace LuaAPI {
 				.addVariable("Balanced", &teamAssignTypeBalanced, false)
 				.addVariable("Unbalanced", &teamAssignTypeUnbalanced, false)
 				.addVariable("AutoAssign", &teamAssignTypeAutoAssign, false)
-			.endNamespace()
-			.beginNamespace("SpawnTypes")
-				.addVariable("Normal", &spawnTypeNormal, false)
-				.addVariable("NakedLight", &spawnTypeNakedLight, false)
 			.endNamespace()
 			.beginNamespace("Maps")
 				.beginNamespace("CTF")

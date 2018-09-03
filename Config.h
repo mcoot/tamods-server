@@ -34,7 +34,7 @@ struct ServerSettings {
 
 	int MaxPlayers = 32;
 	TeamAssignTypes TeamAssignType = TAT_BALANCED;
-	SpawnTypes SpawnType = EST_NORMAL;
+	bool NakedSpawn = false;
 	bool AutoBalanceTeams = true;
 
 	int FlagDragLight = 0;
@@ -81,6 +81,7 @@ struct ServerSettings {
 
 	bool SkiingEnabled = true;
 	bool CTFBlitzAllFlagsMove = false;
+	bool ForceHardcodedLoadouts = false;
 
 	MapRotationMode mapRotationMode = MapRotationMode::SEQUENTIAL;
 	std::vector<std::string> mapRotation;
@@ -93,12 +94,6 @@ struct ServerSettings {
 
 	void ApplyAsDefaults();
 	void ApplyToGame(ATrServerSettingsInfo* s);
-};
-
-enum class ServerMode {
-	STANDALONE,
-	TASERVER,
-	API
 };
 
 class Config {
@@ -115,8 +110,9 @@ public:
 
 	ServerSettings serverSettings;
 
-	ServerMode serverMode;
+	bool connectToTAServer;
 	bool connectToClients;
+	bool allowUnmoddedClients;
 	HardCodedLoadouts hardcodedLoadouts;
 };
 
