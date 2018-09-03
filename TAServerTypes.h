@@ -353,16 +353,19 @@ namespace TAServer {
 			if (it == j.end()) return false;
 			json mapping = j["player_pings"];
 
-			for (json::iterator mapping_it = mapping.begin(); mapping_it != mapping.end(); ++mapping_it) {
-				int pingValue = mapping_it.value();
+			Logger::debug("Pings body contains: %s", mapping.dump().c_str());
 
+			for (json::iterator mapping_it = mapping.begin(); mapping_it != mapping.end(); ++mapping_it) {
+				std::string key = mapping_it.key();
 				long long playerIdLong;
 				try {
-					playerIdLong = std::stoll(mapping_it.key());
+					playerIdLong = std::stoll(key);
 				}
 				catch (std::invalid_argument&) {
 					return false;
 				}
+
+				int pingValue = (*mapping_it).get<int>();
 
 				playerToPing[playerIdLong] = pingValue;
 			}

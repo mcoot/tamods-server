@@ -180,7 +180,7 @@ static void performMapChange(std::string mapName) {
 void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) {
 	if (g_config.serverMode != ServerMode::TASERVER || !g_TAServerClient.isConnected()) return;
 
-	std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+	//std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 	if (!Utils::tr_gri || !Utils::tr_gri->WorldInfo) return;
 
 	if (g_config.serverSettings.mapRotation.empty()) {
@@ -208,6 +208,7 @@ void TAServer::Client::handler_Launcher2GamePingsMessage(const json& msgBody) {
 	if (!msg.fromJson(msgBody)) {
 		// Failed to parse
 		Logger::error("Failed to parse player pings response: %s", msgBody.dump().c_str());
+		return;
 	}
 
 	std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
@@ -220,8 +221,13 @@ void TAServer::Client::handler_Launcher2GamePingsMessage(const json& msgBody) {
 		if (it == msg.playerToPing.end()) continue;
 
 		pri->c_fCurrentPingMS = (float)it->second;
+		pri->Ping = (it->second) / 4;
+		pri->ExactPing = (it->second) / 4;
 	}
 }
+
+// Blackholed
+void PlayerController_ServerUpdatePing(APlayerController* that, APlayerController_execServerUpdatePing_Parms* params, void* result, Hooks::CallInfo* callInfo) {}
 
 static bool cachedWasInOvertime = false;
 void pollForGameInfoChanges() {
