@@ -169,7 +169,7 @@ static void performMapChange(std::string mapName) {
 }
 
 void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) {
-	if (g_config.connectToTAServer || !g_TAServerClient.isConnected()) return;
+	if (!g_config.connectToTAServer || !g_TAServerClient.isConnected()) return;
 
 	//std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 	if (!Utils::tr_gri || !Utils::tr_gri->WorldInfo) return;
