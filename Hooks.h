@@ -189,7 +189,7 @@ namespace Hooks
 
 		if (!original_func)
 		{
-			Logger::error("WARNING: unable hook function: '%s'. Check if you didn't make a typo", original_name);
+			Logger::error("ERROR: Failed to hook function: '%s'", original_name);
 			return 0;
 		}
 

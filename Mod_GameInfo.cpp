@@ -6,7 +6,6 @@ static void checkForScoreChange() {
 	int beScoreCurrent = (int)Utils::tr_gri->Teams.Data[0]->Score;
 	int dsScoreCurrent = (int)Utils::tr_gri->Teams.Data[1]->Score;
 	if (beScoreCurrent != beScoreCached || dsScoreCurrent != dsScoreCached) {
-		Logger::debug("Polled: changed (%d, %d) -> (%d, %d)", beScoreCached, dsScoreCached, beScoreCurrent, dsScoreCurrent);
 		beScoreCached = beScoreCurrent;
 		dsScoreCached = dsScoreCurrent;
 
@@ -49,7 +48,6 @@ void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bo
 }
 
 bool UTGame_MatchInProgress_BeginState(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
-	Logger::debug("[Match start]");
 	Utils::serverGameStatus = Utils::ServerGameStatus::IN_PROGRESS;
 	if (g_config.connectToTAServer && g_TAServerClient.isConnected() && Utils::tr_gri) {
 		{
@@ -62,7 +60,6 @@ bool UTGame_MatchInProgress_BeginState(int ID, UObject *dwCallingObject, UFuncti
 }
 
 void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* result, Hooks::CallInfo* callInfo) {
-	Logger::debug("[UTGame.EndGame] called");
 	Utils::serverGameStatus = Utils::ServerGameStatus::ENDED;
 	that->EndGame(params->Winner, params->Reason);
 
@@ -84,7 +81,6 @@ void UTGame_ProcessServerTravel(AUTGame* that, AUTGame_execProcessServerTravel_P
 		// Ensure latest data has been sent to the login server
 		checkForScoreChange();
 		// Invalidate the GRI
-		Logger::debug("Invalidating GRI");
 		Utils::tr_gri = NULL;
 	}
 	that->ProcessServerTravel(params->URL, params->bAbsolute);
@@ -94,19 +90,16 @@ static int changeMapTickCounter = -1;
 
 void TrGame_ApplyServerSettings(ATrGame* that, ATrGame_execApplyServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo) {
 	that->ApplyServerSettings();
-	Logger::debug("[TrGame.ApplyServerSettings]: autobalance = %d; gri = %d", that->m_bShouldAutoBalance, ((ATrGameReplicationInfo*)that->GameReplicationInfo)->r_ServerConfig->bAutoBalanceInGame);
 }
 
 static bool shouldRemoveAllPlayersFromTeamsOnNextTick = false;
 
 bool TrGameReplicationInfo_PostBeginPlay(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
-	Logger::debug("[PostBeginPlay]");
 	{
 		Utils::serverGameStatus = Utils::ServerGameStatus::PREROUND;
 		std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 
 		Utils::tr_gri = (ATrGameReplicationInfo*)dwCallingObject;
-		Logger::debug("GRI set!");
 
 		if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {
 			// GRI should only be set at the start of the match -> ergo not counting down
@@ -136,11 +129,9 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 		for (int i = 0; i < Utils::tr_gri->PRIArray.Count; ++i) {
 			ATrPlayerReplicationInfo* pri = (ATrPlayerReplicationInfo*)Utils::tr_gri->PRIArray.GetStd(i);
 			if (pri->Team && pri->Owner) {
-				//Logger::debug("Removing player %s from team", Utils::f2std(pri->PlayerName).c_str());
 				pri->Team->RemoveFromTeam((APlayerController*)pri->Owner);
 			}
 			else {
-				//Logger::debug("PRI %s has no team or owner", Utils::f2std(pri->PlayerName).c_str());
 			}
 			
 		}
@@ -167,7 +158,7 @@ void TAServer::Client::handler_OnConnect() {
 }
 
 static void performMapChange(std::string mapName) {
-	Logger::debug("Changing map to %s...", mapName.c_str());
+	Logger::info("Changing map to %s...", mapName.c_str());
 	std::wstring wideMapName(mapName.begin(), mapName.end());
 	wchar_t* mapNameData = new wchar_t[wideMapName.size() + 1];
 	wcscpy(mapNameData, wideMapName.c_str());
@@ -244,9 +235,7 @@ void pollForGameInfoChanges() {
 	// Ensure match time is updated when overtime is entered
 	if (Utils::tr_gri->WorldInfo && Utils::tr_gri->WorldInfo->Game) {
 		if (Utils::tr_gri->WorldInfo->Game->bOverTime != cachedWasInOvertime) {
-			Logger::debug("Overtime changed!");
 			if (!cachedWasInOvertime) {
-				Logger::debug("Sending overtime time update");
 				updateMatchTime(true);
 			}
 			cachedWasInOvertime = Utils::tr_gri->WorldInfo->Game->bOverTime;

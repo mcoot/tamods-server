@@ -67,7 +67,6 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 }
 
 void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrServerSettingsInfo_eventLoadServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo) {
-	Logger::debug("[LoadServerSettings]");
 	g_config.serverSettings.ApplyToGame(that);
 	that->ApplyServerSettings();
 }
@@ -249,7 +248,6 @@ static void addToBannedItemsList(std::string className, std::string itemName) {
 	int item = Data::getItemId(className, itemName);
 	if (item) {
 		g_config.serverSettings.bannedItems.insert(item);
-		Logger::debug("Added ban for item %d", item);
 	}
 }
 
