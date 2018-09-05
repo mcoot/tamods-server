@@ -24,8 +24,8 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 	s->MaxSpeedWithFlagHeavy = this->FlagDragHeavy;
 	s->DecelerationRateWithFlag = this->FlagDragDeceleration;
 
-	s->bFriendlyFire = this->FriendlyFire * 1000.0f;
-	s->fFriendlyFireDamageMultiplier = this->FriendlyFireMultiplier;
+	s->bFriendlyFire = this->FriendlyFire;
+	s->fFriendlyFireDamageMultiplier = this->FriendlyFireMultiplier * 1000.0f;
 	s->BaseDestructionLimit = this->BaseDestructionKickLimit;
 	s->FFDamageLimit = this->FriendlyFireDamageKickLimit;
 	s->FFKillLimit = this->FriendlyFireKillKickLimit;
