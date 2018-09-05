@@ -52,3 +52,22 @@ void Config::parseFile() {
 // Set the TAMods config based on the current state of the Lua object
 void Config::setConfigVariables() {
 }
+
+void Config::addDefaultMapRotation() {
+	serverSettings.mapRotation.push_back("TrCTF-Katabatic");
+	serverSettings.mapRotation.push_back("TrCTF-ArxNovena");
+	serverSettings.mapRotation.push_back("TrCTF-DangerousCrossing");
+	serverSettings.mapRotation.push_back("TrCTF-Crossfire");
+	serverSettings.mapRotation.push_back("TrCTF-Drydock");
+	serverSettings.mapRotation.push_back("TrCTF-Terminus");
+	serverSettings.mapRotation.push_back("TrCTF-Sunstar");
+}
+
+void Config::load() {
+	parseFile();
+
+	// If there is no map rotation, add the default rotation
+	if (serverSettings.mapRotation.empty()) {
+		addDefaultMapRotation();
+	}
+}

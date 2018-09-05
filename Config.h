@@ -97,13 +97,16 @@ struct ServerSettings {
 };
 
 class Config {
+private:
+	void parseFile();
+	void setConfigVariables();
+	void addDefaultMapRotation();
 public:
 	Config();
 	~Config();
 
 	void reset();
-	void parseFile();
-	void setConfigVariables();
+	void load();
 
 public:
 	Lua lua;
