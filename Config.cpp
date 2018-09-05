@@ -17,24 +17,19 @@ void Config::reset() {
 	hardcodedLoadouts = HardCodedLoadouts();
 }
 
-void Config::parseFile() { 
-	
-	std::string directory = Utils::getConfigDir();
+void Config::parseFile(std::string filePath) { 
 	reset();
 	lua = Lua();
-	if (Utils::fileExists(directory + CONFIGFILE_NAME)) {
-		std::string err = lua.doFile(directory + CONFIGFILE_NAME);
+	if (Utils::fileExists(filePath)) {
+		Logger::info("Loading configuration from %s", filePath.c_str());
+		std::string err = lua.doFile(filePath);
 		if (err.size()) {
 			Logger::error("Lua config error: %s", err.c_str());
 			return;
 		}
 	}
-	if (Utils::fileExists(directory + CUSTOMFILE_NAME)) {
-		std::string err = lua.doFile(directory + CUSTOMFILE_NAME);
-		if (err.size()) {
-			Logger::error("Custom Lua config error: %s", err.c_str());
-			return;
-		}
+	else {
+		Logger::error("Unable to locate config file %s", filePath.c_str());
 	}
 
 	setConfigVariables();
@@ -63,8 +58,33 @@ void Config::addDefaultMapRotation() {
 	serverSettings.mapRotation.push_back("TrCTF-Sunstar");
 }
 
+#define CLI_FLAG_CONFIGPATH L"-tamodsconfig"
+
+static std::string getConfigFilePath() {
+	int numArgs;
+	wchar_t** args = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+
+	if (!args) {
+		return Utils::getConfigDir() + CONFIGFILE_NAME;
+	}
+
+	// Only check up to the second last argument
+	// Since we need both the flag and the path
+	for (int i = 0; i < numArgs - 1; ++i) {
+		if (wcscmp(args[i], CLI_FLAG_CONFIGPATH) == 0) {
+			// User has set the config path
+			// This won't work if there are non-ascii characters in the path but yolo
+			std::wstring cfgPathW(args[i + 1]);
+			std::string cfgPath(cfgPathW.begin(), cfgPathW.end());
+			return cfgPath;
+		}
+	}
+
+	return Utils::getConfigDir() + CONFIGFILE_NAME;
+}
+
 void Config::load() {
-	parseFile();
+	parseFile(getConfigFilePath());
 
 	// If there is no map rotation, add the default rotation
 	if (serverSettings.mapRotation.empty()) {

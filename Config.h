@@ -98,7 +98,7 @@ struct ServerSettings {
 
 class Config {
 private:
-	void parseFile();
+	void parseFile(std::string filePath);
 	void setConfigVariables();
 	void addDefaultMapRotation();
 public:
