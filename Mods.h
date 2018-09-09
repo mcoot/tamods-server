@@ -5,6 +5,7 @@
 #include <random>
 
 #include "TAServerClient.h"
+#include "DirectConnectionServer.h"
 
 #include "Config.h"
 #include "Utils.h"
@@ -12,7 +13,8 @@
 #include "Geom.h"
 #include "Logger.h"
 #include "LuaAPI.h"
-#include "TAServerClient.h"
+//#include "TAServerClient.h"
+
 
 // Hook called on server settings load
 void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrServerSettingsInfo_eventLoadServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo);

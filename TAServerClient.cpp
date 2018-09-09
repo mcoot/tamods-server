@@ -44,7 +44,7 @@ namespace TAServer {
 	bool Client::disconnect() {
 		tcpClient->stop();
 		iosThread->join();
-		return false;
+		return true;
 	}
 
 	bool Client::isConnected() {

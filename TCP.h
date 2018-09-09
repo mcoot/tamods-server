@@ -200,14 +200,14 @@ namespace TCP {
 				// async_connect automatically opens the socket
 				// If the socket is still closed, then timeout occurred
 				// Also check if in an error state
-				stop();
 				error_state = boost::system::error_code(boost::system::errc::connection_aborted, boost::system::generic_category());
+				stop();
 				return;
 			}
 			else if (conErr) {
 				// Connection error
-				stop();
 				error_state = conErr;
+				stop();
 				return;
 			}
 
@@ -237,29 +237,44 @@ namespace TCP {
 
 	template <typename SizeType>
 	class Server {
+	public:
+		typedef std::function<void(std::shared_ptr<Connection<SizeType> >&)> AcceptHandler;
 	private:
 		boost::asio::io_service& ios;
 		tcp::acceptor acceptor;
+		AcceptHandler onAcceptHandler;
 	private:
 
-		void handle_accept(std::shared_ptr<Connection<SizeType> > conn, boost::system::error_code& err) {
+		void handle_accept(std::shared_ptr<Connection<SizeType> > conn, const boost::system::error_code& err) {
+			Logger::fatal("handle_accept called");
 			if (!err) {
 				conn->start();
+				Logger::debug("Incoming connection occurred!");
+				if (onAcceptHandler) {
+					onAcceptHandler(conn);
+				}
 			} else {
 				Logger::warn("Incoming connection failed with error %d: %s", err.value(), err.message());
 			}
-			std::shared_ptr<Connection<SizeType> > conn = std::make_shared<Connection<SizeType> >(ios);
-			acceptor.async_accept(conn->get_socket(),
-				boost::bind(&Server::handle_accept, this, conn, boost::asio::placeholders::error));
+			std::shared_ptr<Connection<SizeType> > newConn = std::make_shared<Connection<SizeType> >(ios);
+			acceptor.async_accept(newConn->get_socket(),
+				boost::bind(&Server::handle_accept, this, newConn, boost::asio::placeholders::error));
 		}
 
 	public:
-		Server(boost::asio::io_service& ios, short port) :
+		Server(boost::asio::io_service& ios, short port, AcceptHandler accept_handler = NULL) :
 			ios(ios),
-			acceptor(ios, tcp::endpoint(tcp::v4(), port)) {
+			acceptor(ios, tcp::endpoint(tcp::v4(), port)),
+			onAcceptHandler(accept_handler)
+		{
+			
+		}
+
+		void start() {
 			std::shared_ptr<Connection<SizeType> > conn = std::make_shared<Connection<SizeType> >(ios);
 			acceptor.async_accept(conn->get_socket(),
 				boost::bind(&Server::handle_accept, this, conn, boost::asio::placeholders::error));
+			Logger::debug("TCP server running!");
 		}
 	};
 }

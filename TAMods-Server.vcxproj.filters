@@ -339,6 +339,12 @@
     <ClInclude Include="GameBalance.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DirectConnectionServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectConnectionTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TAMods-Server.cpp">
@@ -622,6 +628,9 @@
     </ClCompile>
     <ClCompile Include="Mod_GameBalance.cpp">
       <Filter>Source Files\Mods</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectConnectionServer.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
