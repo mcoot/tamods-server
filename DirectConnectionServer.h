@@ -10,6 +10,8 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 
+#include <mutex>
+
 #include <nlohmann/json.hpp>
 
 #include "SdkHeaders.h"
@@ -24,19 +26,32 @@ using boost::asio::ip::tcp;
 
 namespace DCServer {
 
+	typedef std::shared_ptr<TCP::Connection<uint32_t> > ConnectionPtr;
+
+	struct PlayerConnection {
+	public:
+		ConnectionPtr conn;
+		long long playerId = 0;
+		bool validated = false;
+	public:
+		PlayerConnection(ConnectionPtr conn) : conn(conn) {}
+	};
+
 	class Server {
-	private:
-		typedef std::shared_ptr<TCP::Connection<uint32_t> > ConnectionPtr;
 	private:
 		boost::asio::io_service ios;
 		std::shared_ptr<std::thread> iosThread;
 
 		std::shared_ptr<TCP::Server<uint32_t>> server;
 
-		std::map<long long, ConnectionPtr> knownPlayerConnections;
-		std::vector<ConnectionPtr> pendingConnections;
+		std::mutex knownPlayerConnectionsMutex;
+		std::map<long long, PlayerConnection> knownPlayerConnections;
+
+		std::mutex pendingConnectionsMutex;
+		std::vector<PlayerConnection> pendingConnections;
 
 		void handler_acceptConnection(ConnectionPtr& conn);
+		void handler_stopConnection(std::shared_ptr<PlayerConnection> pconn, boost::system::error_code& err);
 	public:
 		Server() {}
 

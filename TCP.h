@@ -24,6 +24,9 @@ namespace TCP {
 	// Connection represents an ongoing TCP connection with a client
 	template <typename SizeType>
 	class Connection : public std::enable_shared_from_this<Connection<SizeType> > {
+	public:
+		typedef std::function<void(boost::system::error_code&)> StopHandler;
+		typedef std::function<void()> StartHandler;
 	protected:
 		typedef std::function<void(const json&)> RecvHandlerType;
 		boost::system::error_code error_state;
@@ -33,6 +36,7 @@ namespace TCP {
 		tcp::socket socket;
 		std::function<void(boost::system::error_code&)> onStopHandler;
 		std::map<short, RecvHandlerType> handlers;
+	
 	protected:
 
 		void handle_read(boost::system::error_code readErr) {
@@ -152,7 +156,7 @@ namespace TCP {
 			write(msgKind, msgBody);
 		}
 
-		virtual void start(std::function<void()> connect_handler = NULL, std::function<void(boost::system::error_code&)> stop_handler = NULL) {
+		virtual void start(StartHandler connect_handler = NULL, StopHandler stop_handler = NULL) {
 			stopped = false;
 			onStopHandler = stop_handler;
 			boost::asio::async_read(socket,
@@ -163,6 +167,10 @@ namespace TCP {
 			if (connect_handler) {
 				connect_handler();
 			}
+		}
+
+		void set_stop_handler(StopHandler stop_handler) {
+			onStopHandler = stop_handler;
 		}
 
 		void stop() {
