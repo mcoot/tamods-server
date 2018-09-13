@@ -12,7 +12,7 @@ Config::~Config() { }
 void Config::reset() {
 	serverSettings = ServerSettings();
 	connectToTAServer = true;
-	connectToClients = false;
+	connectToClients = true;
 	allowUnmoddedClients = true;
 	hardcodedLoadouts = HardCodedLoadouts();
 }

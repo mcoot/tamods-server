@@ -17,13 +17,13 @@
 
 #define DCSRV_MSG_KIND_INVALID 0x0
 
-#define DVSRV_MSG_KIND_PLAYER_CONNECTION 0x10000000
+#define DVSRV_MSG_KIND_PLAYER_CONNECTION 0x1000
 
 namespace DCServer {
 
 	class Message {
 	public:
-		virtual uint32_t getMessageKind() {
+		virtual short getMessageKind() {
 			return DCSRV_MSG_KIND_INVALID;
 		}
 
@@ -42,7 +42,7 @@ namespace DCServer {
 		FUniqueNetId uniquePlayerId;
 		std::string protocolVersion;
 	public:
-		uint32_t getMessageKind() override {
+		short getMessageKind() override {
 			return DVSRV_MSG_KIND_PLAYER_CONNECTION;
 		}
 

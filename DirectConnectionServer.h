@@ -45,13 +45,17 @@ namespace DCServer {
 		std::shared_ptr<TCP::Server<uint32_t>> server;
 
 		std::mutex knownPlayerConnectionsMutex;
-		std::map<long long, PlayerConnection> knownPlayerConnections;
+		std::map<long long, std::shared_ptr<PlayerConnection> > knownPlayerConnections;
 
 		std::mutex pendingConnectionsMutex;
 		std::vector<PlayerConnection> pendingConnections;
+	private:
+		void applyHandlersToConnection(std::shared_ptr<PlayerConnection> pconn);
 
 		void handler_acceptConnection(ConnectionPtr& conn);
 		void handler_stopConnection(std::shared_ptr<PlayerConnection> pconn, boost::system::error_code& err);
+
+		void handler_PlayerConnectionMessage(std::shared_ptr<PlayerConnection> pconn, const json& j);
 	public:
 		Server() {}
 
