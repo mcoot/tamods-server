@@ -24,6 +24,7 @@ using json = nlohmann::json;
 #define TASRV_MSG_KIND_GAME_2_LAUNCHER_MATCHTIME 0x3003
 #define TASRV_MSG_KIND_GAME_2_LAUNCHER_MATCHEND 0x3004
 #define TASRV_MSG_KIND_GAME_2_LAUNCHER_LOADOUT_REQUEST 0x3005
+#define TASRV_MSG_KIND_GAME_2_LAUNCHER_MAPINFO 0x3006
 
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_LOADOUT_MESSAGE 0x4000
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_NEXT_MAP_MESSAGE 0x4001
@@ -367,6 +368,27 @@ namespace TAServer {
 
 				playerToPing[playerIdLong] = pingValue;
 			}
+			return true;
+		}
+	};
+
+	class Game2LauncherMapInfoMessage : public Message {
+	public:
+		int mapId;
+	public:
+		short getMessageKind() override {
+			return TASRV_MSG_KIND_GAME_2_LAUNCHER_MAPINFO;
+		}
+
+		void toJson(json& j) {
+			j["map_id"] = mapId;
+		}
+
+		bool fromJson(const json& j) {
+			auto& it = j.find("player_pings");
+			if (it == j.end()) return false;
+			mapId = j["player_pings"];
+
 			return true;
 		}
 	};

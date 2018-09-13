@@ -187,8 +187,18 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
 		else {
 			g_config.serverSettings.mapRotationIndex = (g_config.serverSettings.mapRotationIndex + 1) % g_config.serverSettings.mapRotation.size();
 		}
-		// TODO: Implement random map mode
 		std::string nextMapName = g_config.serverSettings.mapRotation[g_config.serverSettings.mapRotationIndex];
+
+		// Tell the login server what the new map is
+		// Reverse searching the mapid -> mapname because it's small and cbf'd using boost::bimap
+		for (auto& it : Data::map_id_to_filename) {
+			if (it.second == nextMapName) {
+				g_TAServerClient.sendMapInfo(it.first);
+				break;
+			}
+		}
+
+		// Actually change map
 		performMapChange(nextMapName);
 	}
 }

@@ -47,6 +47,7 @@ namespace TAServer {
 		void sendProtocolVersion();
 		void sendTeamInfo(const std::map<long long, int>& playerToTeamId);
 		void sendScoreInfo(int beScore, int dsScore);
+		void sendMapInfo(int mapId);
 		void sendMatchTime(long long matchSecondsLeft, bool counting);
 		void sendMatchEnded();
 

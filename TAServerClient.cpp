@@ -127,6 +127,16 @@ namespace TAServer {
 		tcpClient->send(msg.getMessageKind(), j);
 	}
 
+	void Client::sendMapInfo(int mapId) {
+		Game2LauncherMapInfoMessage msg;
+		msg.mapId = mapId;
+
+		json j;
+		msg.toJson(j);
+		Logger::debug("SendMapInfo json: %s", j.dump().c_str());
+		tcpClient->send(msg.getMessageKind(), j);
+	}
+
 	void Client::sendMatchTime(long long matchSecondsLeft, bool counting) {
 		Game2LauncherMatchTimeMessage msg;
 		msg.secondsRemaining = matchSecondsLeft;
