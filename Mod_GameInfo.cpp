@@ -26,6 +26,7 @@ static void updateMatchTime(bool counting) {
 
 void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bool* result, Hooks::CallInfo* callInfo) {
 	*result = that->RequestTeam(params->RequestedTeamNum, params->C);
+	Logger::debug("Requesting team from PRI %d", params->C->PlayerReplicationInfo);
 	if (!*result) return;
 
 	if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {

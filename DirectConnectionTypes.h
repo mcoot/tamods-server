@@ -15,6 +15,8 @@
 #include "TAServerTypes.h"
 #include "Logger.h"
 
+using json = nlohmann::json;
+
 #define DCSRV_MSG_KIND_INVALID 0x0
 
 #define DVSRV_MSG_KIND_PLAYER_CONNECTION 0x1000

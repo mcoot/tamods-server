@@ -21,15 +21,19 @@ namespace DCServer {
 	}
 
 	void Server::applyHandlersToConnection(std::shared_ptr<PlayerConnection> pconn) {
-		pconn->conn->set_stop_handler([&](boost::system::error_code& err) {
+		pconn->conn->set_stop_handler([this, pconn](boost::system::error_code& err) {
 			// Run the server-level stop connection handler
 			// `this` will be the server, pconn is the player connection object (captured here)
 			// the point being, this runs inside the Connection but has access to the Server and PlayerConnection
 			handler_stopConnection(pconn, err);
 		});
 
-		pconn->conn->add_handler(DVSRV_MSG_KIND_PLAYER_CONNECTION, [&](const json& j) {
+		pconn->conn->add_handler(DVSRV_MSG_KIND_PLAYER_CONNECTION, [this, pconn](const json& j) {
+			Logger::debug("HANDLER FOR PLAYER CONNECTION MESSAGE CALLED");
+			Logger::debug("JSON OF MESSAGE: %s", j.dump().c_str());
+			//Logger::debug("Handler: %d", &handler_PlayerConnectionMessage);
 			handler_PlayerConnectionMessage(pconn, j);
+			Logger::debug("POST HANDLER");
 		});
 	}
 
@@ -49,7 +53,7 @@ namespace DCServer {
 	}
 
 	void Server::handler_stopConnection(std::shared_ptr<PlayerConnection> pconn, boost::system::error_code& err) {
-		Logger::debug("[Connection Stopped]");
+		Logger::debug("[Connection Stopped with code %d]", pconn->conn->get_error_state().value());
 
 		// Delete from pending connections if there
 		{
@@ -63,6 +67,8 @@ namespace DCServer {
 			}
 		}
 
+		Logger::debug("Done deleting from pending, doing map");
+
 		// Delete from map if there
 		{
 			std::lock_guard<std::mutex> lock(knownPlayerConnectionsMutex);
@@ -73,7 +79,13 @@ namespace DCServer {
 		}
 	}
 
+	//void Server::handler_PlayerConnectionMessage(std::shared_ptr<PlayerConnection> pconn, const json& j) {
+	//	Logger::debug("Got PlayerConnectionMessage");
+	//}
+
 	void Server::handler_PlayerConnectionMessage(std::shared_ptr<PlayerConnection> pconn, const json& j) {
+		Logger::debug("Got PlayerConnectionMessage");
+		Logger::debug("Message contents: %s", j.dump().c_str());
 		PlayerConnectionMessage msg;
 		if (!msg.fromJson(j)) {
 			// Failed to parse

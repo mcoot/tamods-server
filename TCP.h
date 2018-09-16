@@ -42,7 +42,7 @@ namespace TCP {
 		void handle_read(boost::system::error_code readErr) {
 			if (stopped) return;
 			if (readErr) {
-				error_state = readErr;
+				error_state.assign(readErr.value(), readErr.category());
 				stop();
 				return;
 			}
@@ -54,12 +54,12 @@ namespace TCP {
 			short msgKind;
 			size_t syncBytesRead = boost::asio::read(socket, boost::asio::buffer(&msgKind, 2), readErr);
 			if (!readErr && syncBytesRead != 2) {
-				error_state = boost::system::error_code(boost::system::errc::message_size, boost::system::generic_category());
+				error_state.assign(boost::system::errc::message_size, boost::system::generic_category());
 				stop();
 				return;
 			}
 			if (readErr) {
-				error_state = readErr;
+				error_state.assign(readErr.value(), readErr.category());
 				stop();
 				return;
 			}
@@ -68,23 +68,24 @@ namespace TCP {
 			std::vector<char> rawMsg(msgSize - 2);
 			syncBytesRead = boost::asio::read(socket, boost::asio::buffer(rawMsg, msgSize - 2), readErr);
 			if (syncBytesRead != msgSize - 2) {
-				error_state = boost::system::error_code(boost::system::errc::message_size, boost::system::generic_category());
+				error_state.assign(boost::system::errc::message_size, boost::system::generic_category());
 				stop();
 				return;
 			}
-			if (!readErr && readErr) {
-				error_state = readErr;
+			if (readErr) {
+				error_state.assign(readErr.value(), readErr.category());
 				stop();
 				return;
 			}
 			std::string msgString = std::string(rawMsg.begin(), rawMsg.end());
+
 			// Parse the message into json
 			json msgJson;
 			try {
 				msgJson = json::parse(msgString);
 			}
 			catch (const json::parse_error&) {
-				error_state = boost::system::error_code(boost::system::errc::bad_message, boost::system::generic_category());
+				error_state.assign(boost::system::errc::bad_message, boost::system::generic_category());
 				stop();
 				return;
 			}
@@ -128,7 +129,7 @@ namespace TCP {
 				writeErr.assign(boost::system::errc::message_size, boost::system::generic_category());
 			}
 			if (writeErr) {
-				error_state = writeErr;
+				error_state.assign(writeErr.value(), writeErr.category());
 				stop();
 			}
 		}
@@ -174,7 +175,7 @@ namespace TCP {
 		}
 
 		void stop() {
-			Logger::debug("stopping connection... error code is %d: %s", error_state.value(), error_state.message());
+			Logger::debug("stopping connection... error code is %d: %s", error_state.value(), error_state.message().c_str());
 			stopped = true;
 			socket.close();
 
@@ -208,13 +209,13 @@ namespace TCP {
 				// async_connect automatically opens the socket
 				// If the socket is still closed, then timeout occurred
 				// Also check if in an error state
-				error_state = boost::system::error_code(boost::system::errc::connection_aborted, boost::system::generic_category());
+				error_state.assign(boost::system::errc::connection_aborted, boost::system::generic_category());
 				stop();
 				return;
 			}
 			else if (conErr) {
 				// Connection error
-				error_state = conErr;
+				error_state.assign(conErr.value(), conErr.category());
 				stop();
 				return;
 			}
