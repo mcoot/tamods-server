@@ -341,6 +341,7 @@
     <ClCompile Include="SDK_SOURCES\UTGame_functions.cpp" />
     <ClCompile Include="SDK_SOURCES\WinDrv_functions.cpp" />
     <ClCompile Include="SDK_SOURCES\XAudio2_functions.cpp" />
+    <ClCompile Include="GameBalanceData.cpp" />
     <ClCompile Include="TAMods-Server.cpp" />
     <ClCompile Include="TAServerClient.cpp" />
     <ClCompile Include="TCP.cpp" />

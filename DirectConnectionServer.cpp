@@ -67,8 +67,6 @@ namespace DCServer {
 			}
 		}
 
-		Logger::debug("Done deleting from pending, doing map");
-
 		// Delete from map if there
 		{
 			std::lock_guard<std::mutex> lock(knownPlayerConnectionsMutex);
@@ -84,8 +82,6 @@ namespace DCServer {
 	//}
 
 	void Server::handler_PlayerConnectionMessage(std::shared_ptr<PlayerConnection> pconn, const json& j) {
-		Logger::debug("Got PlayerConnectionMessage");
-		Logger::debug("Message contents: %s", j.dump().c_str());
 		PlayerConnectionMessage msg;
 		if (!msg.fromJson(j)) {
 			// Failed to parse

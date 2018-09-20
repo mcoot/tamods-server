@@ -64,6 +64,8 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 
 	s->bSkiEnabled = this->SkiingEnabled;
 	s->bCTFBlitzAllFlagsMove = this->CTFBlitzAllFlagsMove;
+
+	ApplyWeaponProperties();
 }
 
 void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrServerSettingsInfo_eventLoadServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo) {
