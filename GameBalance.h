@@ -35,6 +35,15 @@ namespace GameBalance {
 
 			// Constructors for constructing from any valid type
 			PropValue(const PropValue& other) : type(other.type) {
+				operator=(other);
+			}
+			PropValue(bool val) : type(ValueType::BOOLEAN), valBool(val) {}
+			PropValue(int val) : type(ValueType::INTEGER), valInt(val) {}
+			PropValue(float val) : type(ValueType::FLOAT), valFloat(val) {}
+			PropValue(std::string val) : type(ValueType::STRING), valString(val) {}
+			~PropValue() {}
+
+			PropValue& operator=(const PropValue& other) {
 				switch (other.type) {
 				case ValueType::BOOLEAN:
 					valBool = other.valBool;
@@ -49,18 +58,17 @@ namespace GameBalance {
 					valString = other.valString;
 					break;
 				}
+				type = other.type;
+
+				return *this;
 			}
-			PropValue(bool val) : type(ValueType::BOOLEAN), valBool(val) {}
-			PropValue(int val) : type(ValueType::INTEGER), valInt(val) {}
-			PropValue(float val) : type(ValueType::FLOAT), valFloat(val) {}
-			PropValue(std::string val) : type(ValueType::STRING), valString(val) {}
-			~PropValue() {}
 
 			// Static methods for constructing from a specific type
 			static PropValue fromBool(bool val) { return PropValue(val); }
 			static PropValue fromInt(int val) { return PropValue(val); }
 			static PropValue fromFloat(float val) { return PropValue(val); }
 			static PropValue fromString(std::string val) { return PropValue(val); }
+
 		};
 
 		class Property {
@@ -80,6 +88,8 @@ namespace GameBalance {
 				type(type),
 				applier(applier) {}
 
+			ValueType getType();
+
 			// Attempt to apply the given value of this property, returning success
 			// Will fail if the value is the wrong type or the applier fails
 			bool apply(PropValue value, ATrDevice* dev);
@@ -96,7 +106,8 @@ namespace GameBalance {
 		// Actual weapon properties
 		extern std::map<PropId, Property> properties;
 
-		typedef std::map<int, std::map<PropId, PropValue> > PropsConfig;
+		typedef std::map<PropId, PropValue> ItemConfig;
+		typedef std::map<int, ItemConfig> PropsConfig;
 
 		//namespace Properties {
 		//	// Ammo

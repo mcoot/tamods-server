@@ -3,6 +3,10 @@
 namespace GameBalance {
 	namespace Items {
 
+		ValueType Property::getType() {
+			return type;
+		}
+
 		bool Property::apply(PropValue value, ATrDevice* dev) {
 			return (value.type == type && applier(value, dev));
 		}
@@ -36,21 +40,63 @@ void ServerSettings::ApplyWeaponProperties() {
 	}
 }
 
-static void setWeaponProp(std::string className, std::string itemName, int propId, LuaRef val) {
+static void setWeaponProp(std::string className, std::string itemName, int intPropId, LuaRef val) {
 	int itemId = Data::getItemId(className, itemName);
 
-	// TODO: Check propId is real
+	GameBalance::Items::PropId propId = (GameBalance::Items::PropId)intPropId;
+	auto& it = GameBalance::Items::properties.find(propId);
+	if (it == GameBalance::Items::properties.end()) {
+		// Non-existent property, fail
+		Logger::error("Unable to set weapon property config; invalid property id %d", propId);
+		return;
+	}
 
-	// TODO: check val is the right type
+	GameBalance::Items::PropValue propVal;
 
-	// TODO: create map for item if there isn't one, put prop reference in
+	switch (it->second.getType()) {
+	case GameBalance::Items::ValueType::BOOLEAN:
+		if (val.type() != 1) {
+			Logger::error("Unable to set weapon property config for propId %d, wrong type (should be boolean)", propId);
+			return;
+		}
+		propVal = GameBalance::Items::PropValue::fromBool(val);
+		break;
+	case GameBalance::Items::ValueType::INTEGER:
+		float intPart;
+		if (!val.isNumber() || modf((float)val, &intPart) != 0) {
+			Logger::error("Unable to set weapon property config for propId %d, wrong type (should be integer)", propId);
+			return;
+		}
+		propVal = GameBalance::Items::PropValue::fromInt(val);
+		break;
+	case GameBalance::Items::ValueType::FLOAT:
+		if (!val.isNumber()) {
+			Logger::error("Unable to set weapon property config for propId %d, wrong type (should be float)", propId);
+			return;
+		}
+		propVal = GameBalance::Items::PropValue::fromFloat(val);
+		break;
+	case GameBalance::Items::ValueType::STRING:
+		if (!val.isString()) {
+			Logger::error("Unable to set weapon property config for propId %d, wrong type (should be string)", propId);
+			return;
+		}
+		propVal = GameBalance::Items::PropValue::fromString(val);
+		break;
+	}
+
+	auto& cit = g_config.serverSettings.weaponProperties.find(itemId);
+	if (cit == g_config.serverSettings.weaponProperties.end()) {
+		g_config.serverSettings.weaponProperties[itemId] = GameBalance::Items::ItemConfig();
+	}
+	g_config.serverSettings.weaponProperties[itemId][propId] = propVal;
 }
 
 namespace LuaAPI {
 	void addGameBalanceAPI(luabridge::Namespace ns) {
 		ns
 			.beginNamespace("GameBalance")
-				.addFunction("SetItemProperty", &setWeaponProp)
+				.addFunction("setItemProperty", &setWeaponProp)
 			.endNamespace();
 	}
 }
