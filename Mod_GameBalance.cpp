@@ -92,11 +92,25 @@ static void setWeaponProp(std::string className, std::string itemName, int intPr
 	g_config.serverSettings.weaponProperties[itemId][propId] = propVal;
 }
 
+static int PropId_Invalid = (int)GameBalance::Items::PropId::INVALID;
+static int PropId_ClipAmmo = (int)GameBalance::Items::PropId::CLIP_AMMO;
+static int PropId_SpareAmmo = (int)GameBalance::Items::PropId::SPARE_AMMO;
+static int PropId_AmmoPerShot = (int)GameBalance::Items::PropId::AMMO_PER_SHOT;
+static int PropId_LowAmmoCutoff = (int)GameBalance::Items::PropId::LOW_AMMO_CUTOFF;
+
 namespace LuaAPI {
 	void addGameBalanceAPI(luabridge::Namespace ns) {
 		ns
-			.beginNamespace("GameBalance")
-				.addFunction("setItemProperty", &setWeaponProp)
+			.beginNamespace("Items")
+				.addFunction("setProperty", &setWeaponProp)
+
+				.beginNamespace("Properties")
+					.addVariable("Invalid", &PropId_Invalid, false)
+					.addVariable("ClipAmmo", &PropId_ClipAmmo, false)
+					.addVariable("SpareAmmo", &PropId_SpareAmmo, false)
+					.addVariable("AmmoPerShot", &PropId_AmmoPerShot, false)
+					.addVariable("LowAmmoCutoff", &PropId_LowAmmoCutoff, false)
+				.endNamespace()
 			.endNamespace();
 	}
 }
