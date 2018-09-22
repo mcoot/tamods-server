@@ -1,16 +1,12 @@
 #include "Mods.h"
 
 namespace GameBalance {
-	namespace Items {
+	ValueType Property::getType() {
+		return type;
+	}
 
-		ValueType Property::getType() {
-			return type;
-		}
-
-		bool Property::apply(PropValue value, ATrDevice* dev) {
-			return (value.type == type && applier(value, dev));
-		}
-
+	bool Property::apply(PropValue value, UObject* obj) {
+		return (value.type == type && applier(value, obj));
 	}
 }
 
@@ -51,43 +47,43 @@ static void setWeaponProp(std::string className, std::string itemName, int intPr
 		return;
 	}
 
-	GameBalance::Items::PropValue propVal;
+	GameBalance::PropValue propVal;
 
 	switch (it->second.getType()) {
-	case GameBalance::Items::ValueType::BOOLEAN:
+	case GameBalance::ValueType::BOOLEAN:
 		if (val.type() != 1) {
 			Logger::error("Unable to set weapon property config for propId %d, wrong type (should be boolean)", propId);
 			return;
 		}
-		propVal = GameBalance::Items::PropValue::fromBool(val);
+		propVal = GameBalance::PropValue::fromBool(val);
 		break;
-	case GameBalance::Items::ValueType::INTEGER:
+	case GameBalance::ValueType::INTEGER:
 		float intPart;
 		if (!val.isNumber() || modf((float)val, &intPart) != 0) {
 			Logger::error("Unable to set weapon property config for propId %d, wrong type (should be integer)", propId);
 			return;
 		}
-		propVal = GameBalance::Items::PropValue::fromInt(val);
+		propVal = GameBalance::PropValue::fromInt(val);
 		break;
-	case GameBalance::Items::ValueType::FLOAT:
+	case GameBalance::ValueType::FLOAT:
 		if (!val.isNumber()) {
 			Logger::error("Unable to set weapon property config for propId %d, wrong type (should be float)", propId);
 			return;
 		}
-		propVal = GameBalance::Items::PropValue::fromFloat(val);
+		propVal = GameBalance::PropValue::fromFloat(val);
 		break;
-	case GameBalance::Items::ValueType::STRING:
+	case GameBalance::ValueType::STRING:
 		if (!val.isString()) {
 			Logger::error("Unable to set weapon property config for propId %d, wrong type (should be string)", propId);
 			return;
 		}
-		propVal = GameBalance::Items::PropValue::fromString(val);
+		propVal = GameBalance::PropValue::fromString(val);
 		break;
 	}
 
 	auto& cit = g_config.serverSettings.weaponProperties.find(itemId);
 	if (cit == g_config.serverSettings.weaponProperties.end()) {
-		g_config.serverSettings.weaponProperties[itemId] = GameBalance::Items::ItemConfig();
+		g_config.serverSettings.weaponProperties[itemId] = GameBalance::Items::PropMapping();
 	}
 	g_config.serverSettings.weaponProperties[itemId][propId] = propVal;
 }

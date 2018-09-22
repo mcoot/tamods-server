@@ -92,7 +92,7 @@ struct ServerSettings {
 	std::set<int> disabledEquipPointsMedium;
 	std::set<int> disabledEquipPointsHeavy;
 
-	GameBalance::Items::PropsConfig weaponProperties;
+	GameBalance::Items::ItemsConfig weaponProperties;
 	void ApplyWeaponProperties();
 
 	void ApplyAsDefaults();
