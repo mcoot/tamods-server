@@ -10,6 +10,27 @@ namespace GameBalance {
 	}
 }
 
+namespace DCServer {
+	void Server::handler_PlayerConnectionMessage(std::shared_ptr<PlayerConnection> pconn, const json& j) {
+		PlayerConnectionMessage msg;
+		if (!msg.fromJson(j)) {
+			// Failed to parse
+			Logger::warn("Failed to parse connection message from player: %s", j.dump().c_str());
+			return;
+		}
+
+		if (!validatePlayerConn(pconn, msg)) {
+			Logger::warn("Failed to validate connection message from player: %s", j.dump().c_str());
+			return;
+		}
+
+		// Send the player the current balance state
+		sendGameBalanceDetailsMessage(pconn, g_config.serverSettings.weaponProperties);
+	}
+}
+
+
+
 void ServerSettings::ApplyWeaponProperties() {
 	for (auto& item : weaponProperties) {
 		auto& wepit = Data::weapon_id_to_weapon_class.find(item.first);

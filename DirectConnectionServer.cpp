@@ -77,24 +77,13 @@ namespace DCServer {
 		}
 	}
 
-	//void Server::handler_PlayerConnectionMessage(std::shared_ptr<PlayerConnection> pconn, const json& j) {
-	//	Logger::debug("Got PlayerConnectionMessage");
-	//}
-
-	void Server::handler_PlayerConnectionMessage(std::shared_ptr<PlayerConnection> pconn, const json& j) {
-		PlayerConnectionMessage msg;
-		if (!msg.fromJson(j)) {
-			// Failed to parse
-			Logger::warn("Failed to parse connection message from player: %s", j.dump().c_str());
-			return;
-		}
-
+	bool Server::validatePlayerConn(std::shared_ptr<PlayerConnection> pconn, const PlayerConnectionMessage& connDetails) {
 		// TODO: Validate protocol version
 
 		// Check if player was already validated
 		if (pconn->validated) {
-			Logger::warn("Duplicate connection message for connection %ld: %s", pconn->playerId, j.dump().c_str());
-			return;
+			Logger::warn("Duplicate connection message for connection %ld", pconn->playerId);
+			return false;
 		}
 
 		// Not validated, so the playerId currently refers to a temporary ID
@@ -111,12 +100,24 @@ namespace DCServer {
 		}
 
 		// Add the player to the map of known players
-		pconn->playerId = TAServer::netIdToLong(msg.uniquePlayerId);
+		pconn->playerId = TAServer::netIdToLong(connDetails.uniquePlayerId);
 		{
 			std::lock_guard<std::mutex> lock(knownPlayerConnectionsMutex);
 			knownPlayerConnections[pconn->playerId] = pconn;
 		}
 		pconn->validated = true;
+
+		return true;
+	}
+
+	void Server::sendGameBalanceDetailsMessage(std::shared_ptr<PlayerConnection> pconn, const GameBalance::Items::ItemsConfig& itemProperties) {
+		GameBalanceDetailsMessage msg;
+		msg.itemProperties = itemProperties;
+
+		json j;
+		msg.toJson(j);
+
+		pconn->conn->send(msg.getMessageKind(), j);
 	}
 
 }

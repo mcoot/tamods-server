@@ -55,11 +55,15 @@ namespace DCServer {
 		void handler_acceptConnection(ConnectionPtr& conn);
 		void handler_stopConnection(std::shared_ptr<PlayerConnection> pconn, boost::system::error_code& err);
 
+		bool validatePlayerConn(std::shared_ptr<PlayerConnection> pconn, const PlayerConnectionMessage& connDetails);
+
 		void handler_PlayerConnectionMessage(std::shared_ptr<PlayerConnection> pconn, const json& j);
 	public:
 		Server() {}
 
 		void start(short port);
+
+		void sendGameBalanceDetailsMessage(std::shared_ptr<PlayerConnection> pconn, const GameBalance::Items::ItemsConfig& itemProperties);
 	};
 
 }
