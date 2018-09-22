@@ -126,7 +126,9 @@ namespace GameBalance {
 			DAMAGE = 3000,
 			EXPLOSIVE_RADIUS = 3001,
 			DIRECT_HIT_MULTIPLIER = 3002,
-			MOMENTUM_TRANSFER = 3003,
+			IMPACT_MOMENTUM = 3003,
+			SELF_IMPACT_MOMENTUM_MULTIPLIER = 3004,
+			SELF_IMPACT_EXTRA_Z_MOMENTUM = 3005,
 
 			// Projectile / Tracer
 			PROJECTILE_SPEED = 4000,
@@ -136,9 +138,10 @@ namespace GameBalance {
 			PROJECTILE_LIFESPAN = 4004,
 			PROJECTILE_GRAVITY = 4005,
 			PROJECTILE_TERMINAL_VELOCITY = 4006,
-			PROJECTILE_MESH_SCALE = 4007,
-			PROJECTILE_LIGHT_SCALE = 4008,
-			HITSCAN_RANGE = 4009,
+			PROJECTILE_BOUNCE_DAMPING = 4007,
+			PROJECTILE_MESH_SCALE = 4008,
+			PROJECTILE_LIGHT_RADIUS = 4009,
+			HITSCAN_RANGE = 4010,
 
 			// Accuracy
 			ACCURACY = 5000,
@@ -200,6 +203,9 @@ namespace GameBalance {
 			COLLISION_CYLINDER_HEIGHT = 4001,
 
 		};
+
+		typedef std::map<PropId, PropValue> PropMapping;
+		typedef std::map<int, PropMapping> ClassesConfig;
 	}
 
 	namespace Vehicles {
@@ -240,6 +246,9 @@ namespace GameBalance {
 			RAM_FLAG_PUSH_SPEED = 4006,
 
 		};
+
+		typedef std::map<PropId, PropValue> PropMapping;
+		typedef std::map<int, PropMapping> VehiclesConfig;
 	}
 
 	namespace VehicleWeapons {
@@ -286,6 +295,9 @@ namespace GameBalance {
 			ACCURACY_LOSS_MAX = 5004,
 			ACCURACY_CORRECTION_RATE = 5005,
 		};
+
+		typedef std::map<PropId, PropValue> PropMapping;
+		typedef std::map<int, PropMapping> VehicleWeaponsConfig;
 	}
 
 }

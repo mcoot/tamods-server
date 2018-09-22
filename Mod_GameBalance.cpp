@@ -113,18 +113,10 @@ static void setWeaponProp(std::string className, std::string itemName, int intPr
 	g_config.serverSettings.weaponProperties[itemId][propId] = propVal;
 }
 
-static int PropId_Invalid = (int)GameBalance::Items::PropId::INVALID;
-static int PropId_ClipAmmo = (int)GameBalance::Items::PropId::CLIP_AMMO;
-static int PropId_SpareAmmo = (int)GameBalance::Items::PropId::SPARE_AMMO;
-static int PropId_AmmoPerShot = (int)GameBalance::Items::PropId::AMMO_PER_SHOT;
-static int PropId_LowAmmoCutoff = (int)GameBalance::Items::PropId::LOW_AMMO_CUTOFF;
-
-static int PropId_ReloadTime = (int)GameBalance::Items::PropId::RELOAD_TIME;
-static int PropId_FireInterval = (int)GameBalance::Items::PropId::FIRE_INTERVAL;
-static int PropId_HoldToFire = (int)GameBalance::Items::PropId::HOLD_TO_FIRE;
-
-static int PropId_Damage = (int)GameBalance::Items::PropId::DAMAGE;
-static int PropId_ExplosiveRadius = (int)GameBalance::Items::PropId::EXPLOSIVE_RADIUS;
+template <GameBalance::Items::PropId x>
+static int getItemPropId() {
+	return (int)x;
+}
 
 namespace LuaAPI {
 	void addGameBalanceAPI(luabridge::Namespace ns) {
@@ -133,19 +125,45 @@ namespace LuaAPI {
 				.addFunction("setProperty", &setWeaponProp)
 
 				.beginNamespace("Properties")
-					.addVariable("Invalid", &PropId_Invalid, false)
+					.addProperty<int, int>("Invalid", &getItemPropId<GameBalance::Items::PropId::INVALID>)
 					// Ammo
-					.addVariable("ClipAmmo", &PropId_ClipAmmo, false)
-					.addVariable("SpareAmmo", &PropId_SpareAmmo, false)
-					.addVariable("AmmoPerShot", &PropId_AmmoPerShot, false)
-					.addVariable("LowAmmoCutoff", &PropId_LowAmmoCutoff, false)
+					.addProperty<int, int>("ClipAmmo", &getItemPropId<GameBalance::Items::PropId::CLIP_AMMO>)
+					.addProperty<int, int>("SpareAmmo", &getItemPropId<GameBalance::Items::PropId::SPARE_AMMO>)
+					.addProperty<int, int>("AmmoPerShot", &getItemPropId<GameBalance::Items::PropId::AMMO_PER_SHOT>)
+					.addProperty<int, int>("LowAmmoCutoff", &getItemPropId<GameBalance::Items::PropId::LOW_AMMO_CUTOFF>)
 					// Reload / Firing
-					.addVariable("ReloadTime", &PropId_ReloadTime, false)
-					.addVariable("FireInterval", &PropId_FireInterval, false)
-					.addVariable("HoldToFire", &PropId_HoldToFire, false)
-					// Damage
-					.addVariable("Damage", &PropId_Damage, false)
-					.addVariable("ExplosiveRadius", &PropId_ExplosiveRadius, false)
+					.addProperty<int, int>("ReloadTime", &getItemPropId<GameBalance::Items::PropId::RELOAD_TIME>)
+					.addProperty<int, int>("FireInterval", &getItemPropId<GameBalance::Items::PropId::FIRE_INTERVAL>)
+					.addProperty<int, int>("HoldToFire", &getItemPropId<GameBalance::Items::PropId::HOLD_TO_FIRE>)
+					.addProperty<int, int>("CanZoom", &getItemPropId<GameBalance::Items::PropId::CAN_ZOOM>)
+					.addProperty<int, int>("ReloadSingle", &getItemPropId<GameBalance::Items::PropId::RELOAD_SINGLE>)
+					.addProperty<int, int>("ReloadApplicationProportion", &getItemPropId<GameBalance::Items::PropId::RELOAD_APPLICATION_PROPORTION>)
+					// Damage / Impact
+					.addProperty<int, int>("Damage", &getItemPropId<GameBalance::Items::PropId::DAMAGE>)
+					.addProperty<int, int>("ExplosiveRadius", &getItemPropId<GameBalance::Items::PropId::EXPLOSIVE_RADIUS>)
+					.addProperty<int, int>("DirectHitMultiplier", &getItemPropId<GameBalance::Items::PropId::DIRECT_HIT_MULTIPLIER>)
+					.addProperty<int, int>("ImpactMomentum", &getItemPropId<GameBalance::Items::PropId::IMPACT_MOMENTUM>)
+					.addProperty<int, int>("SelfImpactMomentumMultiplier", &getItemPropId<GameBalance::Items::PropId::SELF_IMPACT_MOMENTUM_MULTIPLIER>)
+					.addProperty<int, int>("SelfImpactExtraZMomentum", &getItemPropId<GameBalance::Items::PropId::SELF_IMPACT_EXTRA_Z_MOMENTUM>)
+					// Projectile / Tracer
+					.addProperty<int, int>("ProjectileSpeed", &getItemPropId<GameBalance::Items::PropId::PROJECTILE_SPEED>)
+					.addProperty<int, int>("ProjectileMaxSpeed", &getItemPropId<GameBalance::Items::PropId::PROJECTILE_MAX_SPEED>)
+					.addProperty<int, int>("CollisionSize", &getItemPropId<GameBalance::Items::PropId::COLLISION_SIZE>)
+					.addProperty<int, int>("ProjectileInheritence", &getItemPropId<GameBalance::Items::PropId::PROJECTILE_INHERITENCE>)
+					.addProperty<int, int>("ProjectileLifespan", &getItemPropId<GameBalance::Items::PropId::PROJECTILE_LIFESPAN>)
+					.addProperty<int, int>("ProjectileGravity", &getItemPropId<GameBalance::Items::PropId::PROJECTILE_GRAVITY>)
+					.addProperty<int, int>("ProjectileTerminalVelocity", &getItemPropId<GameBalance::Items::PropId::PROJECTILE_TERMINAL_VELOCITY>)
+					.addProperty<int, int>("ProjectileBounceDamping", &getItemPropId<GameBalance::Items::PropId::PROJECTILE_BOUNCE_DAMPING>)
+					.addProperty<int, int>("ProjectileMeshScale", &getItemPropId<GameBalance::Items::PropId::PROJECTILE_MESH_SCALE>)
+					.addProperty<int, int>("ProjectileLightRadius", &getItemPropId<GameBalance::Items::PropId::PROJECTILE_LIGHT_RADIUS>)
+					.addProperty<int, int>("HitscanRange", &getItemPropId<GameBalance::Items::PropId::HITSCAN_RANGE>)
+					// Accuracy
+					.addProperty<int, int>("Accuracy", &getItemPropId<GameBalance::Items::PropId::ACCURACY>)
+					.addProperty<int, int>("AccuracyLossOnShot", &getItemPropId<GameBalance::Items::PropId::ACCURACY_LOSS_ON_SHOT>)
+					.addProperty<int, int>("AccuracyLossOnJump", &getItemPropId<GameBalance::Items::PropId::ACCURACY_LOSS_ON_JUMP>)
+					.addProperty<int, int>("AccuracyLossMax", &getItemPropId<GameBalance::Items::PropId::ACCURACY_LOSS_MAX>)
+					.addProperty<int, int>("AccuracyCorrectionRate", &getItemPropId<GameBalance::Items::PropId::ACCURACY_CORRECTION_RATE>)
+
 				.endNamespace()
 			.endNamespace();
 	}
