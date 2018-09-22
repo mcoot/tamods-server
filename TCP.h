@@ -255,10 +255,8 @@ namespace TCP {
 	private:
 
 		void handle_accept(std::shared_ptr<Connection<SizeType> > conn, const boost::system::error_code& err) {
-			Logger::fatal("handle_accept called");
 			if (!err) {
 				conn->start();
-				Logger::debug("Incoming connection occurred!");
 				if (onAcceptHandler) {
 					onAcceptHandler(conn);
 				}

@@ -29,11 +29,8 @@ namespace DCServer {
 		});
 
 		pconn->conn->add_handler(DCSRV_MSG_KIND_PLAYER_CONNECTION, [this, pconn](const json& j) {
-			Logger::debug("HANDLER FOR PLAYER CONNECTION MESSAGE CALLED");
-			Logger::debug("JSON OF MESSAGE: %s", j.dump().c_str());
 			//Logger::debug("Handler: %d", &handler_PlayerConnectionMessage);
 			handler_PlayerConnectionMessage(pconn, j);
-			Logger::debug("POST HANDLER");
 		});
 	}
 

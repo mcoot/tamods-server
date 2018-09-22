@@ -119,6 +119,13 @@ static int PropId_SpareAmmo = (int)GameBalance::Items::PropId::SPARE_AMMO;
 static int PropId_AmmoPerShot = (int)GameBalance::Items::PropId::AMMO_PER_SHOT;
 static int PropId_LowAmmoCutoff = (int)GameBalance::Items::PropId::LOW_AMMO_CUTOFF;
 
+static int PropId_ReloadTime = (int)GameBalance::Items::PropId::RELOAD_TIME;
+static int PropId_FireInterval = (int)GameBalance::Items::PropId::FIRE_INTERVAL;
+static int PropId_HoldToFire = (int)GameBalance::Items::PropId::HOLD_TO_FIRE;
+
+static int PropId_Damage = (int)GameBalance::Items::PropId::DAMAGE;
+static int PropId_ExplosiveRadius = (int)GameBalance::Items::PropId::EXPLOSIVE_RADIUS;
+
 namespace LuaAPI {
 	void addGameBalanceAPI(luabridge::Namespace ns) {
 		ns
@@ -127,10 +134,18 @@ namespace LuaAPI {
 
 				.beginNamespace("Properties")
 					.addVariable("Invalid", &PropId_Invalid, false)
+					// Ammo
 					.addVariable("ClipAmmo", &PropId_ClipAmmo, false)
 					.addVariable("SpareAmmo", &PropId_SpareAmmo, false)
 					.addVariable("AmmoPerShot", &PropId_AmmoPerShot, false)
 					.addVariable("LowAmmoCutoff", &PropId_LowAmmoCutoff, false)
+					// Reload / Firing
+					.addVariable("ReloadTime", &PropId_ReloadTime, false)
+					.addVariable("FireInterval", &PropId_FireInterval, false)
+					.addVariable("HoldToFire", &PropId_HoldToFire, false)
+					// Damage
+					.addVariable("Damage", &PropId_Damage, false)
+					.addVariable("ExplosiveRadius", &PropId_ExplosiveRadius, false)
 				.endNamespace()
 			.endNamespace();
 	}
