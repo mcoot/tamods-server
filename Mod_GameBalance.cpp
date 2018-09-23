@@ -82,8 +82,6 @@ static void applyPropConfig(std::map<int, UClass*>& relevantClassDefs, std::map<
 				name = wepName->second;
 			}
 
-			Logger::error("Special case! %d", elem.first);
-
 			// Find the default object given this name
 			std::string defName = namePrefix + "_" + name + " TribesGame.Default__" + namePrefix + "_" + name;
 			if (isClassCase) {
@@ -112,7 +110,6 @@ static void applyPropConfig(std::map<int, UClass*>& relevantClassDefs, std::map<
 		}
 
 		if (objectsToApplyOn.empty()) {
-			Logger::error("Non special case: %d, elem_it->second->Default = %p", elem.first, elem_it->second->Default);
 			if (!elem_it->second || !elem_it->second->Default || !elem_it->second->Default->IsA(requiredSuperClass)) {
 				Logger::error("Unable to set property; failed to get default object for id %d", elem.first);
 				continue;
@@ -240,6 +237,11 @@ static int getPropId() {
 	return (int)x;
 }
 
+template <const char* s>
+static std::string getStringVal() {
+	return std::string(s);
+}
+
 namespace LuaAPI {
 	void addGameBalanceAPI(luabridge::Namespace ns) {
 		ns
@@ -266,6 +268,22 @@ namespace LuaAPI {
 					.addProperty<int, int>("ImpactMomentum", &getPropId<Items::PropId, Items::PropId::IMPACT_MOMENTUM>)
 					.addProperty<int, int>("SelfImpactMomentumMultiplier", &getPropId<Items::PropId, Items::PropId::SELF_IMPACT_MOMENTUM_MULTIPLIER>)
 					.addProperty<int, int>("SelfImpactExtraZMomentum", &getPropId<Items::PropId, Items::PropId::SELF_IMPACT_EXTRA_Z_MOMENTUM>)
+					.addProperty<int, int>("EnergyDrain", &getPropId<Items::PropId, Items::PropId::ENERGY_DRAIN>)
+					.addProperty<int, int>("MaxDamageRangeProportion", &getPropId<Items::PropId, Items::PropId::MAX_DAMAGE_RANGE_PROPORTION>)
+					.addProperty<int, int>("MinDamageRangeProportion", &getPropId<Items::PropId, Items::PropId::MIN_DAMAGE_RANGE_PROPORTION>)
+					.addProperty<int, int>("MinDamageProportion", &getPropId<Items::PropId, Items::PropId::MIN_DAMAGE_PROPORTION>)
+					.addProperty<int, int>("BulletDamageRange", &getPropId<Items::PropId, Items::PropId::BULLET_DAMAGE_RANGE>)
+					.addProperty<int, int>("DamageAgainstArmorMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_ARMOR_MULTIPLIER>)
+					.addProperty<int, int>("DamageAgainstGeneratorMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_GENERATOR_MULTIPLIER>)
+					.addProperty<int, int>("DamageAgainstBaseTurretMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_BASE_TURRET_MULTIPLIER>)
+					.addProperty<int, int>("DamageAgainstObjectiveMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_BASE_SENSOR_MULTIPLIER>)
+					.addProperty<int, int>("DamageAgainstGravCycleMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_GRAVCYCLE_MULTIPLIER>)
+					.addProperty<int, int>("DamageAgainstBeowulfMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_BEOWULF_MULTIPLIER>)
+					.addProperty<int, int>("DamageAgainstShrikeMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_SHRIKE_MULTIPLIER>)
+					.addProperty<int, int>("DoesGibOnKill", &getPropId<Items::PropId, Items::PropId::DOES_GIB_ON_KILL>)
+					.addProperty<int, int>("GibImpulseRadius", &getPropId<Items::PropId, Items::PropId::GIB_IMPULSE_RADIUS>)
+					.addProperty<int, int>("GibStrength", &getPropId<Items::PropId, Items::PropId::GIB_STRENGTH>)
+					.addProperty<int, int>("DoesImpulseFlag", &getPropId<Items::PropId, Items::PropId::DOES_IMPULSE_FLAG>)
 					// Projectile / Tracer
 					.addProperty<int, int>("ProjectileSpeed", &getPropId<Items::PropId, Items::PropId::PROJECTILE_SPEED>)
 					.addProperty<int, int>("ProjectileMaxSpeed", &getPropId<Items::PropId, Items::PropId::PROJECTILE_MAX_SPEED>)
