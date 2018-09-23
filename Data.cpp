@@ -21,6 +21,7 @@ namespace Data
 			{ R"rx(^((bxt1a|bxt-1a|bxt1-a|bxt-1a)(rifle)?)$)rx", CONST_WEAPON_ID_RIFLE_SNIPER_MKD },
 			{ R"rx(^(phase|phaserifle)$)rx", CONST_WEAPON_ID_RIFLE_PHASE },
 			{ R"rx(^(sap(20)?(rifle)?)$)rx", CONST_WEAPON_ID_SAP20 },
+			{ R"rx(^(melee|knife|sword)$)rx", CONST_WEAPON_ID_MELEE },
 			// Bullet
 			{ R"rx(^(falcon)$)rx", CONST_WEAPON_ID_PISTOL_FALCON },
 			{ R"rx(^(lightassaultrifle|lar|ar|assaultrifle|rifle)$)rx", CONST_WEAPON_ID_RIFLE_ASSAULT_LIGHT },
@@ -65,6 +66,7 @@ namespace Data
 			{ R"rx(^(improvedrepairtool|repairtool|repair)$)rx", CONST_WEAPON_ID_REPAIR_TOOL_SD },
 			{ R"rx(^(longrangerepairtool)$)rx", CONST_WEAPON_ID_REPAIR_TOOL_SD_MKD },
 			{ R"rx(^(elf(projector)?)$)rx", CONST_WEAPON_ID_ELFPROJECTOR },
+			{ R"rx(^(melee|knife|sword)$)rx", CONST_WEAPON_ID_MELEE },
 			// Bullet
 			{ R"rx(^(assaultrifle|rifle|ar)$)rx", CONST_WEAPON_ID_RIFLE_ASSAULT },
 			{ R"rx(^(gast('s)?(rifle)?)$)rx", CONST_WEAPON_ID_RIFLE_ASSAULT_MKD },
@@ -109,6 +111,7 @@ namespace Data
 			{ R"rx(^(saberlauncher|saber)$)rx", CONST_WEAPON_ID_LAUNCHER_SABER },
 			{ R"rx(^(titanlauncher|titan)$)rx", CONST_WEAPON_ID_LAUNCHER_SABER_MKD },
 			{ R"rx(^(gladiator)$)rx", CONST_WEAPON_ID_SPIKELAUNCHER },
+			{ R"rx(^(melee|knife|sword)$)rx", CONST_WEAPON_ID_MELEE },
 			// Bullet
 			{ R"rx(^(chaingun)$)rx", CONST_WEAPON_ID_CHAINGUN },
 			{ R"rx(^(chaincannon)$)rx", CONST_WEAPON_ID_CHAINGUN_MKD },
@@ -209,6 +212,7 @@ namespace Data
 	};
 
 	std::map<int, std::string> weapon_id_to_name = {
+		{ CONST_WEAPON_ID_MELEE, "Melee" },
 		{ CONST_WEAPON_ID_SPINFUSOR_LIGHT, "LightSpinfusor" },
 		{ CONST_WEAPON_ID_LAUNCHER_BOLT, "BoltLauncher" },
 		{ CONST_WEAPON_ID_SPINFUSOR_LIGHT_MKD, "LightSpinfusor_MKD" },
@@ -284,6 +288,8 @@ namespace Data
 	};
 
 	std::map<int, std::string> weapon_id_to_proj_name = {
+		{ CONST_WEAPON_ID_MELEE, "" },
+
 		// Light
 		{ CONST_WEAPON_ID_SPINFUSOR_LIGHT, "LightSpinfusor" },
 		{ CONST_WEAPON_ID_LAUNCHER_BOLT, "BoltLauncher" },
@@ -388,6 +394,7 @@ namespace Data
 	};
 
 	std::map<int, UClass*> weapon_id_to_weapon_class = {
+		{ CONST_WEAPON_ID_MELEE, ATrDevice_Melee::StaticClass() },
 		// Light
 		{ CONST_WEAPON_ID_SPINFUSOR_LIGHT, ATrDevice_LightSpinfusor::StaticClass() },
 		{ CONST_WEAPON_ID_LAUNCHER_BOLT, ATrDevice_BoltLauncher::StaticClass() },

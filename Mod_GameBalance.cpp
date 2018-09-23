@@ -62,39 +62,63 @@ static void applyPropConfig(std::map<int, UClass*>& relevantClassDefs, std::map<
 
 		// Special case for non-items, because the generated SDK can't get the default properly from the static class
 		// Have to do a search by name instead
+		
 		bool isClassCase = std::is_same<IdType, Classes::PropId>::value;
 		bool isVehicleCase = std::is_same<IdType, Vehicles::PropId>::value;
 		bool isVehicleWeaponCase = std::is_same<IdType, VehicleWeapons::PropId>::value;
-		if (isClassCase || isVehicleCase || isVehicleWeaponCase) {
+		bool isMeleeCase = std::is_same<IdType, Items::PropId>::value && elem.first == CONST_WEAPON_ID_MELEE; // Melee is special cased because it has BE and DS variants
+		if (isClassCase || isVehicleCase || isVehicleWeaponCase || isMeleeCase) {
 			std::string namePrefix;
 			std::string name;
 			if (isClassCase) {
 				namePrefix = "TrFamilyInfo";
 				auto& fiName = Data::class_id_to_name.find(elem.first);
 				name = fiName->second;
-			} else if (isVehicleCase) {
+			}
+			else if (isVehicleCase) {
 				namePrefix = "TrVehicle";
 				auto& vehName = Data::vehicle_id_to_name.find(elem.first);
 				name = vehName->second;
-			} else if (isVehicleWeaponCase) {
+			}
+			else if (isVehicleWeaponCase) {
 				namePrefix = "TrVehicleWeapon";
 				auto& wepName = Data::vehicle_weapon_id_to_name.find(elem.first);
 				name = wepName->second;
 			}
+			else if (isMeleeCase) {
+				namePrefix = "TrDevice";
+				auto& meleeName = Data::weapon_id_to_name.find(elem.first);
+				name = meleeName->second;
+			}
 
 			// Find the default object given this name
 			std::string defName = namePrefix + "_" + name + " TribesGame.Default__" + namePrefix + "_" + name;
-			if (isClassCase) {
+			if (isClassCase || isMeleeCase) {
 				// Need both BE and DS variants in this case
 				std::string beName = namePrefix + "_" + name + "_BE" + " TribesGame.Default__" + namePrefix + "_" + name + "_BE";
 				std::string dsName = namePrefix + "_" + name + "_DS" + " TribesGame.Default__" + namePrefix + "_" + name + "_DS";
-				UObject* objBE = UObject::FindObject<UTrFamilyInfo>(beName.c_str());
-				UObject* objDS = UObject::FindObject<UTrFamilyInfo>(dsName.c_str());
+				UObject* objNormal = NULL;
+				UObject* objBE = NULL;
+				UObject* objDS = NULL;
+				if (isClassCase) {
+					objBE = UObject::FindObject<UTrFamilyInfo>(beName.c_str());
+					objDS = UObject::FindObject<UTrFamilyInfo>(dsName.c_str());
+				}
+				else if (isMeleeCase) {
+					objBE = UObject::FindObject<ATrDevice>(beName.c_str());
+					objDS = UObject::FindObject<ATrDevice>(dsName.c_str());
+					objNormal = UObject::FindObject<ATrDevice>(defName.c_str());
+				}
+				
 				if (objBE && objDS) {
 					objectsToApplyOn.push_back(objBE);
 					objectsToApplyOn.push_back(objDS);
 				}
-			} else if (isVehicleCase) {
+				if (objNormal) {
+					objectsToApplyOn.push_back(objNormal);
+				}
+			}
+			else if (isVehicleCase) {
 				UObject* obj = UObject::FindObject<ATrVehicle>(defName.c_str());
 				if (obj) objectsToApplyOn.push_back(obj);
 			}
@@ -284,6 +308,8 @@ namespace LuaAPI {
 					.addProperty<int, int>("GibImpulseRadius", &getPropId<Items::PropId, Items::PropId::GIB_IMPULSE_RADIUS>)
 					.addProperty<int, int>("GibStrength", &getPropId<Items::PropId, Items::PropId::GIB_STRENGTH>)
 					.addProperty<int, int>("DoesImpulseFlag", &getPropId<Items::PropId, Items::PropId::DOES_IMPULSE_FLAG>)
+					.addProperty<int, int>("MeleeDamageRadius", &getPropId<Items::PropId, Items::PropId::MELEE_DAMAGE_RADIUS>)
+					.addProperty<int, int>("MeleeConeAngle", &getPropId<Items::PropId, Items::PropId::MELEE_CONE_ANGLE>)
 					// Projectile / Tracer
 					.addProperty<int, int>("ProjectileSpeed", &getPropId<Items::PropId, Items::PropId::PROJECTILE_SPEED>)
 					.addProperty<int, int>("ProjectileMaxSpeed", &getPropId<Items::PropId, Items::PropId::PROJECTILE_MAX_SPEED>)
