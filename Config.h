@@ -93,7 +93,10 @@ struct ServerSettings {
 	std::set<int> disabledEquipPointsHeavy;
 
 	GameBalance::Items::ItemsConfig weaponProperties;
-	void ApplyWeaponProperties();
+	GameBalance::Classes::ClassesConfig classProperties;
+	GameBalance::Vehicles::VehiclesConfig vehicleProperties;
+	GameBalance::VehicleWeapons::VehicleWeaponsConfig vehicleWeaponProperties;
+	void ApplyGameBalanceProperties();
 
 	void ApplyAsDefaults();
 	void ApplyToGame(ATrServerSettingsInfo* s);

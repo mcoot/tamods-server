@@ -2,6 +2,7 @@
 
 #include "buildconfig.h"
 
+#include <string>
 #include <functional>
 #include <map>
 
@@ -17,6 +18,8 @@ namespace GameBalance {
 		FLOAT,
 		STRING
 	};
+
+	std::string getValueTypeName(ValueType t);
 
 	// Tagged union for possible types of a property
 	class PropValue {
@@ -153,7 +156,7 @@ namespace GameBalance {
 
 		};
 
-		// Actual weapon properties
+		// Item property definitions
 		extern std::map<PropId, Property> properties;
 
 		typedef std::map<PropId, PropValue> PropMapping;
@@ -204,8 +207,11 @@ namespace GameBalance {
 
 		};
 
+		extern std::map<PropId, Property> properties;
+
 		typedef std::map<PropId, PropValue> PropMapping;
 		typedef std::map<int, PropMapping> ClassesConfig;
+
 	}
 
 	namespace Vehicles {
@@ -246,6 +252,8 @@ namespace GameBalance {
 			RAM_FLAG_PUSH_SPEED = 4006,
 
 		};
+
+		extern std::map<PropId, Property> properties;
 
 		typedef std::map<PropId, PropValue> PropMapping;
 		typedef std::map<int, PropMapping> VehiclesConfig;
@@ -295,6 +303,8 @@ namespace GameBalance {
 			ACCURACY_LOSS_MAX = 5004,
 			ACCURACY_CORRECTION_RATE = 5005,
 		};
+
+		extern std::map<PropId, Property> properties;
 
 		typedef std::map<PropId, PropValue> PropMapping;
 		typedef std::map<int, PropMapping> VehicleWeaponsConfig;
