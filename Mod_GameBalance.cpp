@@ -150,7 +150,9 @@ static void applyPropConfig(std::map<int, UClass*>& relevantClassDefs, std::map<
 			}
 
 			for (auto& obj : objectsToApplyOn) {
-				it->second.apply(prop.second, obj);
+				if (!it->second.apply(prop.second, obj)) {
+					Logger::error("Setting property id %d failed on %d", prop.first, elem.first);
+				}
 			}
 		}
 	}
@@ -161,6 +163,42 @@ void ServerSettings::ApplyGameBalanceProperties() {
 	applyPropConfig(Data::class_id_to_class, Classes::properties, UTrFamilyInfo::StaticClass(), classProperties);
 	applyPropConfig(Data::vehicle_id_to_class, Vehicles::properties, ATrVehicle::StaticClass(), vehicleProperties);
 	applyPropConfig(Data::vehicle_weapon_id_to_class, VehicleWeapons::properties, ATrVehicleWeapon::StaticClass(), vehicleWeaponProperties);
+}
+
+template <typename IdType>
+static LuaRef getProp(std::map<int, UClass*>& relevantClassDefs, std::map<IdType, Property>& propDefs, UClass* requiredSuperClass, int elemId, int intPropId) {
+	auto& elem_it = relevantClassDefs.find(elemId);
+	if (elem_it == relevantClassDefs.end()) {
+		Logger::error("Unable to get property; invalid id %d", elemId);
+		// Return nil Lua value
+		return LuaRef(g_config.lua.getState());
+	}
+
+	if (!elem_it->second || !elem_it->second->Default || !elem_it->second->Default->IsA(requiredSuperClass)) {
+		Logger::error("Unable to get property; failed to get default object for id %d", elemId);
+		return LuaRef(g_config.lua.getState());
+	}
+
+	auto& it = propDefs.find((IdType)intPropId);
+	if (it == propDefs.end()) {
+		// Non-existent property, fail
+		Logger::error("Unable to get property; invalid property id %d", intPropId);
+		return LuaRef(g_config.lua.getState());
+	}
+	GameBalance::PropValue val;
+	if (!it->second.get(elem_it->second->Default, val)) {
+		// Failed get
+		Logger::error("Unable to get property with id %d", intPropId);
+		return LuaRef(g_config.lua.getState());
+	}
+
+	return val.getAsLuaRef(g_config.lua.getState());
+}
+
+static LuaRef getWeaponProp(std::string className, std::string itemName, int intPropId) {
+	int itemId = Data::getItemId(className, itemName);
+
+	return getProp(Data::weapon_id_to_weapon_class, Items::properties, ATrDevice::StaticClass(), itemId, intPropId);
 }
 
 static bool getPropValFromLua(ValueType expectedType, LuaRef val, PropValue& ret) {
@@ -194,6 +232,8 @@ static bool getPropValFromLua(ValueType expectedType, LuaRef val, PropValue& ret
 
 	return true;
 }
+
+
 
 template <typename IdType>
 static void setProp(std::map<IdType, Property>& propDefs, std::map<int, std::map<IdType, PropValue> >& props, int elemId, int intPropId, LuaRef val) {
@@ -271,6 +311,7 @@ namespace LuaAPI {
 		ns
 			.beginNamespace("Items")
 				.addFunction("setProperty", &setWeaponProp)
+				.addFunction("getProperty", &getWeaponProp)
 				.beginNamespace("Properties")
 					.addProperty<int, int>("Invalid", &getPropId<Items::PropId, Items::PropId::INVALID>)
 					// Ammo
@@ -322,6 +363,9 @@ namespace LuaAPI {
 					.addProperty<int, int>("ProjectileMeshScale", &getPropId<Items::PropId, Items::PropId::PROJECTILE_MESH_SCALE>)
 					.addProperty<int, int>("ProjectileLightRadius", &getPropId<Items::PropId, Items::PropId::PROJECTILE_LIGHT_RADIUS>)
 					.addProperty<int, int>("HitscanRange", &getPropId<Items::PropId, Items::PropId::HITSCAN_RANGE>)
+					.addProperty<int, int>("FireOffsetX", &getPropId<Items::PropId, Items::PropId::FIRE_OFFSET_X>)
+					.addProperty<int, int>("FireOffsetY", &getPropId<Items::PropId, Items::PropId::FIRE_OFFSET_Y>)
+					.addProperty<int, int>("FireOffsetZ", &getPropId<Items::PropId, Items::PropId::FIRE_OFFSET_Z>)
 					// Accuracy
 					.addProperty<int, int>("Accuracy", &getPropId<Items::PropId, Items::PropId::ACCURACY>)
 					.addProperty<int, int>("AccuracyLossOnShot", &getPropId<Items::PropId, Items::PropId::ACCURACY_LOSS_ON_SHOT>)
@@ -334,13 +378,49 @@ namespace LuaAPI {
 			.beginNamespace("Classes")
 				.addFunction("setProperty", &setClassProp)
 				.beginNamespace("Properties")
+					// Base stats
 					.addProperty<int, int>("HealthPool", &getPropId<Classes::PropId, Classes::PropId::HEALTH_POOL>)
+					.addProperty<int, int>("EnergyPool", &getPropId<Classes::PropId, Classes::PropId::ENERGY_POOL>)
+					.addProperty<int, int>("EnergyRechargeRate", &getPropId<Classes::PropId, Classes::PropId::ENERGY_RECHARGE_RATE>)
+					.addProperty<int, int>("InitialJetEnergyCost", &getPropId<Classes::PropId, Classes::PropId::INITIAL_JET_ENERGY_COST>)
+					.addProperty<int, int>("JetEnergyCost", &getPropId<Classes::PropId, Classes::PropId::JET_ENERGY_COST>)
+					.addProperty<int, int>("RegenTime", &getPropId<Classes::PropId, Classes::PropId::REGEN_TIME>)
+					.addProperty<int, int>("RegenRate", &getPropId<Classes::PropId, Classes::PropId::REGEN_RATE>)
+					.addProperty<int, int>("LowHealthThreshold", &getPropId<Classes::PropId, Classes::PropId::LOW_HEALTH_THRESHOLD>)
+					// Movement / Skiing
+					.addProperty<int, int>("Mass", &getPropId<Classes::PropId, Classes::PropId::MASS>)
+					.addProperty<int, int>("GroundSpeed", &getPropId<Classes::PropId, Classes::PropId::GROUND_SPEED>)
+					.addProperty<int, int>("MaxSkiingSpeed", &getPropId<Classes::PropId, Classes::PropId::MAX_SKIING_SPEED>)
+					.addProperty<int, int>("MaxSkiControl", &getPropId<Classes::PropId, Classes::PropId::MAX_SKI_CONTROL>)
+					.addProperty<int, int>("SkiControlPeakSpeed", &getPropId<Classes::PropId, Classes::PropId::SKI_CONTROL_PEAK_SPEED>)
+					.addProperty<int, int>("SkiControlVariance", &getPropId<Classes::PropId, Classes::PropId::SKI_CONTROL_VARIANCE>)
+					.addProperty<int, int>("SkiSlopeGravity", &getPropId<Classes::PropId, Classes::PropId::SKI_SLOPE_GRAVITY>)
+					.addProperty<int, int>("VehicleSpeedInheritence", &getPropId<Classes::PropId, Classes::PropId::VEHICLE_SPEED_INHERITENCE>)
+					.addProperty<int, int>("MomentumDampeningEnabled", &getPropId<Classes::PropId, Classes::PropId::MOMENTUM_DAMPENING_ENABLED>)
+					.addProperty<int, int>("MomentumDampeningThreshold", &getPropId<Classes::PropId, Classes::PropId::MOMENTUM_DAMPENING_THRESHOLD>)
+					.addProperty<int, int>("MomentumDampeningProportion", &getPropId<Classes::PropId, Classes::PropId::MOMENTUM_DAMPENING_PROPORTION>)
+					// Jetting / Air Control
+					.addProperty<int, int>("MaxJettingSpeed", &getPropId<Classes::PropId, Classes::PropId::MAX_JETTING_SPEED>)
+					.addProperty<int, int>("JetAcceleration", &getPropId<Classes::PropId, Classes::PropId::JET_ACCELERATION>)
+					.addProperty<int, int>("InitialJetAccelerationMultiplier", &getPropId<Classes::PropId, Classes::PropId::INITIAL_JET_ACCELERATION_MULTIPLIER>)
+					.addProperty<int, int>("InitialJetLength", &getPropId<Classes::PropId, Classes::PropId::INITIAL_JET_LENGTH>)
+					.addProperty<int, int>("ForwardJetProportion", &getPropId<Classes::PropId, Classes::PropId::FORWARD_JET_PROPORTION>)
+					.addProperty<int, int>("JetBoostMaxGroundSpeed", &getPropId<Classes::PropId, Classes::PropId::JET_BOOST_MAX_GROUND_SPEED>)
+					.addProperty<int, int>("AirSpeed", &getPropId<Classes::PropId, Classes::PropId::AIR_SPEED>)
+					.addProperty<int, int>("AirControl", &getPropId<Classes::PropId, Classes::PropId::AIR_CONTROL>)
+					.addProperty<int, int>("AirControlMinMultiplier", &getPropId<Classes::PropId, Classes::PropId::AIR_CONTROL_MIN_MULTIPLIER>)
+					.addProperty<int, int>("AirControlReductionRangeMax", &getPropId<Classes::PropId, Classes::PropId::AIR_CONTROL_REDUCTION_RANGE_MAX>)
+					.addProperty<int, int>("AirControlReductionRangeMin", &getPropId<Classes::PropId, Classes::PropId::AIR_CONTROL_REDUCTION_RANGE_MIN>)
+					// Collision
+					.addProperty<int, int>("CollisionCylinderRadius", &getPropId<Classes::PropId, Classes::PropId::COLLISION_CYLINDER_RADIUS>)
+					.addProperty<int, int>("CollisionCylinderHeight", &getPropId<Classes::PropId, Classes::PropId::COLLISION_CYLINDER_HEIGHT>)
 				.endNamespace()
 			.endNamespace()
 			.beginNamespace("Vehicles")
 				.addFunction("setProperty", &setVehicleProp)
 				.beginNamespace("Properties")
 					.addProperty<int, int>("HealthPool", &getPropId<Vehicles::PropId, Vehicles::PropId::HEALTH_POOL>)
+					.addProperty<int, int>("EnergyPool", &getPropId<Vehicles::PropId, Vehicles::PropId::ENERGY_POOL>)
 				.endNamespace()
 			.endNamespace()
 			.beginNamespace("VehicleWeapons")
