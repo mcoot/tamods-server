@@ -419,14 +419,58 @@ namespace LuaAPI {
 			.beginNamespace("Vehicles")
 				.addFunction("setProperty", &setVehicleProp)
 				.beginNamespace("Properties")
+					// Base Stats
 					.addProperty<int, int>("HealthPool", &getPropId<Vehicles::PropId, Vehicles::PropId::HEALTH_POOL>)
 					.addProperty<int, int>("EnergyPool", &getPropId<Vehicles::PropId, Vehicles::PropId::ENERGY_POOL>)
+					.addProperty<int, int>("EnergyRechargeRate", &getPropId<Vehicles::PropId, Vehicles::PropId::ENERGY_RECHARGE_RATE>)
+					.addProperty<int, int>("IsArmored", &getPropId<Vehicles::PropId, Vehicles::PropId::IS_ARMORED>)
+					.addProperty<int, int>("IsArmoured", &getPropId<Vehicles::PropId, Vehicles::PropId::IS_ARMORED>)
+					.addProperty<int, int>("IsHomingTarget", &getPropId<Vehicles::PropId, Vehicles::PropId::IS_HOMING_TARGET>)
+					.addProperty<int, int>("CanCarryFlagAsPilot", &getPropId<Vehicles::PropId, Vehicles::PropId::CAN_CARRY_FLAG_AS_PILOT>)
+					.addProperty<int, int>("CanCarryFlagAsPassenger", &getPropId<Vehicles::PropId, Vehicles::PropId::CAN_CARRY_FLAG_AS_PASSENGER>)
+					.addProperty<int, int>("TimeBeforeSelfDestruct", &getPropId<Vehicles::PropId, Vehicles::PropId::TIME_BEFORE_SELFDESTRUCT>)
+					// Movement
+					.addProperty<int, int>("MaxSpeed", &getPropId<Vehicles::PropId, Vehicles::PropId::MAX_SPEED>)
+					.addProperty<int, int>("MaxDivingSpeedMultiplier", &getPropId<Vehicles::PropId, Vehicles::PropId::MAX_DIVING_SPEED_MULTIPLIER>)
+					.addProperty<int, int>("BoostMultiplier", &getPropId<Vehicles::PropId, Vehicles::PropId::BOOST_MULTIPLIER>)
+					.addProperty<int, int>("BoostEnergyCost", &getPropId<Vehicles::PropId, Vehicles::PropId::BOOST_ENERGY_COST>)
+					.addProperty<int, int>("BoostMinUsableProportion", &getPropId<Vehicles::PropId, Vehicles::PropId::BOOST_MIN_USABLE_PROPORTION>)
+					.addProperty<int, int>("MaxPlayerExitSpeed", &getPropId<Vehicles::PropId, Vehicles::PropId::MAX_PLAYER_EXIT_SPEED>)
+					.addProperty<int, int>("GravityScale", &getPropId<Vehicles::PropId, Vehicles::PropId::GRAVITY_SCALE>)
+					// Self-Damage
+					.addProperty<int, int>("MaxCrashDamage", &getPropId<Vehicles::PropId, Vehicles::PropId::MAX_CRASH_DAMAGE>)
+					.addProperty<int, int>("MinCrashDamage", &getPropId<Vehicles::PropId, Vehicles::PropId::MIN_CRASH_DAMAGE>)
+					.addProperty<int, int>("MaxCrashDamageSpeed", &getPropId<Vehicles::PropId, Vehicles::PropId::MAX_CRASH_DAMAGE_SPEED>)
+					.addProperty<int, int>("MinCrashDamageSpeed", &getPropId<Vehicles::PropId, Vehicles::PropId::MIN_CRASH_DAMAGE_SPEED>)
+					.addProperty<int, int>("MaxVehicleCrashDamage", &getPropId<Vehicles::PropId, Vehicles::PropId::MAX_VEHICLE_CRASH_DAMAGE>)
+					.addProperty<int, int>("MinVehicleCrashDamage", &getPropId<Vehicles::PropId, Vehicles::PropId::MIN_VEHICLE_CRASH_DAMAGE>)
+					.addProperty<int, int>("MaxVehicleCrashDamageSpeed", &getPropId<Vehicles::PropId, Vehicles::PropId::MAX_VEHICLE_CRASH_DAMAGE_SPEED>)
+					.addProperty<int, int>("MinVehicleCrashDamageSpeed", &getPropId<Vehicles::PropId, Vehicles::PropId::MIN_VEHICLE_CRASH_DAMAGE_SPEED>)
+					// Ramming
+					.addProperty<int, int>("RamMinSpeed", &getPropId<Vehicles::PropId, Vehicles::PropId::RAM_MIN_SPEED>)
+					.addProperty<int, int>("RamMaxDamage", &getPropId<Vehicles::PropId, Vehicles::PropId::RAM_MAX_DAMAGE>)
+					.addProperty<int, int>("RamMinDamage", &getPropId<Vehicles::PropId, Vehicles::PropId::RAM_MIN_DAMAGE>)
+					.addProperty<int, int>("RamMaxDamageSpeed", &getPropId<Vehicles::PropId, Vehicles::PropId::RAM_MAX_DAMAGE_SPEED>)
+					.addProperty<int, int>("RamPlayerPushSpeed", &getPropId<Vehicles::PropId, Vehicles::PropId::RAM_PLAYER_PUSH_SPEED>)
+					.addProperty<int, int>("RamFlagPushSpeed", &getPropId<Vehicles::PropId, Vehicles::PropId::RAM_FLAG_PUSH_SPEED>)
 				.endNamespace()
 			.endNamespace()
 			.beginNamespace("VehicleWeapons")
 				.addFunction("setProperty", &setVehicleWeaponProp)
 				.beginNamespace("Properties")
+					// Ammo
 					.addProperty<int, int>("ClipAmmo", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::CLIP_AMMO>)
+					.addProperty<int, int>("SpareAmmo", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::SPARE_AMMO>)
+					.addProperty<int, int>("AmmoPerShot", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::AMMO_PER_SHOT>)
+					// Reload / Firing
+					.addProperty<int, int>("ReloadTime", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::RELOAD_TIME>)
+					.addProperty<int, int>("FireInterval", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::FIRE_INTERVAL>)
+					.addProperty<int, int>("ReloadSingle", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::RELOAD_SINGLE>)
+					.addProperty<int, int>("ReloadApplicationProportion", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::RELOAD_APPLICATION_PROPORTION>)
+					.addProperty<int, int>("BurstShotCount", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::BURST_SHOT_COUNT>)
+					// Damage / Impact
+					// Projectile
+					// Accuracy
 				.endNamespace()
 			.endNamespace()
 			;
