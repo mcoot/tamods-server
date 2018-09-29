@@ -341,7 +341,7 @@ namespace LuaAPI {
 					.addProperty<int, int>("DamageAgainstArmorMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_ARMOR_MULTIPLIER>)
 					.addProperty<int, int>("DamageAgainstGeneratorMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_GENERATOR_MULTIPLIER>)
 					.addProperty<int, int>("DamageAgainstBaseTurretMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_BASE_TURRET_MULTIPLIER>)
-					.addProperty<int, int>("DamageAgainstObjectiveMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_BASE_SENSOR_MULTIPLIER>)
+					.addProperty<int, int>("DamageAgainstBaseSensorMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_BASE_SENSOR_MULTIPLIER>)
 					.addProperty<int, int>("DamageAgainstGravCycleMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_GRAVCYCLE_MULTIPLIER>)
 					.addProperty<int, int>("DamageAgainstBeowulfMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_BEOWULF_MULTIPLIER>)
 					.addProperty<int, int>("DamageAgainstShrikeMultiplier", &getPropId<Items::PropId, Items::PropId::DAMAGE_AGAINST_SHRIKE_MULTIPLIER>)
