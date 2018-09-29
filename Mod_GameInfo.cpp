@@ -25,6 +25,22 @@ static void updateMatchTime(bool counting) {
 }
 
 void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bool* result, Hooks::CallInfo* callInfo) {
+	// Perform authorization if we aren't allowing unmodded clients
+	// Don't need to authorize to join spec
+	if (params->RequestedTeamNum != 255 && g_config.connectToClients && !g_config.allowUnmoddedClients) {
+		if (!params->C || !params->C->PlayerReplicationInfo) {
+			// Failed to get PRI, don't allow
+			Logger::error("Blocked a player from joininga team, unable to get their PRI");
+			return;
+		}
+
+		if (!g_DCServer.isPlayerAKnownModdedConnection(params->C->PlayerReplicationInfo->UniqueId)) {
+			// Player hasn't connected to the server, don't allow
+			Logger::warn("Player with ID %d was blocked from joining a team as they are not a known connection");
+			return;
+		}
+	}
+
 	*result = that->RequestTeam(params->RequestedTeamNum, params->C);
 	Logger::debug("Requesting team from PRI %d", params->C->PlayerReplicationInfo);
 	if (!*result) return;

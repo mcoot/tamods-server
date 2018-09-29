@@ -4,6 +4,15 @@ DCServer::Server g_DCServer;
 
 namespace DCServer {
 
+	bool Server::isPlayerAKnownModdedConnection(FUniqueNetId playerId) {
+		long long lpid = TAServer::netIdToLong(playerId);
+		{
+			std::lock_guard<std::mutex> lock(knownPlayerConnectionsMutex);
+			auto& it = knownPlayerConnections.find(lpid);
+			return it != knownPlayerConnections.end();
+		}
+	}
+
 	void Server::start(short port) {
 		TCP::Server<uint32_t>::AcceptHandler acceptHandler = [this](ConnectionPtr& conn) {
 			handler_acceptConnection(conn);
@@ -17,7 +26,6 @@ namespace DCServer {
 
 			ios.run();
 		});
-		
 	}
 
 	void Server::applyHandlersToConnection(std::shared_ptr<PlayerConnection> pconn) {
