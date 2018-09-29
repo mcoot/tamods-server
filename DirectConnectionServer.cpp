@@ -55,10 +55,12 @@ namespace DCServer {
 		std::lock_guard<std::mutex> lock(pendingConnectionsMutex);
 		pconn->playerId = uniquePendingId++;
 		pendingConnections.push_back(conn);
+
+		Logger::info("Accepted new unvalidated connection, with temporary ID %ld", pconn->playerId);
 	}
 
 	void Server::handler_stopConnection(std::shared_ptr<PlayerConnection> pconn, boost::system::error_code& err) {
-		Logger::debug("[Connection Stopped with code %d]", pconn->conn->get_error_state().value());
+		Logger::info("[Connection for Pid %ld Stopped with code %d]", pconn->playerId, pconn->conn->get_error_state().value());
 
 		// Delete from pending connections if there
 		{
@@ -111,6 +113,8 @@ namespace DCServer {
 			knownPlayerConnections[pconn->playerId] = pconn;
 		}
 		pconn->validated = true;
+
+		Logger::info("Successfully validated new connection from player %ld", pconn->playerId);
 
 		return true;
 	}

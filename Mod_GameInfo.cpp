@@ -30,7 +30,7 @@ void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bo
 	if (params->RequestedTeamNum != 255 && g_config.connectToClients && !g_config.allowUnmoddedClients) {
 		if (!params->C || !params->C->PlayerReplicationInfo) {
 			// Failed to get PRI, don't allow
-			Logger::error("Blocked a player from joininga team, unable to get their PRI");
+			Logger::error("Blocked a player from joining a team, unable to get their PRI");
 			return;
 		}
 
@@ -42,7 +42,9 @@ void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bo
 	}
 
 	*result = that->RequestTeam(params->RequestedTeamNum, params->C);
-	Logger::debug("Requesting team from PRI %d", params->C->PlayerReplicationInfo);
+	if (params->C->PlayerReplicationInfo) {
+		Logger::debug("Requesting team from PlayerID %d", params->C->PlayerReplicationInfo->UniqueId);
+	}
 	if (!*result) return;
 
 	if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {
