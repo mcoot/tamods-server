@@ -347,6 +347,8 @@ namespace LuaAPI {
 					.addProperty<int, int>("CanZoom", &getPropId<Items::PropId, Items::PropId::CAN_ZOOM>)
 					.addProperty<int, int>("ReloadSingle", &getPropId<Items::PropId, Items::PropId::RELOAD_SINGLE>)
 					.addProperty<int, int>("ReloadApplicationProportion", &getPropId<Items::PropId, Items::PropId::RELOAD_APPLICATION_PROPORTION>)
+					.addProperty<int, int>("BurstShotCount", &getPropId<Items::PropId, Items::PropId::BURST_SHOT_COUNT>)
+					.addProperty<int, int>("BurstShotRefireTime", &getPropId<Items::PropId, Items::PropId::BURST_SHOT_REFIRE_TIME>)
 					// Damage / Impact
 					.addProperty<int, int>("Damage", &getPropId<Items::PropId, Items::PropId::DAMAGE>)
 					.addProperty<int, int>("ExplosiveRadius", &getPropId<Items::PropId, Items::PropId::EXPLOSIVE_RADIUS>)
