@@ -119,9 +119,19 @@ namespace DCServer {
 		return true;
 	}
 
-	void Server::sendGameBalanceDetailsMessage(std::shared_ptr<PlayerConnection> pconn, const GameBalance::Items::ItemsConfig& itemProperties) {
+	void Server::sendGameBalanceDetailsMessage(std::shared_ptr<PlayerConnection> pconn,
+		const GameBalance::Items::ItemsConfig& itemProperties,
+		const GameBalance::Classes::ClassesConfig& classProperties,
+		const GameBalance::Vehicles::VehiclesConfig& vehicleProperties,
+		const GameBalance::VehicleWeapons::VehicleWeaponsConfig& vehicleWeaponProperties
+	) 
+	{
 		GameBalanceDetailsMessage msg;
 		msg.itemProperties = itemProperties;
+		msg.classProperties = classProperties;
+		msg.vehicleProperties = vehicleProperties;
+		msg.vehicleWeaponProperties = vehicleWeaponProperties;
+
 
 		json j;
 		msg.toJson(j);

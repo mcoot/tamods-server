@@ -45,7 +45,12 @@ namespace DCServer {
 		}
 
 		// Send the player the current balance state
-		sendGameBalanceDetailsMessage(pconn, g_config.serverSettings.weaponProperties);
+		sendGameBalanceDetailsMessage(pconn, 
+			g_config.serverSettings.weaponProperties,
+			g_config.serverSettings.classProperties,
+			g_config.serverSettings.vehicleProperties,
+			g_config.serverSettings.vehicleWeaponProperties
+		);
 	}
 }
 

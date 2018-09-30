@@ -63,7 +63,12 @@ namespace DCServer {
 
 		void start(short port);
 
-		void sendGameBalanceDetailsMessage(std::shared_ptr<PlayerConnection> pconn, const GameBalance::Items::ItemsConfig& itemProperties);
+		void sendGameBalanceDetailsMessage(std::shared_ptr<PlayerConnection> pconn, 
+			const GameBalance::Items::ItemsConfig& itemProperties,
+			const GameBalance::Classes::ClassesConfig& classProperties,
+			const GameBalance::Vehicles::VehiclesConfig& vehicleProperties,
+			const GameBalance::VehicleWeapons::VehicleWeaponsConfig& vehicleWeaponProperties
+		);
 
 		bool isPlayerAKnownModdedConnection(FUniqueNetId playerId);
 	};
