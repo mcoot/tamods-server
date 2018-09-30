@@ -49,96 +49,85 @@ namespace DCServer {
 	}
 }
 
+template <typename BaseClass>
+static std::vector<UObject*> getDefaultObjects(std::map<int, std::string>& relevantClassNames, std::string prefix, std::vector<std::string> variants, int elemId) {
+	auto& name_it = relevantClassNames.find(elemId);
+	if (name_it == relevantClassNames.end()) return std::vector<UObject*>();
+
+	std::string name = name_it->second;
+
+	std::vector<std::string> toFind;
+	if (variants.empty()) {
+		toFind.push_back(prefix + "_" + name + " TribesGame.Default__" + prefix + "_" + name);
+	} else {
+		for (auto& v : variants) {
+			toFind.push_back(prefix + "_" + name + (v.empty() ? "" : "_") + v + " TribesGame.Default__" + prefix + "_" + name + (v.empty() ? "" : "_") + v);
+		}
+	}
+
+	std::vector<UObject*> found;
+
+	for (auto& n : toFind) {
+		UObject* obj = UObject::FindObject<BaseClass>(n.c_str());
+		//Logger::debug("Fetch for object %s; result: %d", n.c_str(), obj);
+		if (obj) {
+			found.push_back(obj);
+		}
+	}
+
+	return found;
+}
+
 template <typename IdType>
-static void applyPropConfig(std::map<int, UClass*>& relevantClassDefs, std::map<IdType, Property>& propDefs, UClass* requiredSuperClass, std::map<int, std::map<IdType, PropValue> >& props) {
+static std::vector<UObject*> getDefaultObjectsForProps(int elemId) {
+	bool isItemsCase = std::is_same<IdType, Items::PropId>::value;
+	bool isMeleeCase = isItemsCase && elemId == CONST_WEAPON_ID_MELEE; // Melee is special cased because it has BE and DS variants
+	bool isClassCase = std::is_same<IdType, Classes::PropId>::value;
+	bool isVehicleCase = std::is_same<IdType, Vehicles::PropId>::value;
+	bool isVehicleWeaponCase = std::is_same<IdType, VehicleWeapons::PropId>::value;
+	
+	std::string prefix;
+	std::vector<std::string> variants;
+	std::map<int, std::string> relevantClassNames;
+	if (isItemsCase) {
+		prefix = "TrDevice";
+		relevantClassNames = Data::item_id_to_name;
+		if (isMeleeCase) {
+			variants.push_back("");
+			variants.push_back("BE");
+			variants.push_back("DS");
+		}
+		return getDefaultObjects<ATrDevice>(relevantClassNames, prefix, variants, elemId);
+	}
+	else if (isClassCase) {
+		prefix = "TrFamilyInfo";
+		relevantClassNames = Data::class_id_to_name;
+		variants.push_back("");
+		variants.push_back("BE");
+		variants.push_back("DS");
+		return getDefaultObjects<UTrFamilyInfo>(relevantClassNames, prefix, variants, elemId);
+	}
+	else if (isVehicleCase) {
+		prefix = "TrVehicle";
+		relevantClassNames = Data::vehicle_id_to_name;
+		return getDefaultObjects<ATrVehicle>(relevantClassNames, prefix, variants, elemId);
+	}
+	else if (isVehicleWeaponCase) {
+		prefix = "TrVehicleWeapon";
+		relevantClassNames = Data::vehicle_weapon_id_to_name;
+		return getDefaultObjects<ATrVehicleWeapon>(relevantClassNames, prefix, variants, elemId);
+	}
+
+	return std::vector<UObject*>();
+}
+
+template <typename IdType>
+static void applyPropConfig(std::map<IdType, Property>& propDefs, std::map<int, std::map<IdType, PropValue> >& props) {
 	for (auto& elem : props) {
-		auto& elem_it = relevantClassDefs.find(elem.first);
-		if (elem_it == relevantClassDefs.end()) {
-			Logger::error("Unable to set property; invalid id %d", elem.first);
-			continue;
-		}
-
-		std::vector<UObject*> objectsToApplyOn;
-
-		// Special case for non-items, because the generated SDK can't get the default properly from the static class
-		// Have to do a search by name instead
-		
-		bool isClassCase = std::is_same<IdType, Classes::PropId>::value;
-		bool isVehicleCase = std::is_same<IdType, Vehicles::PropId>::value;
-		bool isVehicleWeaponCase = std::is_same<IdType, VehicleWeapons::PropId>::value;
-		bool isMeleeCase = std::is_same<IdType, Items::PropId>::value && elem.first == CONST_WEAPON_ID_MELEE; // Melee is special cased because it has BE and DS variants
-		if (isClassCase || isVehicleCase || isVehicleWeaponCase || isMeleeCase) {
-			std::string namePrefix;
-			std::string name;
-			if (isClassCase) {
-				namePrefix = "TrFamilyInfo";
-				auto& fiName = Data::class_id_to_name.find(elem.first);
-				name = fiName->second;
-			}
-			else if (isVehicleCase) {
-				namePrefix = "TrVehicle";
-				auto& vehName = Data::vehicle_id_to_name.find(elem.first);
-				name = vehName->second;
-			}
-			else if (isVehicleWeaponCase) {
-				namePrefix = "TrVehicleWeapon";
-				auto& wepName = Data::vehicle_weapon_id_to_name.find(elem.first);
-				name = wepName->second;
-			}
-			else if (isMeleeCase) {
-				namePrefix = "TrDevice";
-				auto& meleeName = Data::weapon_id_to_name.find(elem.first);
-				name = meleeName->second;
-			}
-
-			// Find the default object given this name
-			std::string defName = namePrefix + "_" + name + " TribesGame.Default__" + namePrefix + "_" + name;
-			if (isClassCase || isMeleeCase) {
-				// Need both BE and DS variants in this case
-				std::string beName = namePrefix + "_" + name + "_BE" + " TribesGame.Default__" + namePrefix + "_" + name + "_BE";
-				std::string dsName = namePrefix + "_" + name + "_DS" + " TribesGame.Default__" + namePrefix + "_" + name + "_DS";
-				UObject* objNormal = NULL;
-				UObject* objBE = NULL;
-				UObject* objDS = NULL;
-				if (isClassCase) {
-					objBE = UObject::FindObject<UTrFamilyInfo>(beName.c_str());
-					objDS = UObject::FindObject<UTrFamilyInfo>(dsName.c_str());
-				}
-				else if (isMeleeCase) {
-					objBE = UObject::FindObject<ATrDevice>(beName.c_str());
-					objDS = UObject::FindObject<ATrDevice>(dsName.c_str());
-					objNormal = UObject::FindObject<ATrDevice>(defName.c_str());
-				}
-				
-				if (objBE && objDS) {
-					objectsToApplyOn.push_back(objBE);
-					objectsToApplyOn.push_back(objDS);
-				}
-				if (objNormal) {
-					objectsToApplyOn.push_back(objNormal);
-				}
-			}
-			else if (isVehicleCase) {
-				UObject* obj = UObject::FindObject<ATrVehicle>(defName.c_str());
-				if (obj) objectsToApplyOn.push_back(obj);
-			}
-			else if (isVehicleWeaponCase) {
-				UObject* obj = UObject::FindObject<ATrVehicleWeapon>(defName.c_str());
-				if (obj) objectsToApplyOn.push_back(obj);
-			}
-			
-			if (objectsToApplyOn.empty()) {
-				Logger::error("Unable to set property; failed to get default object for id %d", elem.first);
-				continue;
-			}
-		}
-
+		// Get the default objects to apply to
+		std::vector<UObject*> objectsToApplyOn = getDefaultObjectsForProps<IdType>(elem.first);
 		if (objectsToApplyOn.empty()) {
-			if (!elem_it->second || !elem_it->second->Default || !elem_it->second->Default->IsA(requiredSuperClass)) {
-				Logger::error("Unable to set property; failed to get default object for id %d", elem.first);
-				continue;
-			}
-			objectsToApplyOn.push_back(elem_it->second->Default);
+			Logger::error("Unable to set properties; failed to get a default object for id %d", elem.first);
 		}
 
 		for (auto& prop : elem.second) {
@@ -159,25 +148,22 @@ static void applyPropConfig(std::map<int, UClass*>& relevantClassDefs, std::map<
 }
 
 void ServerSettings::ApplyGameBalanceProperties() {
-	applyPropConfig(Data::weapon_id_to_weapon_class, Items::properties, ATrDevice::StaticClass(), weaponProperties);
-	applyPropConfig(Data::class_id_to_class, Classes::properties, UTrFamilyInfo::StaticClass(), classProperties);
-	applyPropConfig(Data::vehicle_id_to_class, Vehicles::properties, ATrVehicle::StaticClass(), vehicleProperties);
-	applyPropConfig(Data::vehicle_weapon_id_to_class, VehicleWeapons::properties, ATrVehicleWeapon::StaticClass(), vehicleWeaponProperties);
+	applyPropConfig(Items::properties, weaponProperties);
+	applyPropConfig(Classes::properties, classProperties);
+	applyPropConfig(Vehicles::properties,vehicleProperties);
+	applyPropConfig(VehicleWeapons::properties, vehicleWeaponProperties);
 }
 
 template <typename IdType>
-static LuaRef getProp(std::map<int, UClass*>& relevantClassDefs, std::map<IdType, Property>& propDefs, UClass* requiredSuperClass, int elemId, int intPropId) {
-	auto& elem_it = relevantClassDefs.find(elemId);
-	if (elem_it == relevantClassDefs.end()) {
-		Logger::error("Unable to get property; invalid id %d", elemId);
-		// Return nil Lua value
+static LuaRef getProp(std::map<IdType, Property>& propDefs, int elemId, int intPropId) {
+	std::vector<UObject*> defObjs = getDefaultObjectsForProps<IdType>(elemId);
+	if (defObjs.empty()) {
+		Logger::error("Unable to get property %d; could not get default objects for item %d", intPropId, elemId);
 		return LuaRef(g_config.lua.getState());
 	}
-
-	if (!elem_it->second || !elem_it->second->Default || !elem_it->second->Default->IsA(requiredSuperClass)) {
-		Logger::error("Unable to get property; failed to get default object for id %d", elemId);
-		return LuaRef(g_config.lua.getState());
-	}
+	
+	// Use the first object returned; they ought to all be the same
+	UObject* objToReadFrom = defObjs[0];
 
 	auto& it = propDefs.find((IdType)intPropId);
 	if (it == propDefs.end()) {
@@ -186,9 +172,9 @@ static LuaRef getProp(std::map<int, UClass*>& relevantClassDefs, std::map<IdType
 		return LuaRef(g_config.lua.getState());
 	}
 	GameBalance::PropValue val;
-	if (!it->second.get(elem_it->second->Default, val)) {
+	if (!it->second.get(objToReadFrom, val)) {
 		// Failed get
-		Logger::error("Unable to get property with id %d", intPropId);
+		Logger::error("Failed to get property with id %d", intPropId);
 		return LuaRef(g_config.lua.getState());
 	}
 
@@ -197,8 +183,43 @@ static LuaRef getProp(std::map<int, UClass*>& relevantClassDefs, std::map<IdType
 
 static LuaRef getWeaponProp(std::string className, std::string itemName, int intPropId) {
 	int itemId = Data::getItemId(className, itemName);
+	if (itemId == 0) {
+		Logger::error("Unable to get property config; invalid item %s on class %s", itemName.c_str(), className.c_str());
+		return LuaRef(g_config.lua.getState());
+	}
 
-	return getProp(Data::weapon_id_to_weapon_class, Items::properties, ATrDevice::StaticClass(), itemId, intPropId);
+	return getProp(Items::properties, itemId, intPropId);
+}
+
+static LuaRef getClassProp(std::string className, int intPropId) {
+	int classNum = Utils::searchMapId(Data::classes, className, "", false);
+	if (classNum == 0) {
+		Logger::error("Unable to get property config; invalid class %s", className.c_str());
+		return LuaRef(g_config.lua.getState());
+	}
+	int classId = Data::classes_id[classNum - 1];
+
+	return getProp(Classes::properties, classId, intPropId);
+}
+
+static LuaRef getVehicleProp(std::string vehicleName, int intPropId) {
+	int vehicleId = Utils::searchMapId(Data::vehicles, vehicleName, "", false);
+	if (vehicleId == 0) {
+		Logger::error("Unable to get property config; invalid vehicle %s", vehicleName.c_str());
+		return LuaRef(g_config.lua.getState());
+	}
+
+	return getProp(Vehicles::properties, vehicleId, intPropId);
+}
+
+static LuaRef getVehicleWeaponProp(std::string vehicleWeaponName, int intPropId) {
+	int vehicleWeaponId = Utils::searchMapId(Data::vehicle_weapons, vehicleWeaponName, "", false);
+	if (vehicleWeaponId == 0) {
+		Logger::error("Unable to set property config; invalid vehicle %s", vehicleWeaponName.c_str());
+		return LuaRef(g_config.lua.getState());
+	}
+
+	return getProp(VehicleWeapons::properties, vehicleWeaponId, intPropId);
 }
 
 static bool getPropValFromLua(ValueType expectedType, LuaRef val, PropValue& ret) {
@@ -407,6 +428,7 @@ namespace LuaAPI {
 			.endNamespace()
 			.beginNamespace("Classes")
 				.addFunction("setProperty", &setClassProp)
+				.addFunction("getProperty", &getClassProp)
 				.beginNamespace("Properties")
 					// Base stats
 					.addProperty<int, int>("HealthPool", &getPropId<Classes::PropId, Classes::PropId::HEALTH_POOL>)
@@ -449,6 +471,7 @@ namespace LuaAPI {
 			.endNamespace()
 			.beginNamespace("Vehicles")
 				.addFunction("setProperty", &setVehicleProp)
+				.addFunction("getProperty", &getVehicleProp)
 				.beginNamespace("Properties")
 					// Base Stats
 					.addProperty<int, int>("HealthPool", &getPropId<Vehicles::PropId, Vehicles::PropId::HEALTH_POOL>)
@@ -488,6 +511,7 @@ namespace LuaAPI {
 			.endNamespace()
 			.beginNamespace("VehicleWeapons")
 				.addFunction("setProperty", &setVehicleWeaponProp)
+				.addFunction("getProperty", &getVehicleWeaponProp)
 				.beginNamespace("Properties")
 					// Ammo
 					.addProperty<int, int>("ClipAmmo", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::CLIP_AMMO>)
@@ -503,7 +527,7 @@ namespace LuaAPI {
 					.addProperty<int, int>("Damage", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::DAMAGE>)
 					.addProperty<int, int>("ExplosiveRadius", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::EXPLOSIVE_RADIUS>)
 					.addProperty<int, int>("DirectHitMultiplier", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::DIRECT_HIT_MULTIPLIER>)
-					.addProperty<int, int>("MomentumTransfer", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::MOMENTUM_TRANSFER>)
+					.addProperty<int, int>("ImpactMomentum", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::IMPACT_MOMENTUM>)
 					.addProperty<int, int>("EnergyDrain", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::ENERGY_DRAIN>)
 					.addProperty<int, int>("MaxDamageRangeProportion", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::MAX_DAMAGE_RANGE_PROPORTION>)
 					.addProperty<int, int>("MinDamageRangeProportion", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::MIN_DAMAGE_RANGE_PROPORTION>)
@@ -524,7 +548,7 @@ namespace LuaAPI {
 					.addProperty<int, int>("ProjectileSpeed", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::PROJECTILE_SPEED>)
 					.addProperty<int, int>("ProjectileMaxSpeed", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::PROJECTILE_MAX_SPEED>)
 					.addProperty<int, int>("CollisionSize", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::COLLISION_SIZE>)
-					.addProperty<int, int>("ProjectileInheritence", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::PROJECTILE_INHERITANCE>)
+					.addProperty<int, int>("ProjectileInheritance", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::PROJECTILE_INHERITANCE>)
 					.addProperty<int, int>("ProjectileLifespan", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::PROJECTILE_LIFESPAN>)
 					.addProperty<int, int>("ProjectileGravity", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::PROJECTILE_GRAVITY>)
 					.addProperty<int, int>("ProjectileTerminalVelocity", &getPropId<VehicleWeapons::PropId, VehicleWeapons::PropId::PROJECTILE_TERMINAL_VELOCITY>)
