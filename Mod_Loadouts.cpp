@@ -55,11 +55,11 @@ static void applyTAServerLoadout(ATrPlayerReplicationInfo* that, int classId, in
 	}
 }
 
-static void applyWeaponBans(ATrPlayerReplicationInfo* that) {
+static void applyWeaponBans(ATrPlayerReplicationInfo* that, int classId) {
 	for (int i = 0; i < EQP_MAX; ++i) {
 		// Check the player's class to see if that class is not allowed to have that slot
 		bool shouldBanSlot = false;
-		switch (that->m_nPlayerClassId) {
+		switch (classId) {
 		case CONST_CLASS_TYPE_LIGHT:
 			shouldBanSlot = g_config.serverSettings.disabledEquipPointsLight.count(i) != 0;
 			break;
@@ -88,7 +88,7 @@ void TrPlayerReplicationInfo_GetCharacterEquip(ATrPlayerReplicationInfo* that, A
 	if (g_config.serverSettings.ForceHardcodedLoadouts) {
 		applyHardcodedLoadout(that, params->ClassId, params->Loadout);
 	}
-	applyWeaponBans(that);
+	applyWeaponBans(that, params->ClassId);
 }
 
 void TrPlayerReplicationInfo_ResolveDefaultEquip(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execResolveDefaultEquip_Parms* params, void* result, Hooks::CallInfo* callInfo) {

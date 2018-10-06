@@ -44,6 +44,7 @@ namespace Data
 			{ R"rx(^(stickygrenades?|sticky|stickies)$)rx", CONST_WEAPON_ID_GRENADE_STICKY },
 			{ R"rx(^(stickygrenades?xl|stickyxl|stickiesxl)$)rx", CONST_WEAPON_ID_GRENADE_STICKY_MKD },
 			{ R"rx(^(claymores?|claymoremines?)$)rx", CONST_WEAPON_ID_MINE_CLAYMORE },
+			{ R"rx(^(motionmines?)$)rx", CONST_WEAPON_ID_MINE_ARMOREDCLAYMORE },
 			{ R"rx(^(prismmines?|mines?)$)rx", CONST_WEAPON_ID_MINE_PRISM },
 			{ R"rx(^(chaffs?(grenades?)?)$)rx", CONST_WEAPON_ID_GRENADE_NINJASMOKE },
 		},
@@ -252,6 +253,7 @@ namespace Data
 		{ CONST_WEAPON_ID_GRENADE_STICKY, "StickyGrenade" },
 		{ CONST_WEAPON_ID_GRENADE_STICKY_MKD, "StickyGrenade_MKD" },
 		{ CONST_WEAPON_ID_MINE_CLAYMORE, "Claymore" },
+		{ CONST_WEAPON_ID_MINE_ARMOREDCLAYMORE, "ArmoredClaymore" },
 		{ CONST_WEAPON_ID_MINE_PRISM, "PrismMineDeployable" },
 		{ CONST_WEAPON_ID_GRENADE_NINJASMOKE, "NinjaSmoke" },
 		// Pack
@@ -383,6 +385,7 @@ namespace Data
 		{ CONST_WEAPON_ID_GRENADE_STICKY, "StickyGrenade" },
 		{ CONST_WEAPON_ID_GRENADE_STICKY_MKD, "StickyGrenade_MKD" },
 		{ CONST_WEAPON_ID_MINE_CLAYMORE, "Claymore" },
+		{ CONST_WEAPON_ID_MINE_ARMOREDCLAYMORE, "ArmoredClaymore" },
 		{ CONST_WEAPON_ID_MINE_PRISM, "PrismMine" },
 		{ CONST_WEAPON_ID_GRENADE_NINJASMOKE, "NinjaSmoke" },
 
@@ -491,6 +494,7 @@ namespace Data
 		{ CONST_WEAPON_ID_MINE_CLAYMORE, ATrDevice_Claymore::StaticClass() },
 		{ CONST_WEAPON_ID_MINE_PRISM, ATrDevice_PrismMineDeployable::StaticClass() },
 		{ CONST_WEAPON_ID_GRENADE_NINJASMOKE, ATrDevice_NinjaSmoke::StaticClass() },
+		{ CONST_WEAPON_ID_MINE_ARMOREDCLAYMORE, ATrDevice_ArmoredClaymore::StaticClass() },
 
 		// Medium
 		{ CONST_WEAPON_ID_RIFLE_ASSAULT, ATrDevice_AssaultRifle::StaticClass() },
