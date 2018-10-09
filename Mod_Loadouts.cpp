@@ -13,6 +13,33 @@ static bool isWeaponEquipPoint(int eqp) {
 }
 
 
+bool CustomClass::doesLoadoutMatch(int ootbClass, const std::map<int, int>& loadout) {
+	if (ootbClass != this->ootbClass) return false;
+
+	std::vector<int> eqpPointsToVerify = {
+		EQP_Primary, 
+		EQP_Secondary, 
+		EQP_Tertiary, 
+		EQP_Quaternary, 
+		EQP_Pack, 
+		EQP_Belt, 
+		EQP_PerkA,
+		EQP_PerkB,
+		EQP_Skin
+	};
+
+	for (auto& eqp : eqpPointsToVerify) {
+		// Skip missing equip points from the loadout
+		auto& it = loadout.find(eqp);
+		if (it == loadout.end()) continue;
+
+		int itemId = it->second;
+		if (itemId != 0 && !this->allowedItems.count(itemId)) return false;
+	}
+
+	return true;
+}
+
 static void applyHardcodedLoadout(ATrPlayerReplicationInfo* that, int classId, int slot) {
 	auto& it = Data::class_id_to_nb.find(classId);
 	if (it == Data::class_id_to_nb.end()) return;
@@ -41,16 +68,37 @@ static void applyHardcodedLoadout(ATrPlayerReplicationInfo* that, int classId, i
 }
 
 static void applyTAServerLoadout(ATrPlayerReplicationInfo* that, int classId, int slot) {
-	if (g_TAServerClient.isConnected()) {
-		std::map<int, int> taserverRetrievedMap;
-		if (!g_TAServerClient.retrieveLoadout(that->UniqueId, classId, slot, taserverRetrievedMap)) {
-			Logger::warn("Failed to retrieve loadout on class %d, slot %d for UniqueID %d from TAServer.", classId, slot, that->UniqueId);
-		}
-		for (auto& eqpItem : taserverRetrievedMap) {
-			if (eqpItem.second != 0) {
-				// TODO: Should do extra validation against server settings here...
-				that->r_EquipLevels[eqpItem.first].EquipId = eqpItem.second;
+	if (!g_TAServerClient.isConnected()) return;
+
+	std::map<int, int> taserverRetrievedMap;
+	if (!g_TAServerClient.retrieveLoadout(that->UniqueId, classId, slot, taserverRetrievedMap)) {
+		Logger::warn("Failed to retrieve loadout on class %d, slot %d for UniqueID %d from TAServer.", classId, slot, that->UniqueId);
+	}
+
+	// If in Custom Class mode, validate that this loadout matches a custom class, and apply the custom armour class if needed
+	if (g_config.serverSettings.useCustomClasses) {
+		bool found = false;
+		for (auto& it : g_config.serverSettings.customClasses) {
+			if (it.second.doesLoadoutMatch(classId, taserverRetrievedMap)) {
+				found = true;
+				// Apply the custom armour class if one is specified
+				if (it.second.armorClass != 0) {
+					that->r_EquipLevels[EQP_Armor].EquipId = it.second.armorClass;
+				}
+				break;
 			}
+		}
+		if (!found) {
+			// Failed to validate
+			return;
+		}
+	}
+
+	// Apply the equipment
+	for (auto& eqpItem : taserverRetrievedMap) {
+		if (eqpItem.second != 0) {
+			// TODO: Should do extra validation against server settings here...
+			that->r_EquipLevels[eqpItem.first].EquipId = eqpItem.second;
 		}
 	}
 }

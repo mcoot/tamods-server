@@ -304,6 +304,41 @@ static void removeFromBannedItemsListNoClass(std::string itemName) {
 	removeFromBannedItemsList("Light", itemName);
 }
 
+static void addCustomClass(std::string name, std::string ootbClass, std::string armorClass) {
+	int classNum = Utils::searchMapId(Data::classes, ootbClass, "", false);
+	if (classNum == 0) {
+		Logger::error("Unable to create custom class based on non-existent class %s", ootbClass.c_str());
+		return;
+	}
+	int ootbClassId = Data::classes_id[classNum - 1];
+
+	int armorClassId = 0;
+	if (armorClass != "") {
+		armorClassId = Utils::searchMapId(Data::armor_class_to_id, armorClass, "", false);
+		if (armorClassId == 0) {
+			Logger::error("Unable to create custom class; invalid armor class %s", armorClass.c_str());
+			return;
+		}
+	}
+	g_config.serverSettings.customClasses[name] = CustomClass(ootbClassId, armorClassId);
+}
+
+static void addToCustomClassAllowed(std::string customClassName, std::string itemClassName, std::string itemName) {
+	auto& it = g_config.serverSettings.customClasses.find(customClassName);
+	if (it == g_config.serverSettings.customClasses.end()) {
+		Logger::error("Unable to find custom class %s", customClassName.c_str());
+		return;
+	}
+
+	int itemId = Data::getItemId(itemClassName, itemName);
+	if (itemId == 0) {
+		Logger::error("Unable to find item %s on class %s to add to custom class", itemName.c_str(), itemClassName.c_str());
+		return;
+	}
+
+	g_config.serverSettings.customClasses[it->first].allowedItems.insert(itemId);
+}
+
 namespace LuaAPI {
 	void addServerSettingsAPI(luabridge::Namespace ns) {
 		ns
@@ -375,6 +410,11 @@ namespace LuaAPI {
 			.beginNamespace("BannedItems")
 				.addFunction("add", &addToBannedItemsList)
 				.addFunction("remove", &removeFromBannedItemsList)
+			.endNamespace()
+			.beginNamespace("CustomClasses")
+				.addVariable("Enabled", &g_config.serverSettings.useCustomClasses, true)
+				.addFunction("new", &addCustomClass)
+				.addFunction("addItem", &addToCustomClassAllowed)
 			.endNamespace()
 			.beginNamespace("DisabledEquipPoints")
 				.addFunction("add", &addToDisabledEquipPointsList)

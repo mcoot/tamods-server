@@ -25,6 +25,26 @@ enum class MapRotationMode {
 	MAP_ROTATION_MAX
 };
 
+// Definition of a server-defines Class
+// A set of allowed items the server may allow
+// Can be used to 'bring back' classes
+struct CustomClass {
+	// The OOTB ingame class this corresponds to (i.e. ID for light/medium/heavy)
+	int ootbClass;
+
+	// The class ID this actually corresponds to; can be OOTB or a removed class
+	// If 0, the OOTB class actually in the loadout is assumed
+	int armorClass;
+
+	// The items allowed for this 'class'
+	std::set<int> allowedItems;
+
+public:
+	CustomClass() : ootbClass(0), armorClass(0), allowedItems() {}
+	CustomClass(int ootbClass, int armorClass) : ootbClass(ootbClass), armorClass(armorClass), allowedItems() {}
+	bool doesLoadoutMatch(int ootbClass, const std::map<int, int>& loadout);
+};
+
 struct ServerSettings {
 	int TimeLimit = 25;
 	int WarmupTime = 20;
@@ -87,10 +107,15 @@ struct ServerSettings {
 	std::vector<std::string> mapRotation;
 	int mapRotationIndex = -1;
 
+	// Weapon bans
 	std::set<int> bannedItems;
 	std::set<int> disabledEquipPointsLight;
 	std::set<int> disabledEquipPointsMedium;
 	std::set<int> disabledEquipPointsHeavy;
+	
+	// Whether the server requires players to adhere to allowed 'Item Sets' (analogous to server-defined allowed classes)
+	bool useCustomClasses;
+	std::map<std::string, CustomClass> customClasses;
 
 	GameBalance::Items::ItemsConfig weaponProperties;
 	GameBalance::Classes::ClassesConfig classProperties;
