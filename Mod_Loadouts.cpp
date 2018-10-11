@@ -23,8 +23,8 @@ bool CustomClass::doesLoadoutMatch(int ootbClass, const std::map<int, int>& load
 		EQP_Quaternary, 
 		EQP_Pack, 
 		EQP_Belt, 
-		EQP_PerkA,
-		EQP_PerkB,
+		//EQP_PerkA,
+		//EQP_PerkB,
 		EQP_Skin
 	};
 
@@ -84,6 +84,7 @@ static void applyTAServerLoadout(ATrPlayerReplicationInfo* that, int classId, in
 				// Apply the custom armour class if one is specified
 				if (it.second.armorClass != 0) {
 					that->r_EquipLevels[EQP_Armor].EquipId = it.second.armorClass;
+					Logger::debug("Changed armor class to custom one: %d", it.second.armorClass);
 				}
 				break;
 			}
@@ -137,6 +138,7 @@ void TrPlayerReplicationInfo_GetCharacterEquip(ATrPlayerReplicationInfo* that, A
 		applyHardcodedLoadout(that, params->ClassId, params->Loadout);
 	}
 	applyWeaponBans(that, params->ClassId);
+	Logger::debug("[Done GetCharacterEquip]");
 }
 
 void TrPlayerReplicationInfo_ResolveDefaultEquip(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execResolveDefaultEquip_Parms* params, void* result, Hooks::CallInfo* callInfo) {
@@ -160,6 +162,86 @@ void TrPlayerReplicationInfo_ResolveDefaultEquip(ATrPlayerReplicationInfo* that,
 		familyInfo->DevSelectionList.Set(i, noWeapon);
 	}
 }
+
+static void applyCustomClassToPRI(ATrPlayerReplicationInfo* that) {
+	if (that->m_nPlayerClassId == that->r_EquipLevels[EQP_Armor].EquipId) {
+		// We don't need to set a custom class
+		return;
+	}
+
+	// Find the armour class name
+	auto& it = Data::armor_class_id_to_name.find(that->r_EquipLevels[EQP_Armor].EquipId);
+	if (it == Data::armor_class_id_to_name.end()) {
+		Logger::warn("Loadout attempted to use invalid armor class %d", that->r_EquipLevels[EQP_Armor].EquipId);
+		return;
+	}
+
+	std::string baseClassName = "Class TribesGame.TrFamilyInfo_" + it->second;
+	std::string teamAppendPart = that->GetTeamNum() == 1 ? "_DS" : "_BE";
+	std::string className = "Class TribesGame.TrFamilyInfo_" + it->second + teamAppendPart;
+		
+
+	// Get base armor
+	//UTrFamilyInfo* baseFI = UObject::FindObject<UTrFamilyInfo>(baseClassName.c_str());
+	UClass* baseFIClass = UObject::FindClass(baseClassName.c_str());
+	if (!baseFIClass || !baseFIClass->Default) {
+		Logger::warn("Failed to retrieve base armour class \"%s\"", baseClassName.c_str());
+		return;
+	}
+	UTrFamilyInfo* baseFI = (UTrFamilyInfo*)baseFIClass->Default;
+	// Get team-specific armor
+	//UTrFamilyInfo* mainFI = UObject::FindObject<UTrFamilyInfo>(className.c_str());
+	UClass* mainFIClass = UObject::FindClass(className.c_str());
+	if (!mainFIClass || !mainFIClass->Default) {
+		Logger::warn("Failed to retrieve specific armour class \"%s\"", className.c_str());
+		return;
+	}
+	UTrFamilyInfo* mainFI = (UTrFamilyInfo*)mainFIClass->Default;
+
+	that->m_CurrentBaseClass = baseFIClass;
+	that->CharClassInfo = mainFIClass;
+
+	if (that->ClassIsChildOf(that->CharClassInfo, UTrFamilyInfo_Light::StaticClass())) {
+		that->m_ArmorType = ARMOR_Light;
+	}
+	else if (that->ClassIsChildOf(that->CharClassInfo, UTrFamilyInfo_Heavy::StaticClass())) {
+		that->m_ArmorType = ARMOR_Heavy;
+	}
+	else {
+		that->m_ArmorType = ARMOR_Medium;
+	}
+
+	that->m_nPlayerClassId = mainFI->ClassId;
+	that->m_nPlayerIconIndex = 140;
+
+	ATrPlayerController* thatPC = (ATrPlayerController*)that->Owner;
+
+	if (that->Stats) that->Stats->SetActiveClass(thatPC, that->m_nPlayerClassId);
+
+	if (thatPC) {
+		ATrPawn* pawn = (ATrPawn*)thatPC->Pawn;
+
+		if (pawn) {
+			Logger::debug("Setting pawn with main class = \"%s\"", that->CharClassInfo->GetFullName());
+			pawn->SetCharacterClassFromInfo(that->CharClassInfo, true);
+		}
+	}
+
+	that->bNetDirty = true;
+}
+
+void TrPlayerReplicationInfo_GetCurrentVoiceClass(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execGetCurrentVoiceClass_Parms* params, UClass** result, Hooks::CallInfo* callInfo) {
+	// Get the real voice
+	*result = that->InvHelper->GetEquipClass(that->r_EquipLevels[EQP_Voice].EquipId);
+	if (!*result) {
+		UTrFamilyInfo* fi = (UTrFamilyInfo*)params->FamilyInfo->Default;
+		*result = fi->DevSelectionList.GetStd(EQP_Voice).DeviceClass;
+	}
+
+	// Apply the custom class if appropriate
+	applyCustomClassToPRI(that);
+}
+
 
 void TAServer::Client::handler_Launcher2GameLoadoutMessage(const json& msgBody) {
 	// Parse the message

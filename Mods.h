@@ -19,10 +19,14 @@
 // Hook called on server settings load
 void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrServerSettingsInfo_eventLoadServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo);
 
+// Hook called to process the swapping to a new class
+//void TrPlayerReplicationInfo_SwapToPendingCharClass(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execSwapToPendingCharClass_Parms* params, void* result, Hooks::CallInfo* callInfo);
 // Hook called when the server tries to retrieve a player's loadout
 void TrPlayerReplicationInfo_GetCharacterEquip(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execGetCharacterEquip_Parms* params, void* result, Hooks::CallInfo* callInfo);
 // Hook called when the server tries to fill in gaps in a player's loadout with defaults
 void TrPlayerReplicationInfo_ResolveDefaultEquip(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execResolveDefaultEquip_Parms* params, void* result, Hooks::CallInfo* callInfo);
+// Hook called when the game tries to assign the player their voice; used because it happens after equipment is resolved
+void TrPlayerReplicationInfo_GetCurrentVoiceClass(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execGetCurrentVoiceClass_Parms* params, UClass** result, Hooks::CallInfo* callInfo);
 
 // Hook called on GRI tick
 bool TrGameReplicationInfo_PostBeginPlay(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult);

@@ -225,7 +225,7 @@ public:
 		return NULL; 
 	} 
 	
-	static UClass* FindClass ( char* ClassFullName ); 
+	static UClass* FindClass ( const char* ClassFullName ); 
 
 	bool IsA ( UClass* pClass ); 
 

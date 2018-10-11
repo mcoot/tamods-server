@@ -704,6 +704,37 @@ namespace Data
 		{ R"rx(^(rook)$)rx", CONST_CLASS_TYPE_HEAVY_ROOK },
 	};
 
+	std::map<int, std::string> armor_class_id_to_name =
+	{
+		// GOTY classes
+		// Light
+		{ CONST_CLASS_TYPE_LIGHT_PATHFINDER, "Light_Pathfinder" },
+		{ CONST_CLASS_TYPE_LIGHT_SENTINEL, "Light_Sentinel" },
+		{ CONST_CLASS_TYPE_LIGHT_INFILTRATOR, "Light_Infiltrator" },
+		// Medium
+		{ CONST_CLASS_TYPE_MEDIUM_SOLDIER, "Medium_Soldier" },
+		{ CONST_CLASS_TYPE_MEDIUM_RAIDER, "Medium_Raider" },
+		{ CONST_CLASS_TYPE_MEDIUM_TECHNICIAN, "Medium_Technician" },
+		// Heavy
+		{ CONST_CLASS_TYPE_HEAVY_JUGGERNAUGHT, "Heavy_Juggernaught" },
+		{ CONST_CLASS_TYPE_HEAVY_DOOMBRINGER, "Heavy_Doombringer" },
+		{ CONST_CLASS_TYPE_HEAVY_BRUTE, "Heavy_Brute" },
+
+		// Older removed classes
+		// Light
+		{ CONST_CLASS_TYPE_LIGHT_ARCHITECT, "Light_Architect" },
+		{ CONST_CLASS_TYPE_LIGHT_JUMPER, "Light_Jumper" },
+		{ CONST_CLASS_TYPE_LIGHT_WRAITH, "Light_Wraith" },
+		// Medium
+		{ CONST_CLASS_TYPE_MEDIUM_RANGER, "Medium_Ranger" },
+		{ CONST_CLASS_TYPE_MEDIUM_SCRAMBLER, "Medium_Scrambler" },
+		{ CONST_CLASS_TYPE_MEDIUM_ENGINEER, "Medium_Engineer" },
+		{ CONST_CLASS_TYPE_MEDIUM_WARDER, "Medium_Warder" },
+		// Heavy
+		{ CONST_CLASS_TYPE_HEAVY_MARAUDER, "Heavy_Marauder" },
+		{ CONST_CLASS_TYPE_HEAVY_ROOK, "Heavy_Rook" },
+	};
+
 	std::map<std::string, int> crosshairs =
 	{
 		{ R"rx(^(spin(fusor)?)$)rx", CONST_THR_SPINFUSOR },
