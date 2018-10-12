@@ -106,7 +106,7 @@ static std::vector<UObject*> getDefaultObjectsForProps(int elemId) {
 	}
 	else if (isClassCase) {
 		prefix = "TrFamilyInfo";
-		relevantClassNames = Data::class_id_to_name;
+		relevantClassNames = Data::armor_class_id_to_name;
 		variants.push_back("");
 		variants.push_back("BE");
 		variants.push_back("DS");
@@ -197,12 +197,11 @@ static LuaRef getWeaponProp(std::string className, std::string itemName, int int
 }
 
 static LuaRef getClassProp(std::string className, int intPropId) {
-	int classNum = Utils::searchMapId(Data::classes, className, "", false);
-	if (classNum == 0) {
-		Logger::error("Unable to get property config; invalid class %s", className.c_str());
+	int classId = Utils::searchMapId(Data::armor_class_to_id, className, "", false);
+	if (classId == 0) {
+		Logger::error("Unable to set property config; invalid class %s", className.c_str());
 		return LuaRef(g_config.lua.getState());
 	}
-	int classId = Data::classes_id[classNum - 1];
 
 	return getProp(Classes::properties, classId, intPropId);
 }
@@ -292,12 +291,11 @@ static void setWeaponProp(std::string className, std::string itemName, int intPr
 }
 
 static void setClassProp(std::string className, int intPropId, LuaRef val) {
-	int classNum = Utils::searchMapId(Data::classes, className, "", false);
-	if (classNum == 0) {
+	int classId = Utils::searchMapId(Data::armor_class_to_id, className, "", false);
+	if (classId == 0) {
 		Logger::error("Unable to set property config; invalid class %s", className.c_str());
 		return;
 	}
-	int classId = Data::classes_id[classNum - 1];
 
 	setProp(Classes::properties, g_config.serverSettings.classProperties, classId, intPropId, val);
 }
