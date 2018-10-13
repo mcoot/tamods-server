@@ -57,7 +57,7 @@ namespace Data
 			{ R"rx(^(thumperd)$)rx", CONST_WEAPON_ID_THUMPER_D },
 			{ R"rx(^(thumperdx)$)rx", CONST_WEAPON_ID_THUMPERD_MKD },
 			{ R"rx(^(twinfusor)$)rx", CONST_WEAPON_ID_TWINFUSOR },
-			{ R"rx(^(blinks?|blinks?fusor)$)rx", CONST_WEAPON_ID_SPINFUSOR_100X },
+			{ R"rx(^(blinks?|blinks?fusor|sparespin(fusor)?)$)rx", CONST_WEAPON_ID_SPINFUSOR_100X },
 			{ R"rx(^(honorfusor|honourfusor|honor)$)rx", CONST_WEAPON_ID_HONORFUSOR },
 			// Timed
 			{ R"rx(^(arxbuster|arx)$)rx", CONST_WEAPON_ID_ARX_BUSTER },
@@ -94,6 +94,7 @@ namespace Data
 			{ R"rx(^(short-?fusefraggrenades?|short-?fuses?)$)rx", CONST_WEAPON_ID_GRENADE_XL_MKD },
 			{ R"rx(^(tcng)$)rx", CONST_WEAPON_ID_TCNG },
 			{ R"rx(^(short-?fuses?tcng)$)rx", CONST_WEAPON_ID_TCNG_MKD },
+			{ R"rx(^(motionsensors?)$)rx", CONST_WEAPON_ID_MOTIONALARM },
 		},
 
 		// Heavy
@@ -147,6 +148,7 @@ namespace Data
 			{ R"rx(^((light)?turret)$)rx", CONST_WEAPON_ID_TURRET_LIGHT },
 			{ R"rx(^(dropstation)$)rx", CONST_WEAPON_ID_DROPJAMMER },
 			{ R"rx(^(shield(pack)?)$)rx", CONST_ITEM_PACK_SHIELD },
+			{ R"rx(^(energy(pack)?)$)rx", CONST_ITEM_PACK_ENERGY_SOLDIER },
 			{ R"rx(^(util(ity)?(pack)?)$)rx", CONST_ITEM_PACK_UTILITY_SOLDIER },
 			{ R"rx(^(jammer(pack)?)$)rx", CONST_ITEM_PACK_JAMMER },
 			{ R"rx(^(exr(turret)?)$)rx", CONST_WEAPON_ID_TURRET_EXR }
@@ -332,10 +334,12 @@ namespace Data
 		{ CONST_WEAPON_ID_GRENADE_XL_MKD, "GrenadeXL_MKD" },
 		{ CONST_WEAPON_ID_TCNG, "TCNG"  },
 		{ CONST_WEAPON_ID_TCNG_MKD, "TCNG_MKD" },
+		{ CONST_WEAPON_ID_MOTIONALARM, "MotionSensorDeployable" },
 		// Pack
 		{ CONST_WEAPON_ID_TURRET_LIGHT, "LightTurretDeployable" },
 		{ CONST_WEAPON_ID_DROPJAMMER, "DropJammerDeployable" },
 		{ CONST_ITEM_PACK_SHIELD, "ShieldPack" },
+		{ CONST_ITEM_PACK_ENERGY_SOLDIER, "EnergyPack_Soldier" },
 		{ CONST_ITEM_PACK_UTILITY_SOLDIER, "UtilityPack_Soldier" },
 		{ CONST_ITEM_PACK_JAMMER, "JammerPack" },
 		{ CONST_WEAPON_ID_TURRET_EXR, "AntiAirTurretDeployable" },
@@ -479,6 +483,7 @@ namespace Data
 		{ CONST_WEAPON_ID_GRENADE_XL_MKD, "GrenadeXL_MKD" },
 		{ CONST_WEAPON_ID_TCNG, "TCNG"  },
 		{ CONST_WEAPON_ID_TCNG_MKD, "TCNG_MKD" },
+		{ CONST_WEAPON_ID_MOTIONALARM, "MotionSensor" },
 
 		// Heavy
 		{ CONST_WEAPON_ID_LAUNCHER_MORTAR, "MortarLauncher" },
@@ -588,6 +593,7 @@ namespace Data
 		{ CONST_WEAPON_ID_GRENADE_XL_MKD, ATrDevice_GrenadeXL_MKD::StaticClass() },
 		{ CONST_WEAPON_ID_TCNG, ATrDevice_TCNG::StaticClass() },
 		{ CONST_WEAPON_ID_TCNG_MKD, ATrDevice_TCNG_MKD::StaticClass() },
+		{ CONST_WEAPON_ID_MOTIONALARM, ATrDevice_MotionSensorDeployable::StaticClass() },
 
 		// Heavy
 		{ CONST_WEAPON_ID_LAUNCHER_MORTAR, ATrDevice_MortarLauncher::StaticClass() },
