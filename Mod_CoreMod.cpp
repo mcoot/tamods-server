@@ -31,6 +31,7 @@ namespace LuaAPI {
 					.addVariable("Debug", &logLevelDebug, false)
 				.endNamespace()
 				.addFunction("setLevel", &setLoggerLevel)
+				.addFunction("log", &Logger::printLog)
 				.addFunction("debug", Logger::printDebug)
 				.addFunction("info", Logger::printInfo)
 				.addFunction("warn", Logger::printWarn)

@@ -79,6 +79,9 @@ static std::vector<UObject*> getDefaultObjects(std::map<int, std::string>& relev
 		if (obj) {
 			found.push_back(obj);
 		}
+		else {
+			Logger::debug("Failed to find %s", n.c_str());
+		}
 	}
 
 	return found;
@@ -223,14 +226,17 @@ static LuaRef getProp(std::map<IdType, Property>& propDefs, int elemId, int intP
 
 static LuaRef getValueMod(int elemId) {
 	std::vector<UObject*> objects;
+	std::string kindForErrorString;
 	if (Data::armor_class_id_to_armor_mod_name.find(elemId) != Data::armor_class_id_to_armor_mod_name.end()) {
 		objects = getDefaultObjects<ATrArmorMod>(Data::armor_class_id_to_armor_mod_name, "TrArmorMod", std::vector<std::string>(), elemId);
+		kindForErrorString = "armor class";
 	}
 	else {
 		objects = getDefaultObjectsForProps<Items::PropId>(elemId);
+		kindForErrorString = "item";
 	}
 	if (objects.empty()) {
-		Logger::error("Failed to get object with id %d", elemId);
+		Logger::error("Failed to get object for %s with id %d", kindForErrorString.c_str(), elemId);
 		return LuaRef(g_config.lua.getState());
 	}
 
@@ -735,6 +741,7 @@ namespace LuaAPI {
 				.addProperty<int, int>("Reach", &getIdentity<CONST_MOD_TYPE_FLAGREACH>)
 				.addProperty<int, int>("BuildTimeBuff", &getIdentity<CONST_MOD_TYPE_BUILDUPPCT>)
 				.addProperty<int, int>("Clothesline", &getIdentity<CONST_MOD_TYPE_CLOTHESLINE>)
+				.addProperty<int, int>("SuperHeavy", &getIdentity<CONST_MOD_TYPE_CLOTHESLINE>)
 				.addProperty<int, int>("StickyHands", &getIdentity<CONST_MOD_TYPE_STICKYHANDS>)
 				.addProperty<int, int>("MaxSkiSpeed", &getIdentity<CONST_MOD_TYPE_MAXSKISPEED>)
 				.addProperty<int, int>("EnergyBuff", &getIdentity<CONST_MOD_TYPE_EXTRAENERGY>)
@@ -819,6 +826,7 @@ namespace LuaAPI {
 				.addProperty<int, int>("RepairToolDamagesEnemyObjectives", &getIdentity<CONST_MOD_TYPE_DAMAGEREPAIRENEMYOBJECTIVES>)
 				.addProperty<int, int>("PotentialEnergyOnFallDamage", &getIdentity<CONST_MOD_TYPE_POTENTIALENERGYFALLDAMAGE>)
 				.addProperty<int, int>("BeltThrowSpeedBuff", &getIdentity<CONST_MOD_TYPE_FASTERTHROWBELTBUFFPCT>)
+				.addProperty<int, int>("QuickDrawBelt", &getIdentity<CONST_MOD_TYPE_FASTERTHROWBELTBUFFPCT>)
 				.addProperty<int, int>("IgnoreGrenadeEffectsOnSelf", &getIdentity<CONST_MOD_TYPE_IGNOREGRENADESECONDARYONSELF>)
 				.addProperty<int, int>("PotentialEnergyDamageTransferBuff", &getIdentity<CONST_MOD_TYPE_POTENTIALENERGYDMGTRANSFERPCT>)
 				.addProperty<int, int>("ReachTier", &getIdentity<CONST_MOD_TYPE_FLAGREACHTIER>)
