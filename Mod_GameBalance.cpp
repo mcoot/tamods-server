@@ -153,7 +153,7 @@ static void applyPropConfig(std::map<IdType, Property>& propDefs, std::map<int, 
 	}
 }
 
-static void applyValueModConfig(Items::DeviceValuesConfig config) {
+static void applyValueModConfig(Items::DeviceValuesConfig& config) {
 	Logger::debug("Applying valuemods...");
 	for (auto& elem : config) {
 		Logger::debug("Applying valuemods to item %d", elem.first);
@@ -221,7 +221,7 @@ static LuaRef getProp(std::map<IdType, Property>& propDefs, int elemId, int intP
 	return val.getAsLuaRef(g_config.lua.getState());
 }
 
-static LuaRef getValueMod(Items::DeviceValuesConfig config, int elemId) {
+static LuaRef getValueMod(int elemId) {
 	std::vector<UObject*> objects;
 	if (Data::armor_class_id_to_armor_mod_name.find(elemId) != Data::armor_class_id_to_armor_mod_name.end()) {
 		objects = getDefaultObjects<ATrArmorMod>(Data::armor_class_id_to_armor_mod_name, "TrArmorMod", std::vector<std::string>(), elemId);
@@ -296,7 +296,7 @@ static LuaRef getDeviceValueMod(std::string className, std::string itemName) {
 		return LuaRef(g_config.lua.getState());;
 	}
 
-	return getValueMod(g_config.serverSettings.deviceValueProperties, itemId);
+	return getValueMod(itemId);
 }
 
 static LuaRef getDeviceValueMod_ArmorMod(std::string armorClassName) {
@@ -306,7 +306,7 @@ static LuaRef getDeviceValueMod_ArmorMod(std::string armorClassName) {
 		return LuaRef(g_config.lua.getState());;
 	}
 
-	return getValueMod(g_config.serverSettings.deviceValueProperties, classId);
+	return getValueMod(classId);
 }
 
 static bool getPropValFromLua(ValueType expectedType, LuaRef val, PropValue& ret) {
