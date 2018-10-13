@@ -92,8 +92,8 @@ namespace Data
 			{ R"rx(^(fraggrenades?(xl)?|frags?(xl)?|grenades?(xl)?)$)rx", CONST_WEAPON_ID_GRENADE_XL },
 			{ R"rx(^(proxmitys?(grenades?)?|proxies|proxys?)$)rx", CONST_WEAPON_ID_PROXIMITY_GRENADE },
 			{ R"rx(^(short-?fusefraggrenades?|short-?fuses?)$)rx", CONST_WEAPON_ID_GRENADE_XL_MKD },
-			{ R"rx(^(tcng)$)rx", CONST_WEAPON_ID_TCNG },
-			{ R"rx(^(short-?fuses?tcng)$)rx", CONST_WEAPON_ID_TCNG_MKD },
+			{ R"rx(^(tcng(grenade)?)$)rx", CONST_WEAPON_ID_TCNG },
+			{ R"rx(^(tcng(quick|short)?-?fuse(grenade)?)$)rx", CONST_WEAPON_ID_TCNG_MKD },
 			{ R"rx(^(motionsensors?)$)rx", CONST_WEAPON_ID_MOTIONALARM },
 		},
 
@@ -129,6 +129,8 @@ namespace Data
 			{ R"rx(^(efg)$)rx", CONST_WEAPON_ID_ELFFLAK },
 			// Belt
 			{ R"rx(^(fraggrenades?|frags?)$)rx", CONST_WEAPON_ID_GRENADE },
+			{ R"rx(^(heavyaps?(grenades?)?)$)rx", CONST_WEAPON_ID_GRENADE_AP_HEAVY },
+			{ R"rx(^(heavyaps?-?xls?(grenades?)?)$)rx", CONST_WEAPON_ID_GRENADE_AP_HEAVY_MKD },
 			{ R"rx(^(fractals?|fractalgrenades?)$)rx", CONST_WEAPON_ID_GRENADE_SPIKE },
 			{ R"rx(^(extendedfractals?(grenades)?)$)rx", CONST_WEAPON_ID_GRENADE_SPIKE_MKD },
 			{ R"rx(^(lightsticky(grenades?)?|lightstickies)$)rx", CONST_WEAPON_ID_GRENADE_STICKY_LIGHT },
@@ -184,7 +186,7 @@ namespace Data
 			{ R"rx(^(synthrall)$)rx", CONST_ITEM_SKIN_SOLDIER_MERC }
 		},
 		{
-			{ R"rx(^(jug|juggernaut|heavy|hvy)$)rx", CONST_ITEM_SKIN_JUGGERNAUT },
+			{ R"rx(^(jug|juggernaut|juggernaught|heavy|hvy)$)rx", CONST_ITEM_SKIN_JUGGERNAUT },
 			{ R"rx(^(dmb|doombringer)$)rx", CONST_ITEM_SKIN_DOOMBRINGER },
 			{ R"rx(^(brt|brute)$)rx", CONST_ITEM_SKIN_BRUTE },
 			{ R"rx(^(crusher)$)rx", CONST_ITEM_SKIN_BRUTE_MERC },
@@ -373,6 +375,8 @@ namespace Data
 		{ CONST_WEAPON_ID_ELFFLAK, "ElfFlak" },
 		// Belt
 		{ CONST_WEAPON_ID_GRENADE, "Grenade" },
+		{ CONST_WEAPON_ID_GRENADE_AP_HEAVY, "HeavyAPGrenade" },
+		{ CONST_WEAPON_ID_GRENADE_AP_HEAVY_MKD, "HeavyAPGrenade_MKD" },
 		{ CONST_WEAPON_ID_GRENADE_SPIKE, "SpikeGrenade" },
 		{ CONST_WEAPON_ID_GRENADE_SPIKE_MKD, "SpikeGrenade_MKD" },
 		{ CONST_WEAPON_ID_GRENADE_STICKY_LIGHT, "LightStickyGrenade" },
@@ -508,6 +512,8 @@ namespace Data
 		{ CONST_WEAPON_ID_ELFPROJECTOR, "" },
 		{ CONST_WEAPON_ID_ELFFLAK, "ElfFlak" },
 		{ CONST_WEAPON_ID_GRENADE,  "Grenade" },
+		{ CONST_WEAPON_ID_GRENADE_AP_HEAVY, "HeavyAPGrenade" },
+		{ CONST_WEAPON_ID_GRENADE_AP_HEAVY_MKD, "HeavyAPGrenade_MKD" },
 		{ CONST_WEAPON_ID_GRENADE_SPIKE, "SpikeGrenade" },
 		{ CONST_WEAPON_ID_GRENADE_SPIKE_MKD, "SpikeGrenade_MKD" },
 		{ CONST_WEAPON_ID_GRENADE_STICKY_LIGHT, "LightStickyGrenade" },
@@ -622,6 +628,8 @@ namespace Data
 		{ CONST_WEAPON_ID_PILOT_BEOWULF, ATrVehicleWeapon_BeowulfPilot::StaticClass() },
 		{ CONST_WEAPON_ID_GUNNER_BEOWULF, ATrVehicleWeapon_BeowulfGunner::StaticClass() },
 		{ CONST_WEAPON_ID_GRENADE,  ATrDevice_Grenade::StaticClass() },
+		{ CONST_WEAPON_ID_GRENADE_AP_HEAVY, ATrDevice_HeavyAPGrenade::StaticClass() },
+		{ CONST_WEAPON_ID_GRENADE_AP_HEAVY_MKD, ATrDevice_HeavyAPGrenade_MKD::StaticClass() },
 		{ CONST_WEAPON_ID_GRENADE_SPIKE, ATrDevice_SpikeGrenade::StaticClass() },
 		{ CONST_WEAPON_ID_GRENADE_SPIKE_MKD, ATrDevice_SpikeGrenade_MKD::StaticClass() },
 		{ CONST_WEAPON_ID_GRENADE_STICKY_LIGHT, ATrDevice_LightStickyGrenade::StaticClass() },
