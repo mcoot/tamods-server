@@ -47,6 +47,7 @@ namespace DCServer {
 		// Send the player the current balance state
 		sendGameBalanceDetailsMessage(pconn, 
 			g_config.serverSettings.weaponProperties,
+			g_config.serverSettings.deviceValueProperties,
 			g_config.serverSettings.classProperties,
 			g_config.serverSettings.vehicleProperties,
 			g_config.serverSettings.vehicleWeaponProperties
@@ -152,8 +153,42 @@ static void applyPropConfig(std::map<IdType, Property>& propDefs, std::map<int, 
 	}
 }
 
+static void applyValueModConfig(Items::DeviceValuesConfig config) {
+	Logger::debug("Applying valuemods...");
+	for (auto& elem : config) {
+		Logger::debug("Applying valuemods to item %d", elem.first);
+		// Get the object/s needed to modify
+		// Item is either a regular item or an armour mod; in the former case it will have a class id rather than an item ID
+		std::vector<UObject*> objects;
+		if (Data::armor_class_id_to_armor_mod_name.find(elem.first) != Data::armor_class_id_to_armor_mod_name.end()) {
+			objects = getDefaultObjects<ATrArmorMod>(Data::armor_class_id_to_armor_mod_name, "TrArmorMod", std::vector<std::string>(), elem.first);
+		}
+		else {
+			objects = getDefaultObjectsForProps<Items::PropId>(elem.first);
+		}
+
+		for (auto& obj : objects) {
+			// All objects should be Devices
+			ATrDevice* dev = (ATrDevice*)obj;
+
+			// Reset existing modifications
+			dev->BaseMod.Modifications.Clear();
+			// Apply modifications
+			for (DeviceValueMod& mod : elem.second) {
+				Logger::debug("Applying mod { %d, %f} to item %d", mod.modType, mod.value, elem.first);
+				FDeviceModification devMod;
+				devMod.ModType = mod.modType;
+				devMod.Value = mod.value;
+				dev->BaseMod.Modifications.Add(devMod);
+			}
+		}
+	}
+}
+
 void ServerSettings::ApplyGameBalanceProperties() {
 	applyPropConfig(Items::properties, weaponProperties);
+	Logger::debug("deviceValueProperties.size() = %d", deviceValueProperties.size());
+	applyValueModConfig(deviceValueProperties);
 	applyPropConfig(Classes::properties, classProperties);
 	applyPropConfig(Vehicles::properties,vehicleProperties);
 	applyPropConfig(VehicleWeapons::properties, vehicleWeaponProperties);
@@ -184,6 +219,34 @@ static LuaRef getProp(std::map<IdType, Property>& propDefs, int elemId, int intP
 	}
 
 	return val.getAsLuaRef(g_config.lua.getState());
+}
+
+static LuaRef getValueMod(Items::DeviceValuesConfig config, int elemId) {
+	std::vector<UObject*> objects;
+	if (Data::armor_class_id_to_armor_mod_name.find(elemId) != Data::armor_class_id_to_armor_mod_name.end()) {
+		objects = getDefaultObjects<ATrArmorMod>(Data::armor_class_id_to_armor_mod_name, "TrArmorMod", std::vector<std::string>(), elemId);
+	}
+	else {
+		objects = getDefaultObjectsForProps<Items::PropId>(elemId);
+	}
+	if (objects.empty()) {
+		Logger::error("Failed to get object with id %d", elemId);
+		return LuaRef(g_config.lua.getState());
+	}
+
+	ATrDevice* dev = (ATrDevice*)objects[0];
+	
+	LuaRef out = newTable(g_config.lua.getState());
+	for (int i = 0; i < dev->BaseMod.Modifications.Count; ++i) {
+		LuaRef curMod = newTable(g_config.lua.getState());
+
+		curMod[1] = dev->BaseMod.Modifications.GetStd(i).ModType;
+		curMod[2] = dev->BaseMod.Modifications.GetStd(i).Value;
+
+		out.append(curMod);
+	}
+
+	return out;
 }
 
 static LuaRef getWeaponProp(std::string className, std::string itemName, int intPropId) {
@@ -226,6 +289,26 @@ static LuaRef getVehicleWeaponProp(std::string vehicleWeaponName, int intPropId)
 	return getProp(VehicleWeapons::properties, vehicleWeaponId, intPropId);
 }
 
+static LuaRef getDeviceValueMod(std::string className, std::string itemName) {
+	int itemId = Data::getItemId(className, itemName);
+	if (itemId == 0) {
+		Logger::error("Unable to get value mod config; invalid item %s on class %s", className.c_str(), itemName.c_str());
+		return LuaRef(g_config.lua.getState());;
+	}
+
+	return getValueMod(g_config.serverSettings.deviceValueProperties, itemId);
+}
+
+static LuaRef getDeviceValueMod_ArmorMod(std::string armorClassName) {
+	int classId = Utils::searchMapId(Data::armor_class_to_id, armorClassName, "", false);
+	if (classId == 0) {
+		Logger::error("Unable to get value mod config; invalid armor class %s", armorClassName.c_str());
+		return LuaRef(g_config.lua.getState());;
+	}
+
+	return getValueMod(g_config.serverSettings.deviceValueProperties, classId);
+}
+
 static bool getPropValFromLua(ValueType expectedType, LuaRef val, PropValue& ret) {
 	switch (expectedType) {
 	case ValueType::BOOLEAN:
@@ -258,8 +341,6 @@ static bool getPropValFromLua(ValueType expectedType, LuaRef val, PropValue& ret
 	return true;
 }
 
-
-
 template <typename IdType>
 static void setProp(std::map<IdType, Property>& propDefs, std::map<int, std::map<IdType, PropValue> >& props, int elemId, int intPropId, LuaRef val) {
 	IdType propId = (IdType)intPropId;
@@ -284,8 +365,61 @@ static void setProp(std::map<IdType, Property>& propDefs, std::map<int, std::map
 	props[elemId][propId] = propVal;
 }
 
+static void setValueMod(Items::DeviceValuesConfig& config, int elemId, LuaRef modDefs) {
+	if (!modDefs.isTable()) {
+		Logger::error("Invalid type for value mods; should be a table of mod definitions");
+		return;
+	}
+
+	auto& cit = config.find(elemId);
+	if (cit == config.end()) {
+		config[elemId] = std::vector<DeviceValueMod>();
+	}
+
+	for (int i = 1; i <= modDefs.length(); ++i) {
+		LuaRef curModDef = LuaRef(modDefs[i]);
+		if (curModDef.isNil()) {
+			Logger::error("Failed to set value mods on device %d, index %d; table of value mods should be an array (i.e. be 0-indexed by continguous integer keys)", elemId, i);
+			return;
+		}
+		if (!curModDef.isTable()) {
+			Logger::error("Failed to set value mods on device %d, index %d; value mod was not a table", elemId, i);
+			return;
+		}
+
+		LuaRef curModType = LuaRef(curModDef[1]);
+		LuaRef curModValue = LuaRef(curModDef[2]);
+
+		if (curModType.isNil() || curModValue.isNil()) {
+			Logger::error("Failed to set value mods on device %d, index %d; value mod should be a two-element array containing the mod type and the value", elemId, i);
+			return;
+		}
+
+		float value;
+		if (curModValue.isNumber()) {
+			value = curModValue;
+		}
+		else if (curModValue.type() == 1) {
+			value = static_cast<bool>(curModValue) ? 1.0f : 0.0f;
+		}
+		else {
+			Logger::error("Failed to set value mods on device %d, index %d; value mod should be a number or boolean", elemId, i);
+			return;
+		}
+
+		DeviceValueMod mod;
+		mod.modType = curModType;
+		mod.value = value;
+		config[elemId].push_back(mod);
+	}	
+}
+
 static void setWeaponProp(std::string className, std::string itemName, int intPropId, LuaRef val) {
 	int itemId = Data::getItemId(className, itemName);
+	if (itemId == 0) {
+		Logger::error("Unable to set property config; invalid item %s on class %s", className.c_str(), itemName.c_str());
+		return;
+	}
 
 	setProp(Items::properties, g_config.serverSettings.weaponProperties, itemId, intPropId, val);
 }
@@ -320,6 +454,26 @@ static void setVehicleWeaponProp(std::string vehicleWeaponName, int intPropId, L
 	setProp(VehicleWeapons::properties, g_config.serverSettings.vehicleWeaponProperties, vehicleWeaponId, intPropId, val);
 }
 
+static void setDeviceValueMod(std::string className, std::string itemName, LuaRef modDefs) {
+	int itemId = Data::getItemId(className, itemName);
+	if (itemId == 0) {
+		Logger::error("Unable to set value mod config; invalid item %s on class %s", className.c_str(), itemName.c_str());
+		return;
+	}
+
+	setValueMod(g_config.serverSettings.deviceValueProperties, itemId, modDefs);
+}
+
+static void setDeviceValueMod_ArmorMod(std::string armorClassName, LuaRef modDefs) {
+	int classId = Utils::searchMapId(Data::armor_class_to_id, armorClassName, "", false);
+	if (classId == 0) {
+		Logger::error("Unable to set value mod config; invalid armor class %s", armorClassName.c_str());
+		return;
+	}
+
+	setValueMod(g_config.serverSettings.deviceValueProperties, classId, modDefs);
+}
+
 template <typename IdType, IdType x>
 static int getPropId() {
 	return (int)x;
@@ -336,6 +490,8 @@ namespace LuaAPI {
 			.beginNamespace("Items")
 				.addFunction("setProperty", &setWeaponProp)
 				.addFunction("getProperty", &getWeaponProp)
+				.addFunction("setValueMods", &setDeviceValueMod)
+				.addFunction("getValueMods", &getDeviceValueMod)
 				.beginNamespace("Properties")
 					.addProperty<int, int>("Invalid", &getPropId<Items::PropId, Items::PropId::INVALID>)
 					// Ammo
@@ -434,6 +590,8 @@ namespace LuaAPI {
 			.beginNamespace("Classes")
 				.addFunction("setProperty", &setClassProp)
 				.addFunction("getProperty", &getClassProp)
+				.addFunction("setValueMods", &setDeviceValueMod_ArmorMod)
+				.addFunction("getValueMods", &getDeviceValueMod_ArmorMod)
 				.beginNamespace("Properties")
 					// Base stats
 					.addProperty<int, int>("HealthPool", &getPropId<Classes::PropId, Classes::PropId::HEALTH_POOL>)

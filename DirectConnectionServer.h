@@ -65,6 +65,7 @@ namespace DCServer {
 
 		void sendGameBalanceDetailsMessage(std::shared_ptr<PlayerConnection> pconn, 
 			const GameBalance::Items::ItemsConfig& itemProperties,
+			const GameBalance::Items::DeviceValuesConfig& deviceValueProperties,
 			const GameBalance::Classes::ClassesConfig& classProperties,
 			const GameBalance::Vehicles::VehiclesConfig& vehicleProperties,
 			const GameBalance::VehicleWeapons::VehicleWeaponsConfig& vehicleWeaponProperties

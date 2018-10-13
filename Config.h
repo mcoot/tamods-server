@@ -118,6 +118,7 @@ struct ServerSettings {
 	std::map<std::string, CustomClass> customClasses;
 
 	GameBalance::Items::ItemsConfig weaponProperties;
+	GameBalance::Items::DeviceValuesConfig deviceValueProperties;
 	GameBalance::Classes::ClassesConfig classProperties;
 	GameBalance::Vehicles::VehiclesConfig vehicleProperties;
 	GameBalance::VehicleWeapons::VehicleWeaponsConfig vehicleWeaponProperties;
