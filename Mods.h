@@ -4,6 +4,8 @@
 #include <list>
 #include <random>
 
+#include "FunctionalUtils.h"
+
 #include "TAServerClient.h"
 #include "DirectConnectionServer.h"
 

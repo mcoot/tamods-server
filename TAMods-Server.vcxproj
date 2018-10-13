@@ -162,6 +162,7 @@
     <ClInclude Include="DirectConnectionServer.h" />
     <ClInclude Include="DirectConnectionTypes.h" />
     <ClInclude Include="dllmain.h" />
+    <ClInclude Include="FunctionalUtils.h" />
     <ClInclude Include="Geom.h" />
     <ClInclude Include="GameBalance.h" />
     <ClInclude Include="Hooks.h" />

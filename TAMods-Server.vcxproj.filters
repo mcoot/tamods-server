@@ -345,6 +345,9 @@
     <ClInclude Include="DirectConnectionTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FunctionalUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TAMods-Server.cpp">
