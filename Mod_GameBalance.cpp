@@ -175,6 +175,7 @@ static void applyValueModConfig(Items::DeviceValuesConfig& config) {
 			ATrDevice* dev = (ATrDevice*)obj;
 
 			// Reset existing modifications
+			// PROBS NEEDS CHECKING - CRASHES BELOW vvv
 			dev->BaseMod.Modifications.Clear();
 			// Apply modifications
 			for (DeviceValueMod& mod : elem.second) {

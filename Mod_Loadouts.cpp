@@ -34,8 +34,12 @@ bool CustomClass::doesLoadoutMatch(int ootbClass, const std::map<int, int>& load
 		if (it == loadout.end()) continue;
 
 		int itemId = it->second;
-		if (itemId != 0 && !this->allowedItems.count(itemId)) return false;
+		if (itemId != 0 && !this->allowedItems.count(itemId)) {
+			//Logger::debug("Tried to check loadout against class %d, but failed on item %d", this->armorClass, itemId);
+			return false;
+		}
 	}
+
 
 	return true;
 }
@@ -215,6 +219,8 @@ static void applyCustomClassToPRI(ATrPlayerReplicationInfo* that) {
 	that->m_nPlayerIconIndex = 140;
 
 	ATrPlayerController* thatPC = (ATrPlayerController*)that->Owner;
+
+	that->r_bSkinId = that->r_EquipLevels[EQP_Skin].EquipId;
 
 	if (that->Stats) that->Stats->SetActiveClass(thatPC, that->m_nPlayerClassId);
 
