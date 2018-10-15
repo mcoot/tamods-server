@@ -19,7 +19,16 @@ void Config::reset() {
 
 void Config::parseFile(std::string filePath) { 
 	reset();
-	lua = Lua();
+	
+	size_t last_sep = filePath.find_last_of("\\/");
+	if (last_sep == std::string::npos) {
+		Logger::error("Invalid filename %s, could not split working directory", filePath.c_str());
+		return;
+	}
+	std::string workingDir(filePath);
+	workingDir.erase(last_sep + 1, workingDir.length());
+	lua = Lua(workingDir);
+
 	if (Utils::fileExists(filePath)) {
 		Logger::info("Loading configuration from %s", filePath.c_str());
 		std::string err = lua.doFile(filePath);

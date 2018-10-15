@@ -1,15 +1,20 @@
 #include "Lua.h"
 
-Lua::Lua()
-{
+Lua::Lua(std::string workingDir) {
 	_state = luaL_newstate();
 	luaL_openlibs(_state);
-	std::string config = Utils::getConfigDir();
-	std::replace(config.begin(), config.end(), '\\', '/');
-	std::string path = "package.path = \"" + config + "?.lua;\" .. package.path";
-	doString(path);
+	setRequireWorkingDir(workingDir);
 	init();
 	_initInputEvents();
+}
+
+Lua::Lua() : Lua(Utils::getConfigDir()) {}
+
+void Lua::setRequireWorkingDir(std::string workingDir) {
+	std::string newWorkingDir(workingDir);
+	std::replace(newWorkingDir.begin(), newWorkingDir.end(), '\\', '/');
+	std::string path = "package.path = \"" + newWorkingDir + "?.lua;\" .. package.path";
+	doString(path);
 }
 
 Lua::~Lua()

@@ -19,6 +19,7 @@ class           Lua
 {
 public:
 	Lua();
+	Lua(std::string workingDir);
 	~Lua();
 
 private:
@@ -30,6 +31,8 @@ private:
 public:
 	// Located in LuaAPI.cpp. Because include hell.
 	void          init();
+
+	void setRequireWorkingDir(std::string workingDir);
 
 	lua_State     *getState() const { return (_state); }
 	std::string   doFile(const std::string &s);
