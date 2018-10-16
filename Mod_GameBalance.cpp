@@ -520,6 +520,8 @@ namespace LuaAPI {
 					.addProperty<int, int>("ReloadApplicationProportion", &getPropId<Items::PropId, Items::PropId::RELOAD_APPLICATION_PROPORTION>)
 					.addProperty<int, int>("BurstShotCount", &getPropId<Items::PropId, Items::PropId::BURST_SHOT_COUNT>)
 					.addProperty<int, int>("BurstShotRefireTime", &getPropId<Items::PropId, Items::PropId::BURST_SHOT_REFIRE_TIME>)
+					.addProperty<int, int>("SpinupTime", &getPropId<Items::PropId, Items::PropId::SPINUP_TIME>)
+					.addProperty<int, int>("ShotgunShotCount", &getPropId<Items::PropId, Items::PropId::SHOTGUN_SHOT_COUNT>)
 					// Damage / Impact
 					.addProperty<int, int>("Damage", &getPropId<Items::PropId, Items::PropId::DAMAGE>)
 					.addProperty<int, int>("ExplosiveRadius", &getPropId<Items::PropId, Items::PropId::EXPLOSIVE_RADIUS>)
@@ -545,6 +547,12 @@ namespace LuaAPI {
 					.addProperty<int, int>("DoesImpulseFlag", &getPropId<Items::PropId, Items::PropId::DOES_IMPULSE_FLAG>)
 					.addProperty<int, int>("MeleeDamageRadius", &getPropId<Items::PropId, Items::PropId::MELEE_DAMAGE_RADIUS>)
 					.addProperty<int, int>("MeleeConeAngle", &getPropId<Items::PropId, Items::PropId::MELEE_CONE_ANGLE>)
+					.addProperty<int, int>("PhaseDamagePerEnergy", &getPropId<Items::PropId, Items::PropId::PHASE_DAMAGE_PER_ENERGY>)
+					.addProperty<int, int>("PhaseMaxConsumedEnergy", &getPropId<Items::PropId, Items::PropId::PHASE_MAX_CONSUMED_ENERGY>)
+					.addProperty<int, int>("BXTChargeMaxDamage", &getPropId<Items::PropId, Items::PropId::BXT_CHARGE_MAX_DAMAGE>)
+					.addProperty<int, int>("BXTChargeTime", &getPropId<Items::PropId, Items::PropId::BXT_CHARGE_TIME>)
+					.addProperty<int, int>("BXTChargeMultCoefficient", &getPropId<Items::PropId, Items::PropId::BXT_CHARGE_MULT_COEFFICIENT>)
+					.addProperty<int, int>("BXTChargeDivCoefficient", &getPropId<Items::PropId, Items::PropId::BXT_CHARGE_DIV_COEFFICIENT>)
 					// Projectile / Tracer
 					.addProperty<int, int>("ProjectileSpeed", &getPropId<Items::PropId, Items::PropId::PROJECTILE_SPEED>)
 					.addProperty<int, int>("ProjectileMaxSpeed", &getPropId<Items::PropId, Items::PropId::PROJECTILE_MAX_SPEED>)
