@@ -574,6 +574,8 @@ namespace LuaAPI {
 					// Grenade
 					.addProperty<int, int>("ThrowDelay", &getPropId<Items::PropId, Items::PropId::THROW_DELAY>)
 					.addProperty<int, int>("ThrowPullPinTime", &getPropId<Items::PropId, Items::PropId::THROW_PULL_PIN_TIME>)
+					.addProperty<int, int>("StuckDamageMultiplier", &getPropId<Items::PropId, Items::PropId::STUCK_DAMAGE_MULTIPLIER>)
+					.addProperty<int, int>("StuckMomentumMultiplier", &getPropId<Items::PropId, Items::PropId::STUCK_MOMENTUM_MULTIPLIER>)
 					// Pack
 					.addProperty<int, int>("PackSustainedEnergyCost", &getPropId<Items::PropId, Items::PropId::PACK_SUSTAINED_ENERGY_COST>)
 					.addProperty<int, int>("ThrustPackEnergyCost", &getPropId<Items::PropId, Items::PropId::THRUST_PACK_ENERGY_COST>)
