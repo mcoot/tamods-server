@@ -157,9 +157,7 @@ static void applyPropConfig(std::map<IdType, Property>& propDefs, std::map<int, 
 }
 
 static void applyValueModConfig(Items::DeviceValuesConfig& config) {
-	Logger::debug("Applying valuemods...");
 	for (auto& elem : config) {
-		Logger::debug("Applying valuemods to item %d", elem.first);
 		// Get the object/s needed to modify
 		// Item is either a regular item or an armour mod; in the former case it will have a class id rather than an item ID
 		std::vector<UObject*> objects;
@@ -179,7 +177,6 @@ static void applyValueModConfig(Items::DeviceValuesConfig& config) {
 			dev->BaseMod.Modifications.Clear();
 			// Apply modifications
 			for (DeviceValueMod& mod : elem.second) {
-				Logger::debug("Applying mod { %d, %f} to item %d", mod.modType, mod.value, elem.first);
 				FDeviceModification devMod;
 				devMod.ModType = mod.modType;
 				devMod.Value = mod.value;

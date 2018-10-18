@@ -92,6 +92,16 @@ static std::string getConfigFilePath() {
 	return Utils::getConfigDir() + CONFIGFILE_NAME;
 }
 
+std::string Config::getConfigDirectory() {
+	std::string cfgPath = getConfigFilePath();
+
+	size_t last_sep = cfgPath.find_last_of("\\/");
+	std::string workingDir(cfgPath);
+	workingDir.erase(last_sep + 1, workingDir.length());
+	
+	return workingDir;
+}
+
 void Config::load() {
 	parseFile(getConfigFilePath());
 

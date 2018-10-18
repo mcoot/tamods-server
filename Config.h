@@ -132,11 +132,13 @@ class Config {
 private:
 	void parseFile(std::string filePath);
 	void setConfigVariables();
+	
 	void addDefaultMapRotation();
 public:
 	Config();
 	~Config();
 
+	std::string getConfigDirectory();
 	void reset();
 	void load();
 

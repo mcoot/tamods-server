@@ -16,6 +16,10 @@ static void setLoggerLevel(int level) {
 	Logger::setLevel((Logger::Level)level);
 }
 
+static std::string getGConfigDirectory() {
+	return g_config.getConfigDirectory();
+}
+
 namespace LuaAPI {
 	void addCoreModAPI(luabridge::Namespace ns) {
 		ns
@@ -39,6 +43,8 @@ namespace LuaAPI {
 				.addFunction("fatal", Logger::printFatal)
 			.endNamespace()
 			.beginNamespace("Core")
+				// Get the current config path
+				.addProperty<std::string, std::string>("ConfigPath", &getGConfigDirectory)
 				// Expose the name and version of the mod via Lua
 				.beginNamespace("DLL")
 					.addVariable("Name", &dllName, false)
