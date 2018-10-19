@@ -71,6 +71,10 @@ namespace DCServer {
 			const GameBalance::VehicleWeapons::VehicleWeaponsConfig& vehicleWeaponProperties
 		);
 
+		void sendStateUpdateMessage(std::shared_ptr<PlayerConnection> pconn, float playerPing);
+
+		void pushPlayerStateUpdate();
+
 		bool isPlayerAKnownModdedConnection(FUniqueNetId playerId);
 	};
 

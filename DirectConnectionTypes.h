@@ -22,6 +22,7 @@ using json = nlohmann::json;
 
 #define DCSRV_MSG_KIND_PLAYER_CONNECTION 0x1000
 #define DCSRV_MSG_KIND_GAME_BALANCE_DETAILS 0x1001
+#define DCSRV_MSG_KIND_STATE_UPDATE 0x1002
 
 namespace DCServer {
 
@@ -329,4 +330,24 @@ namespace DCServer {
 		}
 	};
 
+	class StateUpdateMessage : public Message {
+	public:
+		float playerPing;
+	public:
+		short getMessageKind() override {
+			return DCSRV_MSG_KIND_STATE_UPDATE;
+		}
+
+		void toJson(json& j) {
+			j["player_ping"] = playerPing;
+		}
+
+		bool fromJson(const json& j) {
+			auto& it = j.find("player_ping");
+			if (it == j.end()) return false;
+			playerPing = j["player_ping"];
+
+			return true;
+		}
+	};
 }

@@ -250,6 +250,7 @@ void TAServer::Client::handler_Launcher2GamePingsMessage(const json& msgBody) {
 void PlayerController_ServerUpdatePing(APlayerController* that, APlayerController_execServerUpdatePing_Parms* params, void* result, Hooks::CallInfo* callInfo) {}
 
 static bool cachedWasInOvertime = false;
+static int pollsSinceLastStateUpdate = 0;
 void pollForGameInfoChanges() {
 
 	// Lock the GRI to ensure it can't be unset during polling
@@ -269,5 +270,57 @@ void pollForGameInfoChanges() {
 			}
 			cachedWasInOvertime = Utils::tr_gri->WorldInfo->Game->bOverTime;
 		}
+	}
+
+
+	// Send out player state every 10 seconds;
+	if (pollsSinceLastStateUpdate >= 5) {
+		g_DCServer.pushPlayerStateUpdate();
+		pollsSinceLastStateUpdate = 0;
+	}
+	else {
+		pollsSinceLastStateUpdate++;
+	}
+}
+
+static ATrPlayerReplicationInfo* getPriForPlayerId(TArray<APlayerReplicationInfo*>& arr, long long id) {
+	for (int i = 0; i < arr.Count; ++i) {
+		if (i > arr.Count) break; // Mediocre attempt at dealing with concurrent modifications
+		ATrPlayerReplicationInfo* curPRI = (ATrPlayerReplicationInfo*)arr.GetStd(i);
+		long long cur = TAServer::netIdToLong(curPRI->UniqueId);
+		if (cur == id) {
+			return curPRI;
+		}
+	}
+
+	return NULL;
+}
+
+void DCServer::Server::pushPlayerStateUpdate() {
+	// Need to iterate over all players to send the appropriate update to each
+	// Needs to be concurrency safe - since a player could disconnect while this operation is ongoing and be removed from the map
+
+	// Snapshot of the known connections
+	std::vector<std::shared_ptr<PlayerConnection>> connList;
+	{
+		std::lock_guard<std::mutex> lock(knownPlayerConnectionsMutex);
+
+		for (auto& it : knownPlayerConnections) {
+			if (it.second) {
+				connList.push_back(it.second);
+			}
+		}
+	}
+
+	for (auto& pconn : connList) {
+		if (!pconn || !pconn->conn) continue;
+
+		// Can assume tr_gri exists since we push player state during polling
+		ATrPlayerReplicationInfo* pri = getPriForPlayerId(Utils::tr_gri->PRIArray, pconn->playerId);
+		if (!pri) continue;
+
+		float ping = (pri->Ping * 4.0f) / (1000.0f);
+
+		sendStateUpdateMessage(pconn, ping);
 	}
 }

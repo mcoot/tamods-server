@@ -148,4 +148,14 @@ namespace DCServer {
 		pconn->conn->send(msg.getMessageKind(), j);
 	}
 
+	void Server::sendStateUpdateMessage(std::shared_ptr<PlayerConnection> pconn, float playerPing) {
+		StateUpdateMessage msg;
+		msg.playerPing = playerPing;
+
+		json j;
+		msg.toJson(j);
+
+		pconn->conn->send(msg.getMessageKind(), j);
+	}
+
 }
