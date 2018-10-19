@@ -173,8 +173,13 @@ static void applyValueModConfig(Items::DeviceValuesConfig& config) {
 			ATrDevice* dev = (ATrDevice*)obj;
 
 			// Reset existing modifications
-			// PROBS NEEDS CHECKING - CRASHES BELOW vvv
-			dev->BaseMod.Modifications.Clear();
+			// Here I'm deliberately leaking memory by losing the reference to the existing BaseMod.Modifications data
+			// (since TArray doesn't have a destructor that frees it)
+			// Actually freeing the original data intermittently causes crashes (maybe due to UnrealScript GC interaction?)
+			// The amount of memory leaked should hopefully not be too large;
+			// On server, it will leak: 8 bytes * no. of mods on device * no. times setValueMods is called
+			// On client, it will leak that many for every server join
+			dev->BaseMod.Modifications = TArray<FDeviceModification>();
 			// Apply modifications
 			for (DeviceValueMod& mod : elem.second) {
 				FDeviceModification devMod;
@@ -550,6 +555,14 @@ namespace LuaAPI {
 					.addProperty<int, int>("BXTChargeTime", &getPropId<Items::PropId, Items::PropId::BXT_CHARGE_TIME>)
 					.addProperty<int, int>("BXTChargeMultCoefficient", &getPropId<Items::PropId, Items::PropId::BXT_CHARGE_MULT_COEFFICIENT>)
 					.addProperty<int, int>("BXTChargeDivCoefficient", &getPropId<Items::PropId, Items::PropId::BXT_CHARGE_DIV_COEFFICIENT>)
+					.addProperty<int, int>("FractalDuration", &getPropId<Items::PropId, Items::PropId::FRACTAL_DURATION>)
+					.addProperty<int, int>("FractalShardInterval", &getPropId<Items::PropId, Items::PropId::FRACTAL_SHARD_INTERVAL>)
+					.addProperty<int, int>("FractalAscentTime", &getPropId<Items::PropId, Items::PropId::FRACTAL_ASCENT_TIME>)
+					.addProperty<int, int>("FractalAscentHeight", &getPropId<Items::PropId, Items::PropId::FRACTAL_ASCENT_HEIGHT>)
+					.addProperty<int, int>("FractalShardDistance", &getPropId<Items::PropId, Items::PropId::FRACTAL_SHARD_DISTANCE>)
+					.addProperty<int, int>("FractalShardHeight", &getPropId<Items::PropId, Items::PropId::FRACTAL_SHARD_HEIGHT>)
+					.addProperty<int, int>("FractalShardDamage", &getPropId<Items::PropId, Items::PropId::FRACTAL_SHARD_DAMAGE>)
+					.addProperty<int, int>("FractalShardDamageRadius", &getPropId<Items::PropId, Items::PropId::FRACTAL_SHARD_DAMAGE_RADIUS>)
 					// Projectile / Tracer
 					.addProperty<int, int>("ProjectileSpeed", &getPropId<Items::PropId, Items::PropId::PROJECTILE_SPEED>)
 					.addProperty<int, int>("ProjectileMaxSpeed", &getPropId<Items::PropId, Items::PropId::PROJECTILE_MAX_SPEED>)
@@ -576,6 +589,10 @@ namespace LuaAPI {
 					.addProperty<int, int>("ThrowPullPinTime", &getPropId<Items::PropId, Items::PropId::THROW_PULL_PIN_TIME>)
 					.addProperty<int, int>("StuckDamageMultiplier", &getPropId<Items::PropId, Items::PropId::STUCK_DAMAGE_MULTIPLIER>)
 					.addProperty<int, int>("StuckMomentumMultiplier", &getPropId<Items::PropId, Items::PropId::STUCK_MOMENTUM_MULTIPLIER>)
+					.addProperty<int, int>("FuseTimer", &getPropId<Items::PropId, Items::PropId::FUSE_TIMER>)
+					.addProperty<int, int>("ExplodeOnContact", &getPropId<Items::PropId, Items::PropId::EXPLODE_ON_CONTACT>)
+					.addProperty<int, int>("ExplodeOnFuse", &getPropId<Items::PropId, Items::PropId::EXPLODE_ON_FUSE>)
+					.addProperty<int, int>("MustBounceBeforeExplode", &getPropId<Items::PropId, Items::PropId::MUST_BOUNCE_BEFORE_EXPLODE>)
 					// Pack
 					.addProperty<int, int>("PackSustainedEnergyCost", &getPropId<Items::PropId, Items::PropId::PACK_SUSTAINED_ENERGY_COST>)
 					.addProperty<int, int>("ThrustPackEnergyCost", &getPropId<Items::PropId, Items::PropId::THRUST_PACK_ENERGY_COST>)

@@ -84,8 +84,15 @@ namespace DCServer {
 		}
 	}
 
+	static bool isVersionCompatible(std::string v, std::string referenceV) {
+		return true;
+	}
+
 	bool Server::validatePlayerConn(std::shared_ptr<PlayerConnection> pconn, const PlayerConnectionMessage& connDetails) {
 		// TODO: Validate protocol version
+		if (!isVersionCompatible(connDetails.protocolVersion, TAMODS_PROTOCOL_VERSION)) {
+
+		}
 
 		// Check if player was already validated
 		if (pconn->validated) {
