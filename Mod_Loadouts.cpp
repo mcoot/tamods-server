@@ -230,6 +230,7 @@ static void applyCustomClassToPRI(ATrPlayerReplicationInfo* that) {
 		if (pawn) {
 			Logger::debug("Setting pawn with main class = \"%s\"", that->CharClassInfo->GetFullName());
 			pawn->SetCharacterClassFromInfo(that->CharClassInfo, true);
+			pawn->SetPending3PSkin(that->GetCurrentSkinClass(that->CharClassInfo));
 		}
 	}
 

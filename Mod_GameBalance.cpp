@@ -3,6 +3,7 @@
 using namespace GameBalance;
 
 namespace GameBalance {
+
 	ValueType Property::getType() {
 		return type;
 	}
@@ -201,7 +202,7 @@ void ServerSettings::ApplyGameBalanceProperties() {
 }
 
 template <typename IdType>
-static LuaRef getProp(std::map<IdType, Property>& propDefs, int elemId, int intPropId) {
+static LuaRef getProp(std::map<IdType, Property>& propDefs, std::map<IdType, PropValue>& props, int elemId, int intPropId) {
 	std::vector<UObject*> defObjs = getDefaultObjectsForProps<IdType>(elemId);
 	if (defObjs.empty()) {
 		Logger::error("Unable to get property %d; could not get default objects for item %d", intPropId, elemId);
@@ -218,6 +219,16 @@ static LuaRef getProp(std::map<IdType, Property>& propDefs, int elemId, int intP
 		return LuaRef(g_config.lua.getState());
 	}
 	GameBalance::PropValue val;
+
+	// Find the value of this property in the map
+	// And set it based on that value
+	auto& pvalIt = props.find((IdType)intPropId);
+	if (pvalIt != props.end()) {
+		val = pvalIt->second;
+	}
+
+	// For most properties, the value is a proxy to an underlying game value
+	// Grab the 'true' value from that
 	if (!it->second.get(objToReadFrom, val)) {
 		// Failed get
 		Logger::error("Failed to get property with id %d", intPropId);
@@ -265,17 +276,29 @@ static LuaRef getWeaponProp(std::string className, std::string itemName, int int
 		return LuaRef(g_config.lua.getState());
 	}
 
-	return getProp(Items::properties, itemId, intPropId);
+	Items::PropMapping propMap;
+	auto& it = g_config.serverSettings.weaponProperties.find(itemId);
+	if (it != g_config.serverSettings.weaponProperties.end()) {
+		propMap = it->second;
+	}
+
+	return getProp(Items::properties, propMap, itemId, intPropId);
 }
 
 static LuaRef getClassProp(std::string className, int intPropId) {
 	int classId = Utils::searchMapId(Data::armor_class_to_id, className, "", false);
 	if (classId == 0) {
-		Logger::error("Unable to set property config; invalid class %s", className.c_str());
+		Logger::error("Unable to get property config; invalid class %s", className.c_str());
 		return LuaRef(g_config.lua.getState());
 	}
 
-	return getProp(Classes::properties, classId, intPropId);
+	Classes::PropMapping propMap;
+	auto& it = g_config.serverSettings.classProperties.find(classId);
+	if (it != g_config.serverSettings.classProperties.end()) {
+		propMap = it->second;
+	}
+
+	return getProp(Classes::properties, propMap, classId, intPropId);
 }
 
 static LuaRef getVehicleProp(std::string vehicleName, int intPropId) {
@@ -285,17 +308,29 @@ static LuaRef getVehicleProp(std::string vehicleName, int intPropId) {
 		return LuaRef(g_config.lua.getState());
 	}
 
-	return getProp(Vehicles::properties, vehicleId, intPropId);
+	Vehicles::PropMapping propMap;
+	auto& it = g_config.serverSettings.vehicleProperties.find(vehicleId);
+	if (it != g_config.serverSettings.vehicleProperties.end()) {
+		propMap = it->second;
+	}
+
+	return getProp(Vehicles::properties, propMap, vehicleId, intPropId);
 }
 
 static LuaRef getVehicleWeaponProp(std::string vehicleWeaponName, int intPropId) {
 	int vehicleWeaponId = Utils::searchMapId(Data::vehicle_weapons, vehicleWeaponName, "", false);
 	if (vehicleWeaponId == 0) {
-		Logger::error("Unable to set property config; invalid vehicle %s", vehicleWeaponName.c_str());
+		Logger::error("Unable to get property config; invalid vehicle %s", vehicleWeaponName.c_str());
 		return LuaRef(g_config.lua.getState());
 	}
 
-	return getProp(VehicleWeapons::properties, vehicleWeaponId, intPropId);
+	VehicleWeapons::PropMapping propMap;
+	auto& it = g_config.serverSettings.vehicleWeaponProperties.find(vehicleWeaponId);
+	if (it != g_config.serverSettings.vehicleWeaponProperties.end()) {
+		propMap = it->second;
+	}
+
+	return getProp(VehicleWeapons::properties, propMap, vehicleWeaponId, intPropId);
 }
 
 static LuaRef getDeviceValueMod(std::string className, std::string itemName) {
@@ -584,6 +619,8 @@ namespace LuaAPI {
 					.addProperty<int, int>("AccuracyLossOnJump", &getPropId<Items::PropId, Items::PropId::ACCURACY_LOSS_ON_JUMP>)
 					.addProperty<int, int>("AccuracyLossMax", &getPropId<Items::PropId, Items::PropId::ACCURACY_LOSS_MAX>)
 					.addProperty<int, int>("AccuracyCorrectionRate", &getPropId<Items::PropId, Items::PropId::ACCURACY_CORRECTION_RATE>)
+					.addProperty<int, int>("ShotgunInnerAccuracy", &getPropId<Items::PropId, Items::PropId::SHOTGUN_INNER_ACCURACY>)
+					.addProperty<int, int>("ShotgunUseGOTYSpread", &getPropId<Items::PropId, Items::PropId::SHOTGUN_USE_GOTY_SPREAD>)
 					// Grenade
 					.addProperty<int, int>("ThrowDelay", &getPropId<Items::PropId, Items::PropId::THROW_DELAY>)
 					.addProperty<int, int>("ThrowPullPinTime", &getPropId<Items::PropId, Items::PropId::THROW_PULL_PIN_TIME>)
