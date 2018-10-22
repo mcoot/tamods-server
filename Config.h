@@ -109,6 +109,7 @@ struct ServerSettings {
 
 	// Weapon bans
 	std::set<int> bannedItems;
+	std::set<std::pair<int, int> > mutuallyExclusiveItems;
 	std::set<int> disabledEquipPointsLight;
 	std::set<int> disabledEquipPointsMedium;
 	std::set<int> disabledEquipPointsHeavy;

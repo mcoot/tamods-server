@@ -260,6 +260,22 @@ static void removeFromBannedItemsList(std::string className, std::string itemNam
 	}
 }
 
+static void addToMutuallyExclusiveItemsList(std::string className1, std::string itemName1, std::string className2, std::string itemName2) {
+	int item1 = Data::getItemId(className1, itemName1);
+	int item2 = Data::getItemId(className2, itemName2);
+	if (item1 && item2) {
+		g_config.serverSettings.mutuallyExclusiveItems.insert(std::pair<int, int>(item1, item2));
+	}
+}
+
+static void removeFromMutuallyExclusiveItemsList(std::string className1, std::string itemName1, std::string className2, std::string itemName2) {
+	int item1 = Data::getItemId(className1, itemName1);
+	int item2 = Data::getItemId(className2, itemName2);
+	if (item1 && item2) {
+		g_config.serverSettings.mutuallyExclusiveItems.erase(std::pair<int, int>(item1, item2));
+	}
+}
+
 static void addToDisabledEquipPointsList(std::string className, int eqp) {
 	int classNum = Utils::searchMapId(Data::classes, className, "", false) - 1;
 	if (classNum == -1) return;
@@ -410,6 +426,10 @@ namespace LuaAPI {
 			.beginNamespace("BannedItems")
 				.addFunction("add", &addToBannedItemsList)
 				.addFunction("remove", &removeFromBannedItemsList)
+			.endNamespace()
+			.beginNamespace("MutuallyExclusiveItems")
+				.addFunction("add", &addToMutuallyExclusiveItemsList)
+				.addFunction("remove", &removeFromMutuallyExclusiveItemsList)
 			.endNamespace()
 			.beginNamespace("CustomClasses")
 				.addVariable("Enabled", &g_config.serverSettings.useCustomClasses, true)

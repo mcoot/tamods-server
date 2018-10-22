@@ -123,9 +123,24 @@ static void applyWeaponBans(ATrPlayerReplicationInfo* that, int classId) {
 			shouldBanSlot = g_config.serverSettings.disabledEquipPointsHeavy.count(i) != 0;
 			break;
 		}
+		int itemId = that->r_EquipLevels[i].EquipId;
+
+		bool shouldBanMutualExclusion = false;
+		for (auto& mutualExclusion : g_config.serverSettings.mutuallyExclusiveItems) {
+			if (mutualExclusion.first != itemId && mutualExclusion.second != itemId) continue;
+			int exclusiveItemId = mutualExclusion.first == itemId ? mutualExclusion.second : mutualExclusion.first;
+			for (int j = 0; j < EQP_MAX; ++j) {
+				if (i != j && that->r_EquipLevels[j].EquipId == exclusiveItemId) {
+					shouldBanMutualExclusion = true;
+					break;
+				}
+			}
+			if (shouldBanMutualExclusion) break;
+		}
 
 		// If the given weapon is banned or the slot is disabled, set its equipid to 0
-		if (shouldBanSlot || g_config.serverSettings.bannedItems.count(that->r_EquipLevels[i].EquipId) != 0) {
+		if (shouldBanSlot || shouldBanMutualExclusion
+			|| g_config.serverSettings.bannedItems.count(itemId) != 0) {
 			that->r_EquipLevels[i].EquipId = 0;
 		}
 	}
