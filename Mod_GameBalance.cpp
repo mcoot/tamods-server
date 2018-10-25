@@ -559,6 +559,7 @@ namespace LuaAPI {
 					.addProperty<int, int>("BurstShotRefireTime", &getPropId<Items::PropId, Items::PropId::BURST_SHOT_REFIRE_TIME>)
 					.addProperty<int, int>("SpinupTime", &getPropId<Items::PropId, Items::PropId::SPINUP_TIME>)
 					.addProperty<int, int>("ShotgunShotCount", &getPropId<Items::PropId, Items::PropId::SHOTGUN_SHOT_COUNT>)
+					.addProperty<int, int>("ShotEnergyCost", &getPropId<Items::PropId, Items::PropId::SHOT_ENERGY_COST>)
 					// Damage / Impact
 					.addProperty<int, int>("Damage", &getPropId<Items::PropId, Items::PropId::DAMAGE>)
 					.addProperty<int, int>("ExplosiveRadius", &getPropId<Items::PropId, Items::PropId::EXPLOSIVE_RADIUS>)
