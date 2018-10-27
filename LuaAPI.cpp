@@ -5,7 +5,8 @@ namespace LuaAPI {
 		addCoreModAPI,
 		addServerSettingsAPI,
 		addLoadoutsLuaAPI,
-		addGameBalanceAPI
+		addGameBalanceAPI,
+		addAdministrationAPI,
 	};
 }
 

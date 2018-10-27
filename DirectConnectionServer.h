@@ -17,6 +17,7 @@
 #include "SdkHeaders.h"
 #include "Logger.h"
 #include "Utils.h"
+#include "AccessControl.h"
 
 #include "TCP.h"
 #include "DirectConnectionTypes.h"
@@ -33,6 +34,7 @@ namespace DCServer {
 		ConnectionPtr conn;
 		long long playerId = 0;
 		bool validated = false;
+		ServerRole role;
 	public:
 		PlayerConnection(ConnectionPtr conn) : conn(conn) {}
 	};
@@ -58,10 +60,14 @@ namespace DCServer {
 		bool validatePlayerConn(std::shared_ptr<PlayerConnection> pconn, const PlayerConnectionMessage& connDetails);
 
 		void handler_PlayerConnectionMessage(std::shared_ptr<PlayerConnection> pconn, const json& j);
+		void handler_RoleLoginMessage(std::shared_ptr<PlayerConnection> pconn, const json& j);
+		void handler_ExecuteCommandMessage(std::shared_ptr<PlayerConnection> pconn, const json& j);
 	public:
 		Server() {}
 
 		void start(short port);
+
+		void forAllKnownConnections(std::function<void(Server*, std::shared_ptr<PlayerConnection>)> f);
 
 		void sendGameBalanceDetailsMessage(std::shared_ptr<PlayerConnection> pconn, 
 			const GameBalance::Items::ItemsConfig& itemProperties,
@@ -73,7 +79,7 @@ namespace DCServer {
 
 		void sendStateUpdateMessage(std::shared_ptr<PlayerConnection> pconn, float playerPing);
 
-		void pushPlayerStateUpdate();
+		void sendMessageToClient(std::shared_ptr<PlayerConnection> pconn, std::vector<MessageToClientMessage::ConsoleMsgDetails>& consoleMessages, MessageToClientMessage::IngameMsgDetails& ingameMessage);
 
 		bool isPlayerAKnownModdedConnection(FUniqueNetId playerId);
 	};

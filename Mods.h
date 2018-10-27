@@ -55,3 +55,5 @@ void PlayerController_ServerUpdatePing(APlayerController* that, APlayerControlle
 
 // Hook called when the playercontroller calculates how long the respawn time should be
 void TrPlayerController_GetRespawnDelayTotalTime(ATrPlayerController* that, ATrPlayerController_execGetRespawnDelayTotalTime_Parms* params, float* result, Hooks::CallInfo* callInfo);
+
+// Server admin commands

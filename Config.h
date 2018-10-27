@@ -16,6 +16,7 @@
 #include "Utils.h"
 #include "Hooks.h"
 #include "Data.h"
+#include "AccessControl.h"
 #include "LoadoutTypes.h"
 #include "GameBalance.h"
 
@@ -147,6 +148,7 @@ public:
 	Lua lua;
 
 	ServerSettings serverSettings;
+	ServerAccessControl serverAccessControl;
 
 	bool connectToTAServer;
 	bool connectToClients;

@@ -348,6 +348,9 @@
     <ClInclude Include="FunctionalUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AccessControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TAMods-Server.cpp">
@@ -637,6 +640,9 @@
     </ClCompile>
     <ClCompile Include="GameBalanceData.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mod_Administration.cpp">
+      <Filter>Source Files\Mods</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -37,8 +37,15 @@ namespace DCServer {
 		});
 
 		pconn->conn->add_handler(DCSRV_MSG_KIND_PLAYER_CONNECTION, [this, pconn](const json& j) {
-			//Logger::debug("Handler: %d", &handler_PlayerConnectionMessage);
 			handler_PlayerConnectionMessage(pconn, j);
+		});
+		
+		pconn->conn->add_handler(DCSRV_MSG_KIND_ROLE_LOGIN, [this, pconn](const json& j) {
+			handler_RoleLoginMessage(pconn, j);
+		});
+		
+		pconn->conn->add_handler(DCSRV_MSG_KIND_EXECUTE_COMMAND, [this, pconn](const json& j) {
+			handler_ExecuteCommandMessage(pconn, j);
 		});
 	}
 
@@ -126,6 +133,29 @@ namespace DCServer {
 		return true;
 	}
 
+	void Server::forAllKnownConnections(std::function<void(Server*, std::shared_ptr<PlayerConnection>)> f) {
+		// Need to iterate over all players to send the appropriate update to each
+			// Needs to be concurrency safe - since a player could disconnect while this operation is ongoing and be removed from the map
+
+			// Snapshot of the known connections
+		std::vector<std::shared_ptr<PlayerConnection> > connList;
+		{
+			std::lock_guard<std::mutex> lock(knownPlayerConnectionsMutex);
+
+			for (auto& it : knownPlayerConnections) {
+				if (it.second) {
+					connList.push_back(it.second);
+				}
+			}
+		}
+
+		for (auto& pconn : connList) {
+			if (!pconn || !pconn->conn) continue;
+
+			f(this, pconn);
+		}
+	}
+
 	void Server::sendGameBalanceDetailsMessage(std::shared_ptr<PlayerConnection> pconn,
 		const GameBalance::Items::ItemsConfig& itemProperties,
 		const GameBalance::Items::DeviceValuesConfig& deviceValueProperties,
@@ -151,6 +181,17 @@ namespace DCServer {
 	void Server::sendStateUpdateMessage(std::shared_ptr<PlayerConnection> pconn, float playerPing) {
 		StateUpdateMessage msg;
 		msg.playerPing = playerPing;
+
+		json j;
+		msg.toJson(j);
+
+		pconn->conn->send(msg.getMessageKind(), j);
+	}
+
+	void Server::sendMessageToClient(std::shared_ptr<PlayerConnection> pconn, std::vector<MessageToClientMessage::ConsoleMsgDetails>& consoleMessages, MessageToClientMessage::IngameMsgDetails& ingameMessage) {
+		MessageToClientMessage msg;
+		msg.consoleMessages = consoleMessages;
+		msg.ingameMessage = ingameMessage;
 
 		json j;
 		msg.toJson(j);

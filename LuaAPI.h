@@ -12,4 +12,5 @@ namespace LuaAPI {
 	API addServerSettingsAPI;
 	API addLoadoutsLuaAPI;
 	API addGameBalanceAPI;
+	API addAdministrationAPI;
 }

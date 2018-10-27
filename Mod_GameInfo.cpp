@@ -148,7 +148,11 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 		for (int i = 0; i < Utils::tr_gri->PRIArray.Count; ++i) {
 			ATrPlayerReplicationInfo* pri = (ATrPlayerReplicationInfo*)Utils::tr_gri->PRIArray.GetStd(i);
 			if (pri->Team && pri->Owner) {
-				pri->Team->RemoveFromTeam((APlayerController*)pri->Owner);
+				ATrPlayerController* pc = (ATrPlayerController*)pri->Owner;
+				pri->Team->RemoveFromTeam(pc);
+				pc->r_bNeedLoadout = true;
+				pc->r_bNeedTeam = true;
+				Logger::debug("Need loadout? %d", pc->r_bNeedLoadout);
 			}
 			else {
 			}
@@ -249,6 +253,19 @@ void TAServer::Client::handler_Launcher2GamePingsMessage(const json& msgBody) {
 // Blackholed
 void PlayerController_ServerUpdatePing(APlayerController* that, APlayerController_execServerUpdatePing_Parms* params, void* result, Hooks::CallInfo* callInfo) {}
 
+static ATrPlayerReplicationInfo* getPriForPlayerId(TArray<APlayerReplicationInfo*>& arr, long long id) {
+	for (int i = 0; i < arr.Count; ++i) {
+		if (i > arr.Count) break; // Mediocre attempt at dealing with concurrent modifications
+		ATrPlayerReplicationInfo* curPRI = (ATrPlayerReplicationInfo*)arr.GetStd(i);
+		long long cur = TAServer::netIdToLong(curPRI->UniqueId);
+		if (cur == id) {
+			return curPRI;
+		}
+	}
+
+	return NULL;
+}
+
 static bool cachedWasInOvertime = false;
 static int pollsSinceLastStateUpdate = 0;
 void pollForGameInfoChanges() {
@@ -275,52 +292,19 @@ void pollForGameInfoChanges() {
 
 	// Send out player state every 10 seconds;
 	if (pollsSinceLastStateUpdate >= 5) {
-		g_DCServer.pushPlayerStateUpdate();
+		// Send out to every player
+		g_DCServer.forAllKnownConnections([](DCServer::Server* srv, std::shared_ptr<DCServer::PlayerConnection> pconn) {
+			// Can assume tr_gri exists since we push player state during polling
+			ATrPlayerReplicationInfo* pri = getPriForPlayerId(Utils::tr_gri->PRIArray, pconn->playerId);
+			if (!pri) return;
+
+			float ping = (pri->Ping * 4.0f) / (1000.0f);
+
+			srv->sendStateUpdateMessage(pconn, ping);
+		});
 		pollsSinceLastStateUpdate = 0;
 	}
 	else {
 		pollsSinceLastStateUpdate++;
-	}
-}
-
-static ATrPlayerReplicationInfo* getPriForPlayerId(TArray<APlayerReplicationInfo*>& arr, long long id) {
-	for (int i = 0; i < arr.Count; ++i) {
-		if (i > arr.Count) break; // Mediocre attempt at dealing with concurrent modifications
-		ATrPlayerReplicationInfo* curPRI = (ATrPlayerReplicationInfo*)arr.GetStd(i);
-		long long cur = TAServer::netIdToLong(curPRI->UniqueId);
-		if (cur == id) {
-			return curPRI;
-		}
-	}
-
-	return NULL;
-}
-
-void DCServer::Server::pushPlayerStateUpdate() {
-	// Need to iterate over all players to send the appropriate update to each
-	// Needs to be concurrency safe - since a player could disconnect while this operation is ongoing and be removed from the map
-
-	// Snapshot of the known connections
-	std::vector<std::shared_ptr<PlayerConnection>> connList;
-	{
-		std::lock_guard<std::mutex> lock(knownPlayerConnectionsMutex);
-
-		for (auto& it : knownPlayerConnections) {
-			if (it.second) {
-				connList.push_back(it.second);
-			}
-		}
-	}
-
-	for (auto& pconn : connList) {
-		if (!pconn || !pconn->conn) continue;
-
-		// Can assume tr_gri exists since we push player state during polling
-		ATrPlayerReplicationInfo* pri = getPriForPlayerId(Utils::tr_gri->PRIArray, pconn->playerId);
-		if (!pri) continue;
-
-		float ping = (pri->Ping * 4.0f) / (1000.0f);
-
-		sendStateUpdateMessage(pconn, ping);
 	}
 }

@@ -157,6 +157,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AccessControl.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Data.h" />
     <ClInclude Include="DirectConnectionServer.h" />
@@ -288,6 +289,7 @@
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Lua.cpp" />
     <ClCompile Include="LuaAPI.cpp" />
+    <ClCompile Include="Mod_Administration.cpp" />
     <ClCompile Include="Mod_GameBalance.cpp" />
     <ClCompile Include="Mod_GameInfo.cpp" />
     <ClCompile Include="Mod_CoreMod.cpp" />
