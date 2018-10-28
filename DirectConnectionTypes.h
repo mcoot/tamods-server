@@ -362,12 +362,36 @@ namespace DCServer {
 			unsigned char g;
 			unsigned char b;
 			unsigned char a;
+		public:
+			ConsoleMsgDetails() {}
+			ConsoleMsgDetails(std::string message, unsigned char r, unsigned char g, unsigned char b, unsigned char a) : 
+				message(message),
+				r(r),
+				g(g),
+				b(b),
+				a(a)
+			{}
+			ConsoleMsgDetails(std::string message) : 
+				message(message),
+				r(255),
+				g(255),
+				b(255),
+				a(255)
+			{}
 		};
 		struct IngameMsgDetails {
 			bool doShow;
 			std::string message;
 			float time;
 			int priority;
+		public:
+			IngameMsgDetails() {}
+			IngameMsgDetails(std::string message, float time, int priority = 3) :
+				doShow(true),
+				message(message),
+				time(time),
+				priority(priority)
+			{}
 		};
 	public:
 		std::vector<ConsoleMsgDetails> consoleMessages;

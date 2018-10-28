@@ -133,6 +133,7 @@ bool TrGameReplicationInfo_PostBeginPlay(int ID, UObject *dwCallingObject, UFunc
 }
 
 bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
+
 	if (Utils::serverGameStatus == Utils::ServerGameStatus::PREROUND) {
 		{
 			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
@@ -201,16 +202,23 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
 		Utils::tr_gri->WorldInfo->eventServerTravel(FString(L"?restart"), false, false);
 	}
 	else {
-		if (g_config.serverSettings.mapRotationMode == MapRotationMode::RANDOM) {
+		std::string nextMapName;
+		if (bNextMapOverrideValue != 0 && Data::map_id_to_filename.find(bNextMapOverrideValue) != Data::map_id_to_filename.end()) {
+			// Override for next map has been set
+			nextMapName = Data::map_id_to_filename[bNextMapOverrideValue];
+			bNextMapOverrideValue = 0;
+		}
+		else if (g_config.serverSettings.mapRotationMode == MapRotationMode::RANDOM) {
 			std::random_device rd;
 			std::mt19937 randgen(rd());
 			std::uniform_int_distribution<> rand_dist(0, g_config.serverSettings.mapRotation.size());
 			g_config.serverSettings.mapRotationIndex = rand_dist(randgen);
+			nextMapName = g_config.serverSettings.mapRotation[g_config.serverSettings.mapRotationIndex];
 		}
 		else {
 			g_config.serverSettings.mapRotationIndex = (g_config.serverSettings.mapRotationIndex + 1) % g_config.serverSettings.mapRotation.size();
+			nextMapName = g_config.serverSettings.mapRotation[g_config.serverSettings.mapRotationIndex];
 		}
-		std::string nextMapName = g_config.serverSettings.mapRotation[g_config.serverSettings.mapRotationIndex];
 
 		// Tell the login server what the new map is
 		// Reverse searching the mapid -> mapname because it's small and cbf'd using boost::bimap

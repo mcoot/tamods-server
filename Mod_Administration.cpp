@@ -13,21 +13,29 @@ void DCServer::Server::handler_RoleLoginMessage(std::shared_ptr<PlayerConnection
 	// Attempt to log the user into this role
 	if (g_config.serverAccessControl.roles.find(msg.role) == g_config.serverAccessControl.roles.end()) {
 		Logger::info("Login attempt to non-existent role %s by player %d", msg.role.c_str(), pconn->playerId);
+		std::vector<MessageToClientMessage::ConsoleMsgDetails> v;
+		v.push_back(MessageToClientMessage::ConsoleMsgDetails("Login failed"));
+		sendMessageToClient(pconn, v, MessageToClientMessage::IngameMsgDetails());
 		return;
 	}
 	if (msg.password != g_config.serverAccessControl.roles[msg.role].password) {
 		Logger::info("Failed login attempt to role %s by player %d", msg.role.c_str(), pconn->playerId);
+		std::vector<MessageToClientMessage::ConsoleMsgDetails> v;
+		v.push_back(MessageToClientMessage::ConsoleMsgDetails("Login failed"));
+		sendMessageToClient(pconn, v, MessageToClientMessage::IngameMsgDetails());
 		return;
 	}
 
 	// Successful login
 	pconn->role = g_config.serverAccessControl.roles[msg.role];
 	Logger::info("Successful login attempt to role %s by player %d", msg.role.c_str(), pconn->playerId);
+	std::vector<MessageToClientMessage::ConsoleMsgDetails> v;
+	v.push_back(MessageToClientMessage::ConsoleMsgDetails("Login succeeded"));
+	sendMessageToClient(pconn, v, MessageToClientMessage::IngameMsgDetails());
 }
 
 void DCServer::Server::handler_ExecuteCommandMessage(std::shared_ptr<PlayerConnection> pconn, const json& j) {
-	Logger::debug("[Received execute command message]");
-
+	Logger::debug("[Attempt to execute server command]");
 	ExecuteCommandMessage msg;
 
 	if (!msg.fromJson(j)) {
@@ -35,16 +43,28 @@ void DCServer::Server::handler_ExecuteCommandMessage(std::shared_ptr<PlayerConne
 		return;
 	}
 
+	//Logger::debug("Attempt to execute server command (%d): %s", msg.rawLua, msg.commandString.c_str());
+
 	// Currently only raw Lua commands are supported
 
 	if (msg.rawLua) {
+		Logger::debug("Command is Raw Lua");
+		if (!pconn) {
+			Logger::warn("Command execution failed due to missing player connection");
+			return;
+		}
+
+		Logger::debug("Checking user role...");
 		// Check the user's role
 		if (!pconn->role.canExecuteArbitraryLua) {
 			Logger::warn("Player %d attempted to execute arbitrary lua, but their role (%s) does not allow this", pconn->playerId, pconn->role.name.c_str());
 			return;
 		}
+		Logger::debug("User role validated");
 
+		//Logger::debug("Player %d executing command: %s", msg.commandString.c_str());
 		g_config.lua.doString(msg.commandString);
+		
 	}
 }
 
@@ -91,9 +111,36 @@ static void sendConsoleMessageToAllPlayers(std::string message) {
 }
 
 static void endCurrentMap() {
-	if (Utils::tr_gri) {
+	std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+	if (!Utils::tr_gri || !Utils::tr_gri->WorldInfo || !Utils::tr_gri->WorldInfo->Game) return;
 
+	if (!Utils::tr_gri->bMatchIsOver) {
+		ATrGame* game = (ATrGame*)Utils::tr_gri->WorldInfo->Game;
+		game->bForceEndGame = true;
+		Utils::tr_gri->RemainingTime = 1;
+		Utils::tr_gri->RemainingMinute = 1;
 	}
+}
+
+static void startCurrentMap() {
+	std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+	if (!Utils::tr_gri) return;
+
+	if (!Utils::tr_gri->bWarmupRound) {
+		Utils::tr_gri->RemainingTime = 1;
+		Utils::tr_gri->RemainingMinute = 1;
+	}
+}
+
+int bNextMapOverrideValue;
+static void setNextMap(int mapId) {
+	if (Data::map_id_to_name.find(mapId) == Data::map_id_to_name.end()) {
+		Logger::info("Can't set next map to unknown ID %d", mapId);
+		return;
+	}
+
+	bNextMapOverrideValue = mapId;
+	Logger::debug("Next map was set to %d", mapId);
 }
 
 namespace LuaAPI {
@@ -106,6 +153,11 @@ namespace LuaAPI {
 				.endNamespace()
 				.addFunction("SendGameMessageToAllPlayers", &sendGameMessageToAllPlayers)
 				.addFunction("SendConsoleMessageToAllPlayers", &sendConsoleMessageToAllPlayers)
+				.beginNamespace("Game")
+					.addFunction("StartMap", &startCurrentMap)
+					.addFunction("EndMap", &endCurrentMap)
+					.addFunction("NextMap", &setNextMap)
+				.endNamespace()
 			.endNamespace();
 	}
 }
