@@ -77,6 +77,7 @@ namespace Data
 	extern std::map<std::string, int> voices;
 	extern std::map<int, std::string> item_id_to_name;
 	extern std::map<int, std::string> perk_id_to_name;
+	extern std::map<int, std::string> voice_id_to_name;
 	extern std::map<int, std::string> weapon_id_to_proj_name;
 	extern std::map<int, UClass*> weapon_id_to_weapon_class;
 	extern std::map<std::string, int> vehicle_weapons;

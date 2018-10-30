@@ -52,18 +52,7 @@ static void applyHardcodedLoadout(ATrPlayerReplicationInfo* that, int classId, i
 		std::string item = g_config.hardcodedLoadouts.get(classNum, slot, i);
 		if (item != "") {
 			int itemId = 0;
-			if (isWeaponEquipPoint(i)) {
-				itemId = Utils::searchMapId(Data::weapons[classNum], item, "", false);
-			}
-			else if (i == EQP_Pack) {
-				itemId = Utils::searchMapId(Data::packs[classNum], item, "", false);
-			}
-			else if (i == EQP_Skin) {
-				itemId = Utils::searchMapId(Data::skins[classNum], item, "", false);
-			}
-			else if (i == EQP_Voice) {
-				itemId = Utils::searchMapId(Data::voices, item, "", false);
-			}
+			itemId = Data::getItemId(Data::class_type_name[classNum], item);
 			if (itemId != 0) {
 				that->r_EquipLevels[i].EquipId = itemId;
 			}
@@ -102,8 +91,30 @@ static void applyTAServerLoadout(ATrPlayerReplicationInfo* that, int classId, in
 	// Apply the equipment
 	for (auto& eqpItem : taserverRetrievedMap) {
 		if (eqpItem.second != 0) {
-			// TODO: Should do extra validation against server settings here...
-			that->r_EquipLevels[eqpItem.first].EquipId = eqpItem.second;
+			if (eqpItem.first == EQP_Voice) {
+				// Voice field could be used to encode perks as well...
+				// See if attempting to decode makes any sense
+				int decodedVoice = Utils::perksAndVoice_DecodeVoice(eqpItem.second);
+				int decodedPerkA = Utils::perksAndVoice_DecodePerkA(eqpItem.second);
+				int decodedPerkB = Utils::perksAndVoice_DecodePerkB(eqpItem.second);
+				if (
+					   Data::voice_id_to_name.find(decodedVoice) != Data::voice_id_to_name.end()
+					&& Data::perk_id_to_name.find(decodedPerkA) != Data::perk_id_to_name.end()
+					&& Data::perk_id_to_name.find(decodedPerkB) != Data::perk_id_to_name.end()
+					) {
+					// Successfully decoded into a voice and two perks
+					that->r_EquipLevels[EQP_Voice].EquipId = decodedVoice;
+					that->r_EquipLevels[EQP_PerkA].EquipId = decodedPerkA;
+					that->r_EquipLevels[EQP_PerkB].EquipId = decodedPerkB;
+				}
+				else {
+					// Decoding made no sense, assume this is just a voice
+					that->r_EquipLevels[eqpItem.first].EquipId = eqpItem.second;
+				}
+			}
+			else {
+				that->r_EquipLevels[eqpItem.first].EquipId = eqpItem.second;
+			}
 		}
 	}
 }

@@ -22,6 +22,12 @@ namespace Utils {
 	bool fileExists(const std::string &path, const std::string &mode = "r");
 	bool dirExists(const std::string &path);
 
+	// Perk encoding
+	int perksAndVoice_Encode(int voice, int perkA, int perkB);
+	int perksAndVoice_DecodeVoice(int perksAndVoice);
+	int perksAndVoice_DecodePerkA(int perksAndVoice);
+	int perksAndVoice_DecodePerkB(int perksAndVoice);
+
 	enum class ServerGameStatus {
 		UNKNOWN = 0,
 		PREROUND,
