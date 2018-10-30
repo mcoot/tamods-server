@@ -57,6 +57,7 @@ namespace DCServer {
 }
 
 void TrDevice_NovaSlug_FireAmmunition(ATrDevice_NovaSlug* that, ATrDevice_NovaSlug_execFireAmmunition_Parms* params, void* result, Hooks::CallInfo callInfo) {
+	//that->r_bReadyToFire = true;
 	that->ATrDevice::FireAmmunition();
 }
 
