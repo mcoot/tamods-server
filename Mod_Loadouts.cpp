@@ -91,24 +91,20 @@ static void applyTAServerLoadout(ATrPlayerReplicationInfo* that, int classId, in
 	// Apply the equipment
 	for (auto& eqpItem : taserverRetrievedMap) {
 		if (eqpItem.second != 0) {
-			if (eqpItem.first == EQP_Voice) {
-				// Voice field could be used to encode perks as well...
+			if (eqpItem.first == EQP_Tertiary) {
+				// With a GOTY login server, the tertiary weapon is used to encode perks
 				// See if attempting to decode makes any sense
-				int decodedVoice = Utils::perksAndVoice_DecodeVoice(eqpItem.second);
-				int decodedPerkA = Utils::perksAndVoice_DecodePerkA(eqpItem.second);
-				int decodedPerkB = Utils::perksAndVoice_DecodePerkB(eqpItem.second);
-				if (
-					   Data::voice_id_to_name.find(decodedVoice) != Data::voice_id_to_name.end()
-					&& Data::perk_id_to_name.find(decodedPerkA) != Data::perk_id_to_name.end()
-					&& Data::perk_id_to_name.find(decodedPerkB) != Data::perk_id_to_name.end()
-					) {
-					// Successfully decoded into a voice and two perks
-					that->r_EquipLevels[EQP_Voice].EquipId = decodedVoice;
+				int decodedPerkA = Utils::perks_DecodeA(eqpItem.second);
+				int decodedPerkB = Utils::perks_DecodeB(eqpItem.second);
+				if (Data::perk_id_to_name.find(decodedPerkA) != Data::perk_id_to_name.end()
+					&& Data::perk_id_to_name.find(decodedPerkB) != Data::perk_id_to_name.end()) {
+					// Successfully decoded into two perks
+					that->r_EquipLevels[EQP_Tertiary].EquipId = 0;
 					that->r_EquipLevels[EQP_PerkA].EquipId = decodedPerkA;
 					that->r_EquipLevels[EQP_PerkB].EquipId = decodedPerkB;
 				}
 				else {
-					// Decoding made no sense, assume this is just a voice
+					// Decoding made no sense, assume this is just a weapon
 					that->r_EquipLevels[eqpItem.first].EquipId = eqpItem.second;
 				}
 			}

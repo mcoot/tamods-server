@@ -23,10 +23,9 @@ namespace Utils {
 	bool dirExists(const std::string &path);
 
 	// Perk encoding
-	int perksAndVoice_Encode(int voice, int perkA, int perkB);
-	int perksAndVoice_DecodeVoice(int perksAndVoice);
-	int perksAndVoice_DecodePerkA(int perksAndVoice);
-	int perksAndVoice_DecodePerkB(int perksAndVoice);
+	int perks_Encode(int perkA, int perkB);
+	int perks_DecodeA(int encoded);
+	int perks_DecodeB(int encoded);
 
 	enum class ServerGameStatus {
 		UNKNOWN = 0,

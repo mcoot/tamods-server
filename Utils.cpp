@@ -101,97 +101,14 @@ bool Utils::dirExists(const std::string &path)
 
 // Perk encoding
 
-static std::map<int, int> mappedPerks = {
-	{ CONST_ITEM_PERK_BOUNTYHUNTER, 0b00001 },
-	{ CONST_ITEM_PERK_CLOSECOMBAT, 0b00010 },
-	{ CONST_ITEM_PERK_DETERMINATION, 0b00011 },
-	{ CONST_ITEM_PERK_EGOCENTRIC, 0b00100 },
-	{ CONST_ITEM_PERK_LOOTER, 0b00101 },
-	{ CONST_ITEM_PERK_MECHANIC, 0b00110 },
-	{ CONST_ITEM_PERK_PILOT, 0b00111 },
-	{ CONST_ITEM_PERK_POTENTIALENERGY, 0b01000 },
-	{ CONST_ITEM_PERK_QUICKDRAW, 0b01001 },
-	{ CONST_ITEM_PERK_REACH, 0b01010 },
-	{ CONST_ITEM_PERK_SAFEFALL, 0b01011 },
-	{ CONST_ITEM_PERK_SAFETYTHIRD, 0b01100 },
-	{ CONST_ITEM_PERK_STEALTHY, 0b01101 },
-	{ CONST_ITEM_PERK_SUPERCAPACITOR, 0b01110 },
-	{ CONST_ITEM_PERK_SUPERHEAVY, 0b01111 },
-	{ CONST_ITEM_PERK_SURVIVALIST, 0b10000 },
-	{ CONST_ITEM_PERK_ULTRACAPACITOR, 0b10001 },
-	{ CONST_ITEM_PERK_WHEELDEAL, 0b10010 },
-	{ CONST_ITEM_PERK_RAGE, 0b10011 },
-	{ CONST_ITEM_PERK_SONICPUNCH, 0b10100 },
-	{ CONST_ITEM_PERK_LIGHTWEIGHT, 0b10101 },
-};
-
-static std::map<int, int> mappedVoices = {
-	{ CONST_ITEM_VOICE_LIGHT, 0b00001 },
-	{ CONST_ITEM_VOICE_MEDIUM, 0b00010 },
-	{ CONST_ITEM_VOICE_HEAVY, 0b00011 },
-	{ CONST_ITEM_VOICE_DARK, 0b00100 },
-	{ CONST_ITEM_VOICE_FEM1, 0b00101 },
-	{ CONST_ITEM_VOICE_FEM2, 0b00110 },
-	{ CONST_ITEM_VOICE_AUS, 0b00111 },
-	{ CONST_ITEM_VOICE_TOTALBISCUIT, 0b01000 },
-	{ CONST_ITEM_VOICE_STOWAWAY, 0b01001 },
-	{ CONST_ITEM_VOICE_BASEMENTCHAMPION, 0b01010 },
-	{ CONST_ITEM_VOICE_T2FEM01, 0b01011 },
-	{ CONST_ITEM_VOICE_T2FEM02, 0b01100 },
-	{ CONST_ITEM_VOICE_T2FEM03, 0b01101 },
-	{ CONST_ITEM_VOICE_T2FEM04, 0b01110 },
-	{ CONST_ITEM_VOICE_T2FEM05, 0b01111 },
-	{ CONST_ITEM_VOICE_T2MALE01, 0b10000 },
-	{ CONST_ITEM_VOICE_T2MALE02, 0b10001 },
-	{ CONST_ITEM_VOICE_T2MALE03, 0b10010 },
-	{ CONST_ITEM_VOICE_T2MALE04, 0b10011 },
-	{ CONST_ITEM_VOICE_T2MALE05, 0b10100 },
-	{ CONST_ITEM_VOICE_T2BDERM01, 0b10101 },
-	{ CONST_ITEM_VOICE_T2BDERM02, 0b10110 },
-	{ CONST_ITEM_VOICE_T2BDERM03, 0b10111 }
-};
-
-int Utils::perksAndVoice_Encode(int voice, int perkA, int perkB) {
-	int mappedVoice, mappedPerkA, mappedPerkB;
-
-	auto& it = mappedVoices.find(voice);
-	if (it == mappedVoices.end()) return 0;
-	mappedVoice = it->second;
-
-	it = mappedPerks.find(perkA);
-	if (it == mappedPerks.end()) return 0;
-	mappedPerkA = it->second;
-
-	it = mappedPerks.find(perkB);
-	if (it == mappedPerks.end()) return 0;
-	mappedPerkB = it->second;
-
-	return (mappedVoice << 10) | (mappedPerkA << 5) | (mappedPerkB);
+int Utils::perks_Encode(int perkA, int perkB) {
+	return (perkA << 16) | perkB;
 }
 
-int Utils::perksAndVoice_DecodeVoice(int perksAndVoice) {
-	int mappedVoice = (perksAndVoice & 0b0111110000000000) >> 10;
-	for (auto& voice : mappedVoices) {
-		if (voice.second == mappedVoice) return voice.first;
-	}
-
-	return 0;
+int Utils::perks_DecodeA(int encoded) {
+	return encoded >> 16;
 }
 
-int Utils::perksAndVoice_DecodePerkA(int perksAndVoice) {
-	int mappedPerkA = (perksAndVoice & 0b0000001111100000) >> 5;
-	for (auto& perk : mappedPerks) {
-		if (perk.second == mappedPerkA) return perk.first;
-	}
-
-	return 0;
-}
-
-int Utils::perksAndVoice_DecodePerkB(int perksAndVoice) {
-	int mappedPerkB = (perksAndVoice & 0b0000000000011111);
-	for (auto& perk : mappedPerks) {
-		if (perk.second == mappedPerkB) return perk.first;
-	}
-
-	return 0;
+int Utils::perks_DecodeB(int encoded) {
+	return encoded & 0x0000FFFF;
 }
