@@ -16,19 +16,7 @@ static bool isWeaponEquipPoint(int eqp) {
 bool CustomClass::doesLoadoutMatch(int ootbClass, const std::map<int, int>& loadout) {
 	if (ootbClass != this->ootbClass) return false;
 
-	std::vector<int> eqpPointsToVerify = {
-		EQP_Primary, 
-		EQP_Secondary, 
-		EQP_Tertiary, 
-		EQP_Quaternary, 
-		EQP_Pack, 
-		EQP_Belt, 
-		//EQP_PerkA,
-		//EQP_PerkB,
-		EQP_Skin
-	};
-
-	for (auto& eqp : eqpPointsToVerify) {
+	for (auto& eqp : equipPointsToValidate) {
 		// Skip missing equip points from the loadout
 		auto& it = loadout.find(eqp);
 		if (it == loadout.end()) continue;

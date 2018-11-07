@@ -320,7 +320,7 @@ static void removeFromBannedItemsListNoClass(std::string itemName) {
 	removeFromBannedItemsList("Light", itemName);
 }
 
-static void addCustomClass(std::string name, std::string ootbClass, std::string armorClass) {
+static void addCustomClass(std::string name, std::string ootbClass, std::string armorClass, LuaRef equipPointsToValidate) {
 	int classNum = Utils::searchMapId(Data::classes, ootbClass, "", false);
 	if (classNum == 0) {
 		Logger::error("Unable to create custom class based on non-existent class %s", ootbClass.c_str());
@@ -336,7 +336,30 @@ static void addCustomClass(std::string name, std::string ootbClass, std::string 
 			return;
 		}
 	}
-	g_config.serverSettings.customClasses[name] = CustomClass(ootbClassId, armorClassId);
+
+	if (equipPointsToValidate.isNil()) {
+		// Use default equip point validation (suitable for OOTB)
+		g_config.serverSettings.customClasses[name] = CustomClass(ootbClassId, armorClassId);
+		return;
+	}
+
+	if (!equipPointsToValidate.isTable()) {
+		Logger::error("Unable to create custom class; equip points to validate is not a table");
+		return;
+	}
+
+	std::set<int> equipPointsSet;
+	for (int i = 1; i <= equipPointsToValidate.length(); ++i) {
+		LuaRef tmpEqp = equipPointsToValidate[i];
+		if (!tmpEqp.isNumber()) {
+			Logger::error("Unable to create custom class; invalid equip point %s", tmpEqp.tostring());
+			return;
+		}
+		int eqp = tmpEqp;
+		equipPointsSet.insert(eqp);
+	}
+
+	g_config.serverSettings.customClasses[name] = CustomClass(ootbClassId, armorClassId, equipPointsSet);
 }
 
 static void addToCustomClassAllowed(std::string customClassName, std::string itemClassName, std::string itemName) {

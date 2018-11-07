@@ -37,12 +37,35 @@ struct CustomClass {
 	// If 0, the OOTB class actually in the loadout is assumed
 	int armorClass;
 
+	// The equip points that must match in order for validation to succeed
+	// Defaults to all the OOTB ones except voice
+	std::set<int> equipPointsToValidate;
+
 	// The items allowed for this 'class'
 	std::set<int> allowedItems;
 
 public:
-	CustomClass() : ootbClass(0), armorClass(0), allowedItems() {}
-	CustomClass(int ootbClass, int armorClass) : ootbClass(ootbClass), armorClass(armorClass), allowedItems() {}
+	CustomClass() : 
+		ootbClass(0), 
+		armorClass(0), 
+		equipPointsToValidate({EQP_Primary, EQP_Secondary, EQP_Tertiary, EQP_Belt, EQP_Pack, EQP_Skin}), 
+		allowedItems() 
+	{}
+
+	CustomClass(int ootbClass, int armorClass) : 
+		ootbClass(ootbClass), 
+		armorClass(armorClass), 
+		equipPointsToValidate({ EQP_Primary, EQP_Secondary, EQP_Tertiary, EQP_Belt, EQP_Pack, EQP_Skin }),
+		allowedItems() 
+	{}
+
+	CustomClass(int ootbClass, int armorClass, std::set<int> equipPointsToValidate) :
+		ootbClass(ootbClass),
+		armorClass(armorClass),
+		equipPointsToValidate(equipPointsToValidate),
+		allowedItems()
+	{}
+
 	bool doesLoadoutMatch(int ootbClass, const std::map<int, int>& loadout);
 };
 
