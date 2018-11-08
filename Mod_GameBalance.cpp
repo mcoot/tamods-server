@@ -869,7 +869,7 @@ namespace LuaAPI {
 				.addProperty<int, int>("MeleeCausesFlagDrop", &getIdentity<CONST_MOD_TYPE_VICTIMDROPFLAGONMELEE>)
 				.addProperty<int, int>("SonicPunchFlagDrop", &getIdentity<CONST_MOD_TYPE_VICTIMDROPFLAGONMELEE>)
 				.addProperty<int, int>("ConcussiveMelee", &getIdentity<CONST_MOD_TYPE_VICTIMDROPFLAGONMELEE>)
-				.addProperty<int, int>("PrimaryRangeBugg", &getIdentity<CONST_MOD_TYPE_PRIMARYWEAPONRANGEPCT>)
+				.addProperty<int, int>("PrimaryRangeBuff", &getIdentity<CONST_MOD_TYPE_PRIMARYWEAPONRANGEPCT>)
 				.addProperty<int, int>("BeltDamageRadiusBuff", &getIdentity<CONST_MOD_TYPE_OFFHANDDAMAGERADIUSPCT>)
 				.addProperty<int, int>("TurretTargetAcquisitionBuff", &getIdentity<CONST_MOD_TYPE_TURRETACQUIRETARGETPCT>)
 				.addProperty<int, int>("BlackoutLengthReduction", &getIdentity<CONST_MOD_TYPE_WHITEOUTINTERPSPEEDPCT>)

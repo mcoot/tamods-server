@@ -132,6 +132,11 @@ bool TrGameReplicationInfo_PostBeginPlay(int ID, UObject *dwCallingObject, UFunc
 	return false;
 }
 
+void TrGame_SendShowSummary(ATrGame* that, ATrGame_execSendShowSummary_Parms* params, void* result, Hooks::CallInfo callInfo) {
+	// Seeing as we don't support the match end screen anyway, this can be blackholed
+	// It causes the 'getting stuck in the menu glitch'
+}
+
 bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
 
 	if (Utils::serverGameStatus == Utils::ServerGameStatus::PREROUND) {
@@ -153,7 +158,6 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 				pri->Team->RemoveFromTeam(pc);
 				pc->r_bNeedLoadout = true;
 				pc->r_bNeedTeam = true;
-				Logger::debug("Need loadout? %d", pc->r_bNeedLoadout);
 			}
 			else {
 			}
@@ -197,6 +201,11 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
 
 	//std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 	if (!Utils::tr_gri || !Utils::tr_gri->WorldInfo) return;
+
+	// Reset team scores
+	for (int i = 0; i < Utils::tr_gri->Teams.Count; ++i) {
+		Utils::tr_gri->Teams.Data[i]->Score = 0;
+	}
 
 	if (g_config.serverSettings.mapRotation.empty()) {
 		Utils::tr_gri->WorldInfo->eventServerTravel(FString(L"?restart"), false, false);
