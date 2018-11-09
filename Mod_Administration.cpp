@@ -127,14 +127,9 @@ static void startCurrentMap() {
 	if (!Utils::tr_gri || !Utils::tr_gri->WorldInfo || !Utils::tr_gri->WorldInfo->Game) return;
 
 	if (Utils::tr_gri->bWarmupRound) {
-		// Force start the match by setting the timer to one second
-		// Setting to one second rather than zero to avoid a race condition
 		ATrGame* game = (ATrGame*)Utils::tr_gri->WorldInfo->Game;
-		game->WarmupRemaining = 1;
-		if (game->NumPlayers < 2) {
-			// Pretend we have at least two players so the game actually starts
-			game->NumPlayers = 2;
-		}
+		game->bForceRoundStart = true;
+		game->m_nRoundCountdownRemainingTime = 0;
 	}
 }
 
