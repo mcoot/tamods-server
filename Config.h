@@ -86,6 +86,9 @@ struct ServerSettings {
 	int FlagDragHeavy = 0;
 	int FlagDragDeceleration = 0;
 
+	float AmmoPickupLifespan = 15;
+	float CTFFlagTimeout = 40;
+
 	bool FriendlyFire = false;
 	float FriendlyFireMultiplier = 1.0f;
 	int BaseDestructionKickLimit = 0;

@@ -7,6 +7,10 @@ void ServerSettings::ApplyAsDefaults() {
 
 void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 	ATrPlayerController* defTrPC = (ATrPlayerController*)(ATrPlayerController::StaticClass()->Default);
+	ATrDroppedPickup* defNug = (ATrDroppedPickup*)(ATrDroppedPickup::StaticClass()->Default);
+	ATrFlagCTF* defCTFFlag = (ATrFlagCTF*)(ATrFlagCTF::StaticClass()->Default);
+	ATrFlagCTF_BloodEagle* defCTFFlag_BE = (ATrFlagCTF_BloodEagle*)(ATrFlagCTF_BloodEagle::StaticClass()->Default);
+	ATrFlagCTF_DiamondSword* defCTFFlag_DS = (ATrFlagCTF_DiamondSword*)(ATrFlagCTF_DiamondSword::StaticClass()->Default);
 
 	s->TimeLimit = this->TimeLimit;
 	s->WarmupTime = this->WarmupTime;
@@ -23,6 +27,11 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 	s->MaxSpeedWithFlagMedium = this->FlagDragMedium;
 	s->MaxSpeedWithFlagHeavy = this->FlagDragHeavy;
 	s->DecelerationRateWithFlag = this->FlagDragDeceleration;
+
+	defNug->LifeSpan = this->AmmoPickupLifespan;
+	defCTFFlag->MaxDropTime = this->CTFFlagTimeout;
+	defCTFFlag_BE->MaxDropTime = this->CTFFlagTimeout;
+	defCTFFlag_DS->MaxDropTime = this->CTFFlagTimeout;
 
 	s->bFriendlyFire = this->FriendlyFire;
 	s->fFriendlyFireDamageMultiplier = this->FriendlyFireMultiplier * 1000.0f;
@@ -80,8 +89,8 @@ void TrPlayerController_GetRespawnDelayTotalTime(ATrPlayerController* that, ATrP
 		int item = ((ATrPlayerReplicationInfo*)(that->PlayerReplicationInfo))->r_EquipLevels[i].EquipId;
 		if (item == CONST_WEAPON_ID_RIFLE_SNIPER || item == CONST_WEAPON_ID_RIFLE_SNIPER_MKD || item == CONST_WEAPON_ID_RIFLE_PHASE || item == CONST_WEAPON_ID_SAP20) {
 			// Player has a sniper rifle, if there's an extra sniper spawn delay, add it on
-			*result += that->fSniperRespawnDelay;
-			break;
+			//*result += that->fSniperRespawnDelay;
+			return;
 		}
 	}
 }
@@ -191,6 +200,9 @@ SETTING_GETTERSETTER(int, FlagDragLight)
 SETTING_GETTERSETTER(int, FlagDragMedium)
 SETTING_GETTERSETTER(int, FlagDragHeavy)
 SETTING_GETTERSETTER(int, FlagDragDeceleration)
+
+SETTING_GETTERSETTER(float, AmmoPickupLifespan)
+SETTING_GETTERSETTER(float, CTFFlagTimeout)
 
 SETTING_GETTERSETTER(bool, FriendlyFire)
 SETTING_GETTERSETTER(float, FriendlyFireMultiplier)
@@ -397,6 +409,9 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(FlagDragMedium)
 				.SETTING_LUAPROP(FlagDragHeavy)
 				.SETTING_LUAPROP(FlagDragDeceleration)
+
+				.SETTING_LUAPROP(AmmoPickupLifespan)
+				.SETTING_LUAPROP(CTFFlagTimeout)
 
 				.SETTING_LUAPROP(FriendlyFire)
 				.SETTING_LUAPROP(FriendlyFireMultiplier)
