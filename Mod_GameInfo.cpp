@@ -158,11 +158,25 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 				pri->Team->RemoveFromTeam(pc);
 				pc->r_bNeedLoadout = true;
 				pc->r_bNeedTeam = true;
+
 			}
 			else {
 			}
-			
 		}
+
+		// Re-send game balance info to all players
+		// This lets us mutate game balance between maps
+		g_DCServer.forAllKnownConnections([](DCServer::Server* srv, std::shared_ptr<DCServer::PlayerConnection> pconn) {
+			// Send the player the current balance state
+			srv->sendGameBalanceDetailsMessage(pconn,
+				g_config.serverSettings.weaponProperties,
+				g_config.serverSettings.deviceValueProperties,
+				g_config.serverSettings.classProperties,
+				g_config.serverSettings.vehicleProperties,
+				g_config.serverSettings.vehicleWeaponProperties
+			);
+		});
+
 	}
 	
 
