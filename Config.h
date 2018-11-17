@@ -130,6 +130,9 @@ struct ServerSettings {
 	bool CTFBlitzAllFlagsMove = false;
 	bool ForceHardcodedLoadouts = false;
 
+	// Whether to revert to GOTY shield pack behaviour
+	bool UseGOTYShieldPack = false;
+
 	MapRotationMode mapRotationMode = MapRotationMode::SEQUENTIAL;
 	std::vector<std::string> mapRotation;
 	int mapRotationIndex = -1;

@@ -245,6 +245,8 @@ SETTING_GETTERSETTER(bool, SkiingEnabled)
 SETTING_GETTERSETTER(bool, CTFBlitzAllFlagsMove)
 SETTING_GETTERSETTER(bool, ForceHardcodedLoadouts)
 
+SETTING_GETTERSETTER(bool, UseGOTYShieldPack)
+
 static void addCustomToMapRotation(std::string mapName) {
 	g_config.serverSettings.mapRotation.push_back(mapName);
 }
@@ -452,6 +454,8 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(SkiingEnabled)
 				.SETTING_LUAPROP(CTFBlitzAllFlagsMove)
 				.SETTING_LUAPROP(ForceHardcodedLoadouts)
+
+				.SETTING_LUAPROP(UseGOTYShieldPack)
 				.beginNamespace("MapRotation")
 					.addVariable("Mode", (int*)&g_config.serverSettings.mapRotationMode, true)
 					.beginNamespace("Modes")

@@ -64,3 +64,6 @@ void TrDevice_NovaSlug_FireAmmunition(ATrDevice_NovaSlug* that, ATrDevice_NovaSl
 
 // Server admin commands
 extern int bNextMapOverrideValue;
+
+// Reimplemented TakeDamage to revert Shield Pack behaviour
+void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, void* result, Hooks::CallInfo callinfo);
