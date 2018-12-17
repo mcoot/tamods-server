@@ -348,21 +348,22 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 		return;
 	}
 
-	AActor* DamagingActor;
-	float ColRadius, ColHeight;
-	float DamageScale, Dist, ScaledDamage, EnergyDrainAmount, DamageWithoutNewPlayerAssist;
+	AActor* DamagingActor = NULL;
+	float ColRadius = 0.f, ColHeight = 0.f;
+	float DamageScale = 0.f, Dist = 0.f, ScaledDamage = 0.f, EnergyDrainAmount = 0.f, DamageWithoutNewPlayerAssist = 0.f;
 	FVector Dir;
-	APawn* DamagingPawn;
+	APawn* DamagingPawn = NULL;
 
-	ATrGame* TrG;
-	UClass* TrDamageType;
-	ATrPlayerReplicationInfo* TrPRI, *DamagingPawnTrPRI;
-	UTrValueModifier* VM, *DamagingPawnVM;
-	ATrProjectile* TrProj;
-	float DamageScaleWithoutNewPlayerAssist;
-	ATrPlayerController* TrEventInstigator;
-	bool bIsEventInstigatorDeployableController, bIgnoreSecondaryEffectsOnSelf;
-	bool bClearRage;
+	ATrGame* TrG = NULL;
+	UClass* TrDamageType = NULL;
+	ATrPlayerReplicationInfo* TrPRI = NULL, *DamagingPawnTrPRI = NULL;
+	UTrValueModifier* VM = NULL, *DamagingPawnVM = NULL;
+	ATrProjectile* TrProj = NULL;
+	float DamageScaleWithoutNewPlayerAssist = 0.f;
+	ATrPlayerController* TrEventInstigator = NULL;
+	bool bIsEventInstigatorDeployableController = false;
+	bool bIgnoreSecondaryEffectsOnSelf = false;
+	bool bClearRage = false;
 
 	TrDamageType = params->DamageType;
 
@@ -424,7 +425,7 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 		// Drain energy
 		if (TrDamageType) {
 			UTrDmgType_Base* dmgTypeDef = (UTrDmgType_Base*)TrDamageType->Default;
-			if (dmgTypeDef->m_EnergyDrainAmount > 0 && DamagingPawn && ((DamagingPawn == that && !bIgnoreSecondaryEffectsOnSelf) || !DamagingPawn->eventIsSameTeam(that))) {
+			if (dmgTypeDef->m_EnergyDrainAmount > 0 && DamagingPawn && ((DamagingPawn == that && !bIgnoreSecondaryEffectsOnSelf) || DamagingActor->GetTeamNum() != that->GetTeamNum())) {
 				EnergyDrainAmount = dmgTypeDef->m_EnergyDrainAmount;
 
 				DamagingPawnTrPRI = (ATrPlayerReplicationInfo*)DamagingPawn->PlayerReplicationInfo;
@@ -457,14 +458,18 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 			return;
 		}
 
+
+		Logger::debug("params->EventInstigator = %p", params->EventInstigator);
 		if (params->EventInstigator) {
 			TrEventInstigator = (ATrPlayerController*)params->EventInstigator;
 
 			if (!TrEventInstigator) {
+				Logger::debug("Failed to cast EventInstigator");
 				// Try getting an instigator from a turret
 				if (params->EventInstigator->IsA(ATrDeployableController::StaticClass())) {
 					TrEventInstigator = ((ATrDeployableController*)params->EventInstigator)->m_SpawnedFromController;
 					bIsEventInstigatorDeployableController = true;
+					Logger::debug("Got Deployable instigator");
 				}
 			}
 			else if (that->Role == ROLE_Authority && params->EventInstigator != that->Controller && TrEventInstigator->GetTeamNum() == that->GetTeamNum()) {
@@ -475,16 +480,23 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 
 			if (TrEventInstigator && TrEventInstigator != that->Controller) {
 				// Play effects for hitting someone
+				Logger::debug("Showing overhead number");
 				TrEventInstigator->ServerShowOverheadNumber(DamageWithoutNewPlayerAssist, 
 					((UTrDmgType_Base*)TrDamageType->Default)->ModifyOverheadNumberLocation(that->Location), that->Location.Z, that->bShieldAbsorb);
 
 				if (!bIsEventInstigatorDeployableController) {
+					Logger::debug("Doing FlashShooterHitReticule");
 					TrEventInstigator->FlashShooterHitReticule(DamageWithoutNewPlayerAssist, false, that->GetTeamNum());
 				}
 			}
+			else {
+				Logger::debug("Not showing overhead number or doing FlashShooterHitReticule");
+			}
 
 			// Take shield pack damage from energy rather than health
+			Logger::debug("Damage before GetUnshieldedDamage: %f", ScaledDamage);
 			ScaledDamage = that->GetUnshieldedDamage(ScaledDamage);
+			Logger::debug("Damage after GetUnshieldedDamage: %f", ScaledDamage);
 
 			that->RememberLastDamager(params->EventInstigator, ScaledDamage, DamagingActor, params->DamageAmount);
 
