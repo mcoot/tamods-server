@@ -133,6 +133,11 @@ struct ServerSettings {
 	// Whether to revert to GOTY shield pack behaviour
 	bool UseGOTYShieldPack = false;
 
+	// Whether to convert the Laser Targeter into an Inv Station call-in
+	bool EnableInventoryCallIn = false;
+	float InventoryCallInBuildUpTime = 2.f;
+	float InventoryCallInCooldownTime = 10.f;
+
 	MapRotationMode mapRotationMode = MapRotationMode::SEQUENTIAL;
 	std::vector<std::string> mapRotation;
 	int mapRotationIndex = -1;

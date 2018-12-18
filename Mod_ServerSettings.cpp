@@ -246,6 +246,9 @@ SETTING_GETTERSETTER(bool, CTFBlitzAllFlagsMove)
 SETTING_GETTERSETTER(bool, ForceHardcodedLoadouts)
 
 SETTING_GETTERSETTER(bool, UseGOTYShieldPack)
+SETTING_GETTERSETTER(bool, EnableInventoryCallIn)
+SETTING_GETTERSETTER(float, InventoryCallInBuildUpTime)
+SETTING_GETTERSETTER(float, InventoryCallInCooldownTime)
 
 static void addCustomToMapRotation(std::string mapName) {
 	g_config.serverSettings.mapRotation.push_back(mapName);
@@ -456,6 +459,9 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(ForceHardcodedLoadouts)
 
 				.SETTING_LUAPROP(UseGOTYShieldPack)
+				.SETTING_LUAPROP(EnableInventoryCallIn)
+				.SETTING_LUAPROP(InventoryCallInBuildUpTime)
+				.SETTING_LUAPROP(InventoryCallInCooldownTime)
 				.beginNamespace("MapRotation")
 					.addVariable("Mode", (int*)&g_config.serverSettings.mapRotationMode, true)
 					.beginNamespace("Modes")
