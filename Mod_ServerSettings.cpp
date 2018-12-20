@@ -246,6 +246,7 @@ SETTING_GETTERSETTER(bool, CTFBlitzAllFlagsMove)
 SETTING_GETTERSETTER(bool, ForceHardcodedLoadouts)
 
 SETTING_GETTERSETTER(bool, UseGOTYShieldPack)
+SETTING_GETTERSETTER(bool, InventoryStationsRestoreEnergy)
 SETTING_GETTERSETTER(bool, EnableInventoryCallIn)
 SETTING_GETTERSETTER(float, InventoryCallInBuildUpTime)
 SETTING_GETTERSETTER(float, InventoryCallInCooldownTime)
@@ -459,6 +460,7 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(ForceHardcodedLoadouts)
 
 				.SETTING_LUAPROP(UseGOTYShieldPack)
+				.SETTING_LUAPROP(InventoryStationsRestoreEnergy)
 				.SETTING_LUAPROP(EnableInventoryCallIn)
 				.SETTING_LUAPROP(InventoryCallInBuildUpTime)
 				.SETTING_LUAPROP(InventoryCallInCooldownTime)

@@ -124,19 +124,18 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 		}
 
 		if (params->EventInstigator) {
-			TrEventInstigator = (ATrPlayerController*)params->EventInstigator;
-
-			if (!TrEventInstigator) {
-				// Try getting an instigator from a turret
-				if (params->EventInstigator->IsA(ATrDeployableController::StaticClass())) {
-					TrEventInstigator = ((ATrDeployableController*)params->EventInstigator)->m_SpawnedFromController;
-					bIsEventInstigatorDeployableController = true;
-				}
+			if (params->EventInstigator->IsA(ATrDeployableController::StaticClass())) {
+				TrEventInstigator = ((ATrDeployableController*)params->EventInstigator)->m_SpawnedFromController;
+				bIsEventInstigatorDeployableController = true;
 			}
-			else if (that->Role == ROLE_Authority && params->EventInstigator != that->Controller && TrEventInstigator->GetTeamNum() == that->GetTeamNum()) {
-				// Track the friendly fire the instigator has done, which may be used to kick them
-				TrEventInstigator->FriendlyFireDamage += ScaledDamage;
-				TrEventInstigator->CheckFriendlyFireDamage();
+			else {
+				TrEventInstigator = (ATrPlayerController*)params->EventInstigator;
+
+				if (that->Role == ROLE_Authority && params->EventInstigator != that->Controller && TrEventInstigator->GetTeamNum() == that->GetTeamNum()) {
+					// Track the friendly fire the instigator has done, which may be used to kick them
+					TrEventInstigator->FriendlyFireDamage += ScaledDamage;
+					TrEventInstigator->CheckFriendlyFireDamage();
+				}
 			}
 
 			if (TrEventInstigator && TrEventInstigator != that->Controller) {
@@ -207,6 +206,22 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 			}
 		}
 	}
+}
+
+////////////////////////
+// Inv Stations restore energy
+////////////////////////
+
+void TrStation_PawnEnteredStation(ATrStation* that, ATrStation_execPawnEnteredStation_Parms* params, void* result, Hooks::CallInfo callInfo) {
+	Logger::debug("PawnEnteredStation");
+	
+	that->bForceNetUpdate = true;
+
+	if (!that->r_CurrentPawn) {
+		
+	}
+
+	that->PawnEnteredStation(params->P);
 }
 
 ////////////////////////
