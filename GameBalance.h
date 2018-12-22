@@ -67,6 +67,56 @@ namespace GameBalance {
 			return *this;
 		}
 
+		template <typename T>
+		bool get(T& ret) { return false; }
+
+		template <>
+		bool get<bool>(bool& ret) {
+			if (type == ValueType::BOOLEAN) {
+				ret = valBool;
+				return true;
+			}
+			return false;
+		}
+
+		template <>
+		bool get<int>(int& ret) {
+			if (type == ValueType::INTEGER) {
+				ret = valInt;
+				return true;
+			}
+			return false;
+		}
+
+		template <>
+		bool get<float>(float& ret) {
+			if (type == ValueType::FLOAT) {
+				ret = valFloat;
+				return true;
+			}
+			return false;
+		}
+
+		template <>
+		bool get<std::string>(std::string& ret) {
+			if (type == ValueType::STRING) {
+				ret = valString;
+				return true;
+			}
+			return false;
+		}
+
+		template <typename T>
+		T getOrDefault(T def) {
+			T ret;
+			if (get(ret)) {
+				return ret;
+			}
+			else {
+				return def;
+			}
+		}
+
 		// Static methods for constructing from a specific type
 		static PropValue fromBool(bool val) { return PropValue(val); }
 		static PropValue fromInt(int val) { return PropValue(val); }
@@ -126,6 +176,8 @@ namespace GameBalance {
 		int modType;
 		float value;
 	};
+
+	typedef std::map<std::string, PropValue> ReplicatedSettings;
 
 	namespace Items {
 

@@ -46,7 +46,8 @@ namespace DCServer {
 		}
 
 		// Send the player the current balance state
-		sendGameBalanceDetailsMessage(pconn, 
+		sendGameBalanceDetailsMessage(pconn,
+			g_config.getReplicatedSettings(),
 			g_config.serverSettings.weaponProperties,
 			g_config.serverSettings.deviceValueProperties,
 			g_config.serverSettings.classProperties,

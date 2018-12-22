@@ -327,6 +327,7 @@
     <ClCompile Include="lua_src\lutf8lib.c" />
     <ClCompile Include="lua_src\lvm.c" />
     <ClCompile Include="lua_src\lzio.c" />
+    <ClCompile Include="Mod_CallIn.cpp" />
     <ClCompile Include="Mod_Loadouts.cpp" />
     <ClCompile Include="Mod_Reimpl.cpp" />
     <ClCompile Include="Mod_ServerSettings.cpp" />

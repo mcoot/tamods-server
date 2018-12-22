@@ -17,6 +17,16 @@ void Config::reset() {
 	hardcodedLoadouts = HardCodedLoadouts();
 }
 
+GameBalance::ReplicatedSettings Config::getReplicatedSettings() {
+	GameBalance::ReplicatedSettings repSet;
+
+	repSet["EnableInventoryCallIn"] = serverSettings.EnableInventoryCallIn;
+	repSet["InventoryCallInCooldownTime"] = serverSettings.InventoryCallInCooldownTime;
+	repSet["InventoryCallInBuildUpTime"] = serverSettings.InventoryCallInBuildUpTime;
+
+	return repSet;
+}
+
 void Config::parseFile(std::string filePath) { 
 	reset();
 	

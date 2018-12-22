@@ -169,6 +169,7 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 		g_DCServer.forAllKnownConnections([](DCServer::Server* srv, std::shared_ptr<DCServer::PlayerConnection> pconn) {
 			// Send the player the current balance state
 			srv->sendGameBalanceDetailsMessage(pconn,
+				g_config.getReplicatedSettings(),
 				g_config.serverSettings.weaponProperties,
 				g_config.serverSettings.deviceValueProperties,
 				g_config.serverSettings.classProperties,

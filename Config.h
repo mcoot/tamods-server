@@ -179,6 +179,7 @@ public:
 	~Config();
 
 	std::string getConfigDirectory();
+	GameBalance::ReplicatedSettings getReplicatedSettings();
 	void reset();
 	void load();
 

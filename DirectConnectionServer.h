@@ -69,7 +69,8 @@ namespace DCServer {
 
 		void forAllKnownConnections(std::function<void(Server*, std::shared_ptr<PlayerConnection>)> f);
 
-		void sendGameBalanceDetailsMessage(std::shared_ptr<PlayerConnection> pconn, 
+		void sendGameBalanceDetailsMessage(std::shared_ptr<PlayerConnection> pconn,
+			const GameBalance::ReplicatedSettings replicatedSettings,
 			const GameBalance::Items::ItemsConfig& itemProperties,
 			const GameBalance::Items::DeviceValuesConfig& deviceValueProperties,
 			const GameBalance::Classes::ClassesConfig& classProperties,
