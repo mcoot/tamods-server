@@ -151,8 +151,46 @@ void ResetLaserTargetCallInCache() {
 //////////////////////////
 
 static bool IsValidTargetLocation(ATrDevice_LaserTargeter* that, FVector currentTarget, FVector prevTarget, AActor* hitTarget) {
-	// TODO: Implement location validation
 	// Unfortunately the original version of this was native, and doesn't exist in OOTB :(
+	// So I've reimplemented it from scratch with traces yaaaaay
+
+	// Rules:
+	// 1) Nowhere is valid in pre-round
+	// 2) Must not collide with flag
+	// 3) Must not be underneath any world geometry (e.g. inside a base)
+
+	// Check we aren't in preround
+	if (!that->WorldInfo || !that->WorldInfo->GRI) return false;
+	if (((ATrGameReplicationInfo*)that->WorldInfo->GRI)->bWarmupRound) {
+		return false;
+	}
+
+	FVector landLocation = currentTarget;
+	// Spawn location for the pod is directly above where it will land
+	// It is supposed to take 5sec to land
+	ATrCallIn_DeliveryPod* podDefault = (ATrCallIn_DeliveryPod*)ATrCallIn_DeliveryPod::StaticClass()->Default;
+	FVector podFallStart = Geom::add(landLocation, Geom::mult(FVector(0, 0, 1), 5.0f * (podDefault->Speed)));
+	// End collision check slightly above the ground
+	FVector podFallEnd = Geom::add(landLocation, Geom::mult(FVector(0, 0, 1), 50));
+
+	// Trace the path of the fall, and see if it hits world geometry
+	FVector hitLocation, hitNormal;
+	FTraceHitInfo hitInfo;
+	AActor* hitActor = that->Trace(podFallEnd, podFallStart, false, FVector(), 0, &hitLocation, &hitNormal, &hitInfo);
+
+	if (hitActor) {
+		// There was something above the point we wanted to land
+		return false;
+	}
+
+	// Now, we want to check if we're going to hit a flag
+	hitActor = that->Trace(podFallEnd, podFallStart, true, FVector(10, 10, 10), 0, &hitLocation, &hitNormal, &hitInfo);
+	if (hitActor) {
+		// Should probably check that it is a flag, but thus far flags are the only thing that seem to trigger
+		// Maybe turrets do too (haven't tested) but that's probably a good thing if so
+		return false;
+	}
+
 	return true;
 }
 
@@ -176,7 +214,7 @@ static bool GetLaserStartAndEnd(ATrDevice_LaserTargeter* that, FVector& startLoc
 }
 
 static void CallInConfirmed(ATrDevice_LaserTargeter* that) {
-	//if (that->Role == ROLE_Authority) return;
+	if (that->Role == ROLE_Authority) return;
 }
 
 static void ServerPerformCallIn(ATrDevice_LaserTargeter* that, FVector endLocation, FVector hitNormal) {
@@ -263,7 +301,10 @@ void TrDevice_LaserTargeter_UpdateTarget(ATrDevice_LaserTargeter* that, ATrDevic
 
 	if (!that->Instigator) return;
 
-	callInData.UpdateTarget(that, params->hasHitSomething, params->End);
+	FVector start, end, hitNormal;
+	bool hasLaserHit = GetLaserStartAndEnd(that, start, end, hitNormal);
+
+	callInData.UpdateTarget(that, params->hasHitSomething && hasLaserHit, params->End);
 }
 
 // Not currently hooked...
@@ -330,75 +371,41 @@ void TrDevice_LaserTargeter_UpdateLaserEffect(ATrDevice_LaserTargeter* that, ATr
 	}
 }
 
+// Graphical effects for laser targeter
+
+static void UpdateCreditMaterial(ATrDevice_LaserTargeter* that) {
+	if (!that->Instigator || !that->Instigator->Controller || !that->Instigator->Controller->IsLocalPlayerController()) return;
+
+	ATrPawn* pOwner = (ATrPawn*)that->Instigator;
+
+	if (that->Mesh->Materials.Count > 1 && that->Mesh->Materials.GetStd(1) != NULL) {
+		UMaterialInstanceConstant* mic = (UMaterialInstanceConstant*)that->Mesh->Materials.GetStd(1);
+		// Set whether to show available... TODO
+		mic->SetScalarParameterValue(FName("bAvailable"), true);
+		mic->SetScalarParameterValue(FName("bCoolingDown"), false);
+		
+	}
+
+	// 'Ammo Count' used for cooldown... TODO
+	that->m_nCarriedAmmo = 0;
+}
 
 
-//bool getTargetLocationAndNormal(ATrDevice_LaserTargeter* that, FVector& startLoc, FVector& targetLoc, FVector& targetLocNormal) {
-//	FVector startTrace = that->InstantFireStartTrace();
-//	FVector endTrace = that->InstantFireEndTrace(startTrace);
-//
-//	targetLocNormal = FVector(0, 0, 1);
-//
-//	TArray<FImpactInfo> impactList;
-//
-//	FImpactInfo testImpact = that->CalcWeaponFire(startTrace, endTrace, FVector(0, 0, 0), 0, &impactList);
-//
-//	if (that->NotEqual_VectorVector(testImpact.HitLocation, startTrace) || that->NotEqual_VectorVector(testImpact.HitLocation, endTrace)) {
-//		targetLoc = testImpact.HitLocation;
-//		targetLocNormal = testImpact.HitNormal;
-//	}
-//
-//	startLoc = startTrace;
-//
-//	// TODO: Check validity of target location!!!
-//	return testImpact.HitActor != NULL;
-//}
-//
-//void TrDevice_LaserTargeter_OnStartConstantFire(ATrDevice_LaserTargeter* that, ATrDevice_LaserTargeter_execOnStartConstantFire_Parms* params, void* result, Hooks::CallInfo* callInfo) {
-//	ltCache_setFiring(that);
-//	that->OnStartConstantFire();
-//}
-//
-//static float TrDevice_LaserTargeter_CalcHUDAimChargePercent(ATrDevice_LaserTargeter* that) {
-//	Logger::debug("Calculating aim charge percent for targeter!");
-//	// Don't show call-in progress if not firing or on cooldown
-//	if (ltCache_cooldownTimePassed(that) < g_config.serverSettings.InventoryCallInCooldownTime) {
-//		return 0.f;
-//	}
-//
-//	float progress = ltCache_buildUpTimePassed(that) / g_config.serverSettings.InventoryCallInBuildUpTime;
-//	Logger::debug("Calculated aim charge percent for targeter: %f!", progress);
-//	return that->FClamp(progress, 0.f, 1.f);
-//}
-//
-//void TrDevice_CalcHUDAimChargePercent(ATrDevice* that, ATrDevice_execCalcHUDAimChargePercent_Parms* params, float* result, Hooks::CallInfo callInfo) {
-//	Logger::debug("Calculating aim charge percent!");
-//	*result = that->CalcHUDAimChargePercent();
-//
-//	if (that->IsA(ATrDevice_LaserTargeter::StaticClass())) {
-//		*result = TrDevice_LaserTargeter_CalcHUDAimChargePercent((ATrDevice_LaserTargeter*)that);
-//	}
-//}
-//
-//void TrDevice_LaserTargeter_OnEndConstantFire(ATrDevice_LaserTargeter* that, ATrDevice_LaserTargeter_execOnEndConstantFire_Parms* params, void* result, Hooks::CallInfo* callInfo) {
-//	if (!g_config.serverSettings.EnableInventoryCallIn) {
-//		// Call-In logic not required
-//		that->OnEndConstantFire();
-//		ltCache_stopFiring(that);
-//		return;
-//	}
-//
-//	bool canFireCallIn = ltCache_canFire(that, g_config.serverSettings.InventoryCallInBuildUpTime, g_config.serverSettings.InventoryCallInCooldownTime);
-//	ltCache_stopFiring(that);
-//
-//	if (!canFireCallIn) {
-//		that->OnEndConstantFire();
-//		return;
-//	}
-//
-//	// Call in an inventory station
-//	ltCache_recordCallIn(that);
-//
+static void UpdateCallInMaterial(ATrDevice_LaserTargeter* that) {
+	UMaterialInstanceConstant* displayMaterial = NULL;
 
-//
-//	that->OnEndConstantFire();
-//}
+	if (!that->Mesh) return;
+
+	// CREATE THE NEW MIC
+
+	UpdateCreditMaterial(that);
+}
+
+
+void TrDevice_PlayWeaponEquip(ATrDevice* that, ATrDevice_execPlayWeaponEquip_Parms* params, void* result, Hooks::CallInfo* callInfo) {
+	that->PlayWeaponEquip();
+}
+
+void TrDevice_UpdateWeaponMICs(ATrDevice* that, ATrDevice_eventUpdateWeaponMICs_Parms* params, void* result, Hooks::CallInfo* callInfo) {
+	that->eventUpdateWeaponMICs();
+}
