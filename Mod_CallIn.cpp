@@ -276,13 +276,8 @@ void TrDevice_LaserTargeter_OnEndConstantFire(ATrDevice_LaserTargeter* that, ATr
 	}
 }
 
-void TrDevice_CalcHUDAimChargePercent(ATrDevice* that, ATrDevice_execCalcHUDAimChargePercent_Parms* params, float* result, Hooks::CallInfo callInfo) {
-	Logger::debug("Calculating aim charge percent!");
-	*result = that->CalcHUDAimChargePercent();
-
-	if (that->IsA(ATrDevice_LaserTargeter::StaticClass())) {
-		*result = callInData.CalcHUDAimChargePercent((ATrDevice_LaserTargeter*)that);
-	}
+float TrDevice_LaserTargeter_CalcHUDAimChargePercent(ATrDevice_LaserTargeter* that) {
+	return callInData.CalcHUDAimChargePercent(that);
 }
 
 // Disabled due to OutParam weirdness

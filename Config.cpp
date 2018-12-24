@@ -24,6 +24,8 @@ GameBalance::ReplicatedSettings Config::getReplicatedSettings() {
 	repSet["InventoryCallInCooldownTime"] = serverSettings.InventoryCallInCooldownTime;
 	repSet["InventoryCallInBuildUpTime"] = serverSettings.InventoryCallInBuildUpTime;
 
+	repSet["UseGOTYBXTCharging"] = serverSettings.UseGOTYBXTCharging;
+
 	return repSet;
 }
 

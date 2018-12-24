@@ -136,6 +136,9 @@ struct ServerSettings {
 	// Whether inventory stations should restore energy
 	bool InventoryStationsRestoreEnergy = false;
 
+	// Whether to revert sniper charge behaviour to GOTY
+	bool UseGOTYBXTCharging = false;
+
 	// Whether to convert the Laser Targeter into an Inv Station call-in
 	bool EnableInventoryCallIn = false;
 	float InventoryCallInBuildUpTime = 2.f;
