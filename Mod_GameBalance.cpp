@@ -57,11 +57,6 @@ namespace DCServer {
 	}
 }
 
-void TrDevice_NovaSlug_FireAmmunition(ATrDevice_NovaSlug* that, ATrDevice_NovaSlug_execFireAmmunition_Parms* params, void* result, Hooks::CallInfo callInfo) {
-	//that->r_bReadyToFire = true;
-	that->ATrDevice::FireAmmunition();
-}
-
 template <typename BaseClass>
 static std::vector<UObject*> getDefaultObjects(std::map<int, std::string>& relevantClassNames, std::string prefix, std::vector<std::string> variants, int elemId) {
 	auto& name_it = relevantClassNames.find(elemId);
