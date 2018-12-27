@@ -447,16 +447,16 @@ namespace TAServer {
 		}
 
 		bool fromJson(const json& j) {
-			if (!j.is_object()) return false;
-			if (j.size() == 0) {
-				// Empty context
-				// Fine, we treat the server as just starting
-				controllerContext = PersistentContext();
-				return true;
-			}
-
 			if (j.find("controller_context") == j.end()) return false;
 			json contextJson = j["controller_context"];
+
+			if (!contextJson.is_object()) return false;
+			if (contextJson.empty()) {
+				// Empty context
+				// Fine, we treat the server as just starting for the first time
+				controllerContext.hasContext = false;
+				return true;
+			}
 
 			bool succeeded = controllerContext.fromJson(contextJson);
 			if (succeeded) {
