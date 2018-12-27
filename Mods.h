@@ -18,6 +18,8 @@
 //#include "TAServerClient.h"
 
 
+void GameInfo_ProcessServerTravel(AGameInfo* that, AGameInfo_execProcessServerTravel_Parms* params);
+
 // Hook called on server settings load
 void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrServerSettingsInfo_eventLoadServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo);
 

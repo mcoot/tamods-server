@@ -49,12 +49,13 @@ namespace TAServer {
 		void sendScoreInfo(int beScore, int dsScore);
 		void sendMapInfo(int mapId);
 		void sendMatchTime(long long matchSecondsLeft, bool counting);
-		void sendMatchEnded();
+		void sendMatchEnded(int nextMapIdx, std::string nextMapOverride);
 
 		void handler_OnConnect();
 		void handler_Launcher2GameLoadoutMessage(const json& msgBody);
 		void handler_Launcher2GameNextMapMessage(const json& msgBody);
 		void handler_Launcher2GamePingsMessage(const json& msgBody);
+		void handler_Launcher2GameInitMessage(const json& msgBody);
 	};
 }
 

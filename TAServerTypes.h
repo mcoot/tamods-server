@@ -29,6 +29,7 @@ using json = nlohmann::json;
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_LOADOUT_MESSAGE 0x4000
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_NEXT_MAP_MESSAGE 0x4001
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_PINGS_MESSAGE 0x4002
+#define TASRV_MSD_KIND_LAUNCHER_2_GAME_INIT_MESSAGE 0x4003
 
 #define TASRV_EQP_CODE_LOADOUTNAME "1341"
 #define TASRV_EQP_CODE_PRIMARY "1086"
@@ -42,6 +43,25 @@ using json = nlohmann::json;
 #define TASRV_EQP_CODE_VOICE "1094"
 
 namespace TAServer {
+
+	struct PersistentContext {
+	public:
+		bool hasContext = false;
+		int nextMapIndex = 0;
+		std::string nextMapOverride = "";
+	public:
+		void toJson(json& j) {
+			j["next_map_index"] = nextMapIndex;
+			j["next_map_override"] = nextMapOverride;
+		}
+
+		bool fromJson(const json& j) {
+			if (j.find("next_map_index") == j.end()) return false;
+			nextMapIndex = j["next_map_index"];
+			nextMapOverride = j["next_map_override"].get<std::string>();
+			return true;
+		}
+	};
 
 	long long netIdToLong(FUniqueNetId id);
 
@@ -292,14 +312,30 @@ namespace TAServer {
 
 	class Game2LauncherMatchEndMessage : public Message {
 	public:
+		PersistentContext controllerContext;
+	public:
 		short getMessageKind() override {
 			return TASRV_MSG_KIND_GAME_2_LAUNCHER_MATCHEND;
 		}
 
-		void toJson(json& j) {}
+		void toJson(json& j) {
+			json contextJson;
+
+			controllerContext.toJson(contextJson);
+
+			j["controller_context"] = contextJson;
+		}
 
 		bool fromJson(const json& j) {
-			return true;
+			if (j.find("controller_context") == j.end()) return false;
+			json contextJson = j["controller_context"];
+
+			bool succeeded = controllerContext.fromJson(contextJson);
+			if (succeeded) {
+				controllerContext.hasContext = true;
+			}
+
+			return succeeded;
 		}
 	};
 
@@ -390,6 +426,44 @@ namespace TAServer {
 			mapId = j["player_pings"];
 
 			return true;
+		}
+	};
+
+	class Launcher2GameInitMessage : public Message {
+	public:
+		PersistentContext controllerContext;
+
+	public:
+		short getMessageKind() override {
+			return TASRV_MSD_KIND_LAUNCHER_2_GAME_INIT_MESSAGE;
+		}
+
+		void toJson(json& j) {
+			json contextJson;
+			
+			controllerContext.toJson(contextJson);
+
+			j["controller_context"] = contextJson;
+		}
+
+		bool fromJson(const json& j) {
+			if (!j.is_object()) return false;
+			if (j.size() == 0) {
+				// Empty context
+				// Fine, we treat the server as just starting
+				controllerContext = PersistentContext();
+				return true;
+			}
+
+			if (j.find("controller_context") == j.end()) return false;
+			json contextJson = j["controller_context"];
+
+			bool succeeded = controllerContext.fromJson(contextJson);
+			if (succeeded) {
+				controllerContext.hasContext = true;
+			}
+
+			return succeeded;
 		}
 	};
 }

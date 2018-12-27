@@ -62,6 +62,9 @@ namespace TAServer {
 		tcpClient->add_handler(TASRV_MSG_KIND_LAUNCHER_2_GAME_PINGS_MESSAGE, [this](const json& j) {
 			handler_Launcher2GamePingsMessage(j);
 		});
+		tcpClient->add_handler(TASRV_MSD_KIND_LAUNCHER_2_GAME_INIT_MESSAGE, [this](const json& j) {
+			handler_Launcher2GameInitMessage(j);
+		});
 	}
 
 	void Client::sendProtocolVersion() {
@@ -148,8 +151,11 @@ namespace TAServer {
 		tcpClient->send(msg.getMessageKind(), j);
 	}
 
-	void Client::sendMatchEnded() {
+	void Client::sendMatchEnded(int nextMatchIdx, std::string nextMapOverride) {
 		Game2LauncherMatchEndMessage msg;
+		msg.controllerContext.hasContext = true;
+		msg.controllerContext.nextMapIndex = nextMatchIdx;
+		msg.controllerContext.nextMapOverride = nextMapOverride;
 
 		json j = json::object();
 		msg.toJson(j);

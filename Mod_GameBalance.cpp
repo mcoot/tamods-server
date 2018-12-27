@@ -198,7 +198,6 @@ static void applyValueModConfig(Items::DeviceValuesConfig& config) {
 
 void ServerSettings::ApplyGameBalanceProperties() {
 	applyPropConfig(Items::properties, weaponProperties);
-	Logger::debug("deviceValueProperties.size() = %d", deviceValueProperties.size());
 	applyValueModConfig(deviceValueProperties);
 	applyPropConfig(Classes::properties, classProperties);
 	applyPropConfig(Vehicles::properties,vehicleProperties);

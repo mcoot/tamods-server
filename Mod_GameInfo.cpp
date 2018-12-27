@@ -1,5 +1,11 @@
 #include "Mods.h"
 
+// Sneaky state used to force a map switch for initialisation
+// With a timer so that things can process, to avoid race conditions during init
+// 5 ticks seems to do the trick
+static int changeMapTickCounter = -1;
+static TAServer::PersistentContext controllerContext;
+
 static void checkForScoreChange() {
 	static int beScoreCached = 0;
 	static int dsScoreCached = 0;
@@ -78,6 +84,38 @@ bool UTGame_MatchInProgress_BeginState(int ID, UObject *dwCallingObject, UFuncti
 	return false;
 }
 
+static int getNextMapIdx() {
+	if (bNextMapOverrideValue != 0 && Data::map_id_to_filename.find(bNextMapOverrideValue) != Data::map_id_to_filename.end()) {
+		// Override for next map has been set
+		// Shouldn
+		return bNextMapOverrideValue;
+	}
+	else if (g_config.serverSettings.mapRotationMode == MapRotationMode::RANDOM) {
+		std::random_device rd;
+		std::mt19937 randgen(rd());
+		std::uniform_int_distribution<> rand_dist(0, g_config.serverSettings.mapRotation.size());
+		g_config.serverSettings.mapRotationIndex = rand_dist(randgen);
+	}
+	else {
+		g_config.serverSettings.mapRotationIndex = (g_config.serverSettings.mapRotationIndex + 1) % g_config.serverSettings.mapRotation.size();
+	}
+	return g_config.serverSettings.mapRotationIndex;
+}
+
+static std::string getNextMapName() {
+	std::string nextMapName;
+	if (bNextMapOverrideValue != 0 && Data::map_id_to_filename.find(bNextMapOverrideValue) != Data::map_id_to_filename.end()) {
+		// Override for next map has been set
+		nextMapName = Data::map_id_to_filename[bNextMapOverrideValue];
+		bNextMapOverrideValue = 0;
+	}
+	else {
+		nextMapName = g_config.serverSettings.mapRotation[getNextMapIdx()];
+	}
+
+	return nextMapName;
+}
+
 void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* result, Hooks::CallInfo* callInfo) {
 	Utils::serverGameStatus = Utils::ServerGameStatus::ENDED;
 	that->EndGame(params->Winner, params->Reason);
@@ -88,9 +126,26 @@ void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* resu
 			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 			g_TAServerClient.sendMatchTime(0, false);
 		}
+
+		// If a map override has been issued, we need to explicitly give the map name
+		std::string nextMapOverrideName = bNextMapOverrideValue == 0 ? "" : getNextMapName();
 		
-		g_TAServerClient.sendMatchEnded();
+		g_TAServerClient.sendMatchEnded(getNextMapIdx(), nextMapOverrideName);
 	}
+}
+
+void TAServer::Client::handler_Launcher2GameInitMessage(const json& msgBody) {
+	// Received when the launcher is ready for us to initialise
+	Launcher2GameInitMessage msg;
+	if (!msg.fromJson(msgBody)) {
+		Logger::fatal("Failed to parse game server initialisation message: %s", msgBody.dump().c_str());
+		return;
+	}
+
+	// Set up the controller context
+	controllerContext = msg.controllerContext;
+	// And in 5 ticks, perform the map switch
+	changeMapTickCounter = 5;
 }
 
 void UTGame_ProcessServerTravel(AUTGame* that, AUTGame_execProcessServerTravel_Parms* params, void* result, Hooks::CallInfo* callInfo) {
@@ -102,10 +157,10 @@ void UTGame_ProcessServerTravel(AUTGame* that, AUTGame_execProcessServerTravel_P
 		// Invalidate the GRI
 		Utils::tr_gri = NULL;
 	}
+	Logger::debug("About to perform ProcessServerTravel");
 	that->ProcessServerTravel(params->URL, params->bAbsolute);
+	Logger::debug("Done ProcessServerTravel");
 }
-
-static int changeMapTickCounter = -1;
 
 void TrGame_ApplyServerSettings(ATrGame* that, ATrGame_execApplyServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo) {
 	that->ApplyServerSettings();
@@ -195,9 +250,12 @@ void TAServer::Client::handler_OnConnect() {
 	// Immediately send TAServer the protocol version
 	g_TAServerClient.sendProtocolVersion();
 
+	// Below is commented out for the new blue-green dual server approach to map switches
+	// Instead, we will wait until the launcher sends its initialisation message before starting up
+
 	// Force a change map message to immediately go to the first map of the rotation
 	// This also forces a reload of the server settings
-	changeMapTickCounter = 5;
+	//changeMapTickCounter = 5;
 }
 
 static void performMapChange(std::string mapName) {
@@ -212,6 +270,10 @@ static void performMapChange(std::string mapName) {
 }
 
 void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) {
+	// This is actually called from two places:
+	// 1) handler for the next map message (only relevant if using SeamlessTravel switching, rather than blue-green dual server)
+	// 2) When the initialisation map tick counter hits zero (relevant regardless of switching method)
+
 	if (!g_config.connectToTAServer || !g_TAServerClient.isConnected()) return;
 
 	//std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
@@ -225,40 +287,56 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
 	// Reset call-in laser target buildup/cooldown cache
 	ResetLaserTargetCallInCache();
 
+	std::string nextMapName;
 	if (g_config.serverSettings.mapRotation.empty()) {
-		Utils::tr_gri->WorldInfo->eventServerTravel(FString(L"?restart"), false, false);
+		//Utils::tr_gri->WorldInfo->eventServerTravel(FString(L"?restart"), false, false);
+		nextMapName = "?restart";
 	}
 	else {
-		std::string nextMapName;
-		if (bNextMapOverrideValue != 0 && Data::map_id_to_filename.find(bNextMapOverrideValue) != Data::map_id_to_filename.end()) {
-			// Override for next map has been set
-			nextMapName = Data::map_id_to_filename[bNextMapOverrideValue];
-			bNextMapOverrideValue = 0;
-		}
-		else if (g_config.serverSettings.mapRotationMode == MapRotationMode::RANDOM) {
-			std::random_device rd;
-			std::mt19937 randgen(rd());
-			std::uniform_int_distribution<> rand_dist(0, g_config.serverSettings.mapRotation.size());
-			g_config.serverSettings.mapRotationIndex = rand_dist(randgen);
-			nextMapName = g_config.serverSettings.mapRotation[g_config.serverSettings.mapRotationIndex];
-		}
-		else {
-			g_config.serverSettings.mapRotationIndex = (g_config.serverSettings.mapRotationIndex + 1) % g_config.serverSettings.mapRotation.size();
-			nextMapName = g_config.serverSettings.mapRotation[g_config.serverSettings.mapRotationIndex];
-		}
+		if (controllerContext.hasContext) {
+			// We have context from the launcher, choose the map to switch to from that
 
-		// Tell the login server what the new map is
-		// Reverse searching the mapid -> mapname because it's small and cbf'd using boost::bimap
-		for (auto& it : Data::map_id_to_filename) {
-			if (it.second == nextMapName) {
-				g_TAServerClient.sendMapInfo(it.first);
-				break;
+			// Do we have an override in the context?
+			if (controllerContext.nextMapOverride != "") {
+				// Override, use that
+				nextMapName = controllerContext.nextMapOverride;
+			}
+			else {
+				// No override, use the rotation index
+				if (controllerContext.nextMapIndex < 0 || controllerContext.nextMapIndex >= g_config.serverSettings.mapRotation.size()) {
+					// Out of bounds, swap to the start of the rotation
+					Logger::error("Context message rotation index %d is out of rotation bounds", controllerContext.nextMapIndex);
+					nextMapName = g_config.serverSettings.mapRotation[0];
+				}
+				else {
+					nextMapName = g_config.serverSettings.mapRotation[getNextMapIdx()];
+				}
 			}
 		}
-
-		// Actually change map
-		performMapChange(nextMapName);
+		else {
+			// Assume we're at the start the rotation
+			nextMapName = g_config.serverSettings.mapRotation[0];
+			// Disabled - SeamlessTravel case, work it out
+			//nextMapName = getNextMapName();
+		}
 	}
+
+	
+
+	// Tell the login server what the new map is
+	// Reverse searching the mapid -> mapname because it's small and cbf'd using boost::bimap
+	int mapId = -1;
+	for (auto& it : Data::map_id_to_filename) {
+		if (it.second == nextMapName) {
+			mapId = it.first;
+			break;
+		}
+	}
+	// TODO: Fix this for the empty rotation case and custom map case
+	g_TAServerClient.sendMapInfo(mapId == -1 ? 1456 : mapId);
+
+	// Actually change map
+	performMapChange(nextMapName);
 }
 
 void TAServer::Client::handler_Launcher2GamePingsMessage(const json& msgBody) {
