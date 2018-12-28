@@ -94,12 +94,11 @@ static int getNextMapIdx() {
 		std::random_device rd;
 		std::mt19937 randgen(rd());
 		std::uniform_int_distribution<> rand_dist(0, g_config.serverSettings.mapRotation.size());
-		g_config.serverSettings.mapRotationIndex = rand_dist(randgen);
+		return rand_dist(randgen);
 	}
 	else {
-		g_config.serverSettings.mapRotationIndex = (g_config.serverSettings.mapRotationIndex + 1) % g_config.serverSettings.mapRotation.size();
+		return (g_config.serverSettings.mapRotationIndex + 1) % g_config.serverSettings.mapRotation.size();
 	}
-	return g_config.serverSettings.mapRotationIndex;
 }
 
 static std::string getNextMapName() {
@@ -144,6 +143,7 @@ void TAServer::Client::handler_Launcher2GameInitMessage(const json& msgBody) {
 
 	// Set up the controller context
 	controllerContext = msg.controllerContext;
+	g_config.serverSettings.mapRotationIndex = controllerContext.nextMapIndex;
 
 	if (controllerContext.hasContext) {
 		Logger::info("Received controller context; switching to rotation index %d; map override \"%s\"", controllerContext.nextMapIndex, controllerContext.nextMapOverride);
