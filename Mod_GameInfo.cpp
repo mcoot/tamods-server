@@ -144,6 +144,15 @@ void TAServer::Client::handler_Launcher2GameInitMessage(const json& msgBody) {
 
 	// Set up the controller context
 	controllerContext = msg.controllerContext;
+
+	if (controllerContext.hasContext) {
+		Logger::info("Received controller context; switching to rotation index %d; map override \"%s\"", controllerContext.nextMapIndex, controllerContext.nextMapOverride);
+	}
+	else {
+		Logger::info("Received empty controller context, starting map rotation");
+	}
+	
+
 	// And in 5 ticks, perform the map switch
 	changeMapTickCounter = 5;
 }
