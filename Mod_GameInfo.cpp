@@ -201,7 +201,32 @@ void TrGame_SendShowSummary(ATrGame* that, ATrGame_execSendShowSummary_Parms* pa
 	// It causes the 'getting stuck in the menu glitch'
 }
 
+static bool startedDCServer = false;
+
 bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
+
+	ATrGameReplicationInfo* that = (ATrGameReplicationInfo*)dwCallingObject;
+
+	// If we haven't already, start the Direct Connection server
+	if (!startedDCServer && g_config.connectToClients && that->WorldInfo) {
+		std::string url = Utils::f2std(that->WorldInfo->GetAddressURL());
+
+		int port = 7777;
+		size_t portPos = url.rfind(':');
+		if (portPos != std::string::npos) {
+			try {
+				// Server will be connected through UDP proxy
+				// We subtract 100 from the proxied port to get the 'real' UDP port clients are connecting to
+				// and run the DC Server on the TCP port equivalent to that UDP port
+				port = std::stoi(url.substr(portPos + 1)) - 100;
+			}
+			catch (std::invalid_argument&) {}
+		}
+
+		Logger::info("Starting DC Server on TCP port %d..", port);
+		g_DCServer.start(port);
+		startedDCServer = true;
+	}
 
 	if (Utils::serverGameStatus == Utils::ServerGameStatus::PREROUND) {
 		{
@@ -247,7 +272,7 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 
 	if (changeMapTickCounter > 0) changeMapTickCounter--;
 	if (changeMapTickCounter == 0) {
-		Utils::tr_gri = (ATrGameReplicationInfo*)dwCallingObject;
+		Utils::tr_gri = that;
 		changeMapTickCounter = -1;
 		json j;
 		g_TAServerClient.handler_Launcher2GameNextMapMessage(j);
