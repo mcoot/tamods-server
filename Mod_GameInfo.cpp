@@ -91,10 +91,14 @@ static int getNextMapIdx() {
 		return bNextMapOverrideValue;
 	}
 	else if (g_config.serverSettings.mapRotationMode == MapRotationMode::RANDOM) {
-		std::random_device rd;
-		std::mt19937 randgen(rd());
-		std::uniform_int_distribution<> rand_dist(0, g_config.serverSettings.mapRotation.size());
-		return rand_dist(randgen);
+		int idx = g_config.serverSettings.mapRotationIndex;
+		while (idx == g_config.serverSettings.mapRotationIndex) {
+			std::random_device rd;
+			std::mt19937 randgen(rd());
+			std::uniform_int_distribution<> rand_dist(0, g_config.serverSettings.mapRotation.size() - 1);
+			idx = rand_dist(randgen);
+		}
+		return idx;
 	}
 	else {
 		return (g_config.serverSettings.mapRotationIndex + 1) % g_config.serverSettings.mapRotation.size();
