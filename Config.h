@@ -86,6 +86,9 @@ struct ServerSettings {
 	int FlagDragHeavy = 0;
 	int FlagDragDeceleration = 0;
 
+	float BE_SensorRadius = 160;
+	float DS_SensorRadius = 160;
+
 	float AmmoPickupLifespan = 15;
 	float CTFFlagTimeout = 40;
 
