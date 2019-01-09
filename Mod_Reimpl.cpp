@@ -94,11 +94,11 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 	// Get direction and distance of the shot, and use it to calculate scaling / falloff
 	DamageScale = 1.0;
 	DamagingActor = ((UTrDmgType_Base*)UTrDmgType_Base::StaticClass()->Default)->GetActorCausingDamage(params->EventInstigator, params->DamageCauser);
-	TrProj = (ATrProjectile*)DamagingActor;
 	if (DamagingActor) {
 		that->GetBoundingCylinder(&ColRadius, &ColHeight);
 		Dir = that->Subtract_VectorVector(that->Location, DamagingActor->Location);
-		if (TrProj) {
+		if (DamagingActor->IsA(ATrProjectile::StaticClass())) {
+			TrProj = (ATrProjectile*)DamagingActor;
 			if (TrProj->m_bIsBullet) {
 				Dir = that->Subtract_VectorVector(TrProj->r_vSpawnLocation, params->HitLocation);
 			}
@@ -106,10 +106,10 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 				Dir = that->Subtract_VectorVector(that->Location, params->HitLocation);
 			}
 		}
+
 		Dist = that->VSize(Dir);
 		Dir = that->Normal(Dir);
 		Dist = that->FMax(Dist - ColRadius, 0.f);
-
 		DamageScale = that->GetDamageScale(params->DamageCauser, Dist, TrDamageType, params->EventInstigator, VM, &DamageScaleWithoutNewPlayerAssist);
 	}
 
