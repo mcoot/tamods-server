@@ -11,6 +11,12 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 	ATrFlagCTF* defCTFFlag = (ATrFlagCTF*)(ATrFlagCTF::StaticClass()->Default);
 	ATrFlagCTF_BloodEagle* defCTFFlag_BE = (ATrFlagCTF_BloodEagle*)(ATrFlagCTF_BloodEagle::StaticClass()->Default);
 	ATrFlagCTF_DiamondSword* defCTFFlag_DS = (ATrFlagCTF_DiamondSword*)(ATrFlagCTF_DiamondSword::StaticClass()->Default);
+	//Static class is broken, SDK offset needs to be fixed, grabbing as UObject and recasting as respective class
+	UObject* defRadarStation_BE = UObject::FindObject<UObject>("TrRadarStation_BloodEagle TribesGame.Default__TrRadarStation_BloodEagle");
+	UObject* defRadarStation_DS = UObject::FindObject<UObject>("TrRadarStation_DiamondSword TribesGame.Default__TrRadarStation_DiamondSword");
+
+	((ATrRadarStation_BloodEagle*)defRadarStation_BE)->m_fDamageRadius = this->BE_SensorRadius;
+	((ATrRadarStation_DiamondSword*)defRadarStation_DS)->m_fDamageRadius = this->DS_SensorRadius;
 
 	s->TimeLimit = this->TimeLimit;
 	s->WarmupTime = this->WarmupTime;
@@ -251,6 +257,8 @@ SETTING_GETTERSETTER(bool, InventoryStationsRestoreEnergy)
 SETTING_GETTERSETTER(bool, EnableInventoryCallIn)
 SETTING_GETTERSETTER(float, InventoryCallInBuildUpTime)
 SETTING_GETTERSETTER(float, InventoryCallInCooldownTime)
+SETTING_GETTERSETTER(float, BE_SensorRadius)
+SETTING_GETTERSETTER(float, DS_SensorRadius)
 
 static void addCustomToMapRotation(std::string mapName) {
 	g_config.serverSettings.mapRotation.push_back(mapName);
@@ -466,6 +474,8 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(EnableInventoryCallIn)
 				.SETTING_LUAPROP(InventoryCallInBuildUpTime)
 				.SETTING_LUAPROP(InventoryCallInCooldownTime)
+				.SETTING_LUAPROP(BE_SensorRadius)
+				.SETTING_LUAPROP(DS_SensorRadius)
 				.beginNamespace("MapRotation")
 					.addVariable("Mode", (int*)&g_config.serverSettings.mapRotationMode, true)
 					.beginNamespace("Modes")
