@@ -260,18 +260,74 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 }
 
 ////////////////////////
+// Thrust pack rage dependency fix
+////////////////////////
+
+void TrPlayerController_GetBlinkPackAccel(ATrPlayerController* that, ATrPlayerController_execGetBlinkPackAccel_Parms* params) {
+	Logger::debug("GetBlinkPackAccel!");
+	if (g_config.serverSettings.RageThrustPackDependsOnCapperSpeed) {
+		that->GetBlinkPackAccel(&(params->newAccel), &(params->BlinkPackPctEffectiveness));
+		return;
+	}
+
+	FVector NewAccel;
+	float BlinkPackPctEffectiveness;
+
+	ATrPawn* TrP = (ATrPawn*)that->Pawn;
+	ATrDevice_Blink* BlinkPack = (ATrDevice_Blink*)that->GetDeviceByEquipPoint(EQP_Pack);
+
+	if (!TrP->IsA(ATrPawn::StaticClass()) || !BlinkPack->IsA(ATrDevice_Blink::StaticClass())) return;
+
+	FVector ViewPos;
+	FRotator ViewRot;
+	that->eventGetPlayerViewPoint(&ViewPos, &ViewRot);
+	
+	// Start with a local-space impulse amount
+	NewAccel = BlinkPack->GetBlinkImpulse();
+
+	// Transform from local to world space
+	NewAccel = that->GreaterGreater_VectorRotator(NewAccel, ViewRot);
+
+	// Always make sure we have upward impulse
+	if (NewAccel.Z <= BlinkPack->m_fMinZImpulse) {
+		NewAccel.Z = BlinkPack->m_fMinZImpulse;
+	}
+
+	// Modify acceleration based on the power pool
+	BlinkPackPctEffectiveness = BlinkPack->m_fPowerPoolCost > 0.0f ? that->FClamp(TrP->GetPowerPoolPercent() * 100 / BlinkPack->m_fPowerPoolCost, 0.0f, 1.0f) : 1.0f ;
+
+	// Modify the acceleration based on a speed cap
+	float PawnSpeed = that->VSize(TrP->Velocity);
+	float BlinkPackSpeedCapMultiplier = 1.0f;
+	if ((that->Dot_VectorVector(that->Normal(TrP->Velocity), Geom::rotationToVector(ViewRot)) >= 0) && PawnSpeed > BlinkPack->m_fSpeedCapThreshold) {
+		BlinkPackSpeedCapMultiplier = that->Lerp(1.0f, BlinkPack->m_fSpeedCapPct, that->FPctByRange(that->Min(PawnSpeed, BlinkPack->m_fSpeedCapThreshold), BlinkPack->m_fSpeedCapThresholdStart, BlinkPack->m_fSpeedCapThreshold));
+	}
+	BlinkPackPctEffectiveness *= BlinkPackSpeedCapMultiplier;
+
+	// Apply the effectiveness debuf
+	NewAccel = that->Multiply_FloatVector(BlinkPackPctEffectiveness, NewAccel);
+
+	BlinkPack->OnBlink(BlinkPackPctEffectiveness, false);
+
+	// Out params
+	params->newAccel = NewAccel;
+	params->BlinkPackPctEffectiveness = BlinkPackPctEffectiveness;
+}
+
+void TrDevice_Blink_OnBlink(ATrDevice_Blink* that, ATrDevice_Blink_execOnBlink_Parms* params) {
+	that->OnBlink(params->PercentEffectiveness, params->wasRage && g_config.serverSettings.RageThrustPackDependsOnCapperSpeed);
+}
+
+////////////////////////
 // Inv Stations restore energy
 ////////////////////////
 
-void TrStation_PawnEnteredStation(ATrStation* that, ATrStation_execPawnEnteredStation_Parms* params, void* result, Hooks::CallInfo* callInfo) {
-	
-	that->bForceNetUpdate = true;
-
-	if (!that->r_CurrentPawn) {
-		
+void TrPawn_RefreshInventory(ATrPawn* that, ATrPawn_execRefreshInventory_Parms* params) {
+	Logger::debug("RefreshInventory");
+	if (!params->bIsRespawn && g_config.serverSettings.InventoryStationsRestoreEnergy) {
+		that->ConsumePowerPool(-1.0 * that->r_fMaxPowerPool);
 	}
-
-	that->PawnEnteredStation(params->P);
+	that->RefreshInventory(params->bIsRespawn, params->bCallin);	
 }
 
 ////////////////////////
