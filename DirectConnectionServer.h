@@ -39,6 +39,8 @@ namespace DCServer {
 		PlayerConnection(ConnectionPtr conn) : conn(conn) {}
 	};
 
+	int getServerPort(AWorldInfo* worldInfo);
+
 	class Server {
 	private:
 		boost::asio::io_service ios;

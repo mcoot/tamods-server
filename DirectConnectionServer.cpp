@@ -4,6 +4,24 @@ DCServer::Server g_DCServer;
 
 namespace DCServer {
 
+	int getServerPort(AWorldInfo* worldInfo) {
+		std::string url = Utils::f2std(worldInfo->GetAddressURL());
+
+		int port = 0;
+		size_t portPos = url.rfind(':');
+		if (portPos != std::string::npos) {
+			try {
+				// Server will be connected through UDP proxy
+				// We subtract 100 from the proxied port to get the 'real' UDP port clients are connecting to
+				// and run the DC Server on the TCP port equivalent to that UDP port
+				port = std::stoi(url.substr(portPos + 1)) - 100;
+			}
+			catch (std::invalid_argument&) {}
+		}
+
+		return port;
+	}
+
 	bool Server::isPlayerAKnownModdedConnection(FUniqueNetId playerId) {
 		long long lpid = TAServer::netIdToLong(playerId);
 		{

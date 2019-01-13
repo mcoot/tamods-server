@@ -5,6 +5,7 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <condition_variable>
 #include <mutex>
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
@@ -28,6 +29,9 @@ namespace TAServer {
 		boost::asio::io_service ios;
 		std::shared_ptr<std::thread> iosThread;
 		std::shared_ptr<std::thread> gameInfoPollingThread;
+		bool killPollingThreadFlag = false;
+		std::mutex pollingThreadMutex;
+		std::condition_variable pollingThreadCV;
 		std::shared_ptr<TCP::Client<short> > tcpClient;
 		std::map<long long, Launcher2GameLoadoutMessage> receivedLoadouts;
 		std::mutex receivedLoadoutsMutex;
@@ -41,6 +45,9 @@ namespace TAServer {
 		bool connect(std::string host, int port);
 		bool disconnect();
 		bool isConnected();
+
+		void killPollingThread();
+		void performGamePolling();
 
 		bool retrieveLoadout(FUniqueNetId uniquePlayerId, int classId, int slot, std::map<int, int>& resultEquipMap);
 

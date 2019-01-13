@@ -29,14 +29,13 @@ namespace TAServer {
 		});
 
 		// Start the thread used to poll game information to send
-		gameInfoPollingThread = std::make_shared<std::thread>([&] {
-			while (true) {
-				pollForGameInfoChanges();
-				std::this_thread::sleep_for(std::chrono::seconds(2));
-				
-			}
+		{
+			std::unique_lock<std::mutex> lock(pollingThreadMutex);
+			killPollingThreadFlag = false;
+		}
+		gameInfoPollingThread = std::make_shared<std::thread>([&]() {
+			this->performGamePolling();
 		});
-		gameInfoPollingThread->detach();
 
 		return true;
 	}
@@ -45,11 +44,37 @@ namespace TAServer {
 		tcpClient->stop();
 		ios.stop();
 		iosThread->join();
+		killPollingThread();
 		return true;
 	}
 
 	bool Client::isConnected() {
 		return !tcpClient->is_stopped();
+	}
+
+	void Client::killPollingThread() {
+		{
+			std::unique_lock<std::mutex> lock(pollingThreadMutex);
+			killPollingThreadFlag = true;
+		}
+		pollingThreadCV.notify_all();
+		gameInfoPollingThread->join();
+	}
+
+	void Client::performGamePolling() {
+		while (true) {
+			pollForGameInfoChanges();
+			bool shouldDie = false;
+			{
+				std::unique_lock<std::mutex> lock(pollingThreadMutex);
+				shouldDie = pollingThreadCV.wait_for(lock, std::chrono::seconds(2), [&] {return killPollingThreadFlag; });
+			}
+			if (shouldDie) {
+				break;
+			}
+			std::this_thread::sleep_for(std::chrono::seconds(2));
+
+		}
 	}
 
 	void Client::attachHandlers() {

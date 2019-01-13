@@ -70,6 +70,8 @@ extern int bNextMapOverrideValue;
 
 // Reimplemented TakeDamage to revert Shield Pack behaviour
 void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, void* result, Hooks::CallInfo* callinfo);
+void TrPawn_RememberLastDamager(ATrPawn* that, ATrPawn_execRememberLastDamager_Parms* params);
+bool TrPawn_RechargeHealthPool(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult);
 
 // Reimplemented thrust pack acceleration to revert Rage behaviour
 void TrPlayerController_GetBlinkPackAccel(ATrPlayerController* that, ATrPlayerController_execGetBlinkPackAccel_Parms* params);
@@ -77,6 +79,9 @@ void TrDevice_Blink_OnBlink(ATrDevice_Blink* that, ATrDevice_Blink_execOnBlink_P
 
 // Inv stations give energy
 void TrPawn_RefreshInventory(ATrPawn* that, ATrPawn_execRefreshInventory_Parms* params);
+
+// Fix honorfusor hitreg
+void TrProj_Honorfusor_ProjectileHurtRadius(ATrProj_Honorfusor* that, ATrProj_Honorfusor_execProjectileHurtRadius_Parms* params, bool* result);
 
 // BXT fixes
 void TrDevice_SniperRifle_ModifyInstantHitDamage(ATrDevice_SniperRifle* that, ATrDevice_SniperRifle_execModifyInstantHitDamage_Parms* params, float* result, Hooks::CallInfo* callInfo);

@@ -64,7 +64,16 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 		return;
 	}
 
-	AActor* DamagingActor = NULL;
+	AActor* DamagingActor = ((UTrDmgType_Base*)UTrDmgType_Base::StaticClass()->Default)->GetActorCausingDamage(params->EventInstigator, params->DamageCauser);
+
+	if (!strcmp(DamagingActor->Class->GetName(), "TrProj_Honorfusor")) {
+		// Use OOTB TakeDamage, because honorfusor is borked in the reimplementation
+		that->eventTakeDamage(params->DamageAmount, params->EventInstigator, params->HitLocation,
+			params->Momentum, params->DamageType, params->HitInfo, params->DamageCauser);
+		return;
+	}
+
+
 	float ColRadius = 0.f, ColHeight = 0.f;
 	float DamageScale = 0.f, Dist = 0.f, ScaledDamage = 0.f, EnergyDrainAmount = 0.f, DamageWithoutNewPlayerAssist = 0.f;
 	FVector Dir;
@@ -93,7 +102,6 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 
 	// Get direction and distance of the shot, and use it to calculate scaling / falloff
 	DamageScale = 1.0;
-	DamagingActor = ((UTrDmgType_Base*)UTrDmgType_Base::StaticClass()->Default)->GetActorCausingDamage(params->EventInstigator, params->DamageCauser);
 	if (DamagingActor) {
 		that->GetBoundingCylinder(&ColRadius, &ColHeight);
 		Dir = that->Subtract_VectorVector(that->Location, DamagingActor->Location);
@@ -202,7 +210,12 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 			// Take shield pack damage from energy rather than health
 			ScaledDamage = that->GetUnshieldedDamage(ScaledDamage);
 
-			that->RememberLastDamager(params->EventInstigator, ScaledDamage, DamagingActor, params->DamageAmount);
+			ATrPawn_execRememberLastDamager_Parms rememberLastDamagerParams;
+			rememberLastDamagerParams.Damager = params->EventInstigator;
+			rememberLastDamagerParams.DamageAmount = ScaledDamage;
+			rememberLastDamagerParams.DamagingActor = DamagingActor;
+			rememberLastDamagerParams.UnscaledDamageAmount = params->DamageAmount;
+			TrPawn_RememberLastDamager(that, &rememberLastDamagerParams);
 
 			params->EventInstigator = that->CheckTribesTurretInstigator(params->EventInstigator, params->DamageCauser);
 
@@ -257,6 +270,212 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 			}
 		}
 	}
+}
+
+void TrPawn_RememberLastDamager(ATrPawn* that, ATrPawn_execRememberLastDamager_Parms* params) {
+	if (!g_config.serverSettings.UseGOTYShieldPack) {
+		that->RememberLastDamager(params->Damager, params->DamageAmount, params->DamagingActor, params->UnscaledDamageAmount);
+		return;
+	}
+
+	ATrPlayerController* OwnerController;
+	if (that->Owner && that->Owner->IsA(ATrVehicle::StaticClass())) {
+		OwnerController = (ATrPlayerController*)(((ATrVehicle*)that->Owner)->Controller);
+	}
+	else {
+		OwnerController = (ATrPlayerController*)that->Owner;
+	}
+
+	// Kill cam info
+	if (OwnerController && OwnerController->IsA(ATrPlayerController::StaticClass()) && params->Damager && params->Damager->Pawn) {
+		ATrPawn* TrP = (ATrPawn*)params->Damager->Pawn;
+		if (TrP && TrP->IsA(ATrPawn::StaticClass())) {
+			ATrTurretPawn* TrTP = (ATrTurretPawn*)TrP;
+
+			// Check if the damager was a turret/deployable, or a player
+			if (TrTP && TrTP->IsA(ATrTurretPawn::StaticClass()) && TrTP->m_OwnerDeployable) {
+				OwnerController->ClientSetLastDamagerInfo(100 * ((float)TrTP->m_OwnerDeployable->r_Health)/((float)TrTP->m_OwnerDeployable->r_MaxHealth), TrTP->m_OwnerDeployable->r_nUpgradeLevel);
+			}
+			else {
+				OwnerController->ClientSetLastDamagerInfo(TrP->GetHealthPct(), 0);
+			}
+		}
+	}
+
+	// Remember the actual actor that damaged us
+	if (OwnerController && OwnerController->IsA(ATrPlayerController::StaticClass())) {
+		OwnerController->m_LastDamagedBy = params->DamagingActor;
+	}
+
+	// If we damaged ourselves, always apply a timestamp
+	if (params->Damager && params->Damager == OwnerController) {
+		if (params->DamageAmount > 0) {
+			that->m_fLastDamagerTimeStamp = that->WorldInfo->TimeSeconds;
+		}
+		return;
+	}
+
+	// Ignore timestamp for people on the same team unless friendly fire is on
+	bool bSameTeam = OwnerController && OwnerController->IsA(ATrPlayerController::StaticClass()) && params->Damager->GetTeamNum() == OwnerController->GetTeamNum();
+	if (bSameTeam && !that->WorldInfo->GRI->r_bFriendlyFire) return;
+
+	ATrPlayerController* TrDamager = (ATrPlayerController*)params->Damager;
+
+	// Apply timestamp only if actual damage was done
+	if (params->DamageAmount > 0) {
+		that->m_fLastDamagerTimeStamp = that->WorldInfo->TimeSeconds;
+	}
+
+	// Only give score and assist status for damage on opposing team
+	if (!bSameTeam) {
+		if (TrDamager && TrDamager->IsA(ATrPlayerController::StaticClass())) TrDamager->CashForDamage(params->DamageAmount);
+	}
+
+	for (int i = 0; i < that->m_KillAssisters.Count; ++i) {
+		FAssistInfo* assistInfo = that->m_KillAssisters.Get(i);
+		if (assistInfo->m_Damager != TrDamager) continue;
+
+		if (assistInfo->m_fDamagerTime < (that->WorldInfo->TimeSeconds - that->m_fSecondsBeforeAutoHeal)) {
+			// Reset damage done since player has healed since being shot
+			assistInfo->m_AccumulatedDamage = params->DamageAmount;
+		}
+		else {
+			assistInfo->m_AccumulatedDamage += params->DamageAmount;
+		}
+
+		assistInfo->m_fDamagerTime = that->WorldInfo->TimeSeconds;
+		return;
+	}
+
+	// Disabled as this causes a crash when you start regening after someone shot you
+	// Because we're manipulating TAMods managed memory and then the UScript VM goes and tries to remove from the array later...
+	// Add new assist record since we didn't have one already
+	//bool foundEmptySpot = false;
+	//for (int i = 0; i < that->m_KillAssisters.Count; ++i) {
+	//	if (!that->m_KillAssisters.GetStd(i).m_Damager) {
+	//		foundEmptySpot = true;
+	//		that->m_KillAssisters.Set(i, that->CreateAssistRecord(params->Damager, params->DamageAmount));
+	//		break;
+	//	}
+	//}
+	//if (!foundEmptySpot) {
+	//	that->m_KillAssisters.Add(that->CreateAssistRecord(params->Damager, params->DamageAmount));
+	//}
+	//if (that->m_KillAssisters.Count < 32) {
+	//	for (int i = that->m_KillAssisters.Count; i < 32; ++i) {
+	//		FAssistInfo emptyInfo;
+	//		emptyInfo.m_Damager = NULL;
+	//		emptyInfo.m_fDamagerTime = 0;
+	//		emptyInfo.m_AccumulatedDamage = 0;
+	//		that->m_KillAssisters.Add(emptyInfo);
+	//	}
+	//}
+	//for (int i = 0;; ++i) {
+	//	if (!that->m_KillAssisters.GetStd(i).m_Damager) {
+	//		that->m_KillAssisters.Set(i, that->CreateAssistRecord(params->Damager, params->DamageAmount));
+	//		break;
+	//	}
+	//}
+}
+
+bool TrPawn_RechargeHealthPool(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
+	// This hook is disabled as I can't fix assist
+	return false;
+
+	ATrPawn* that = (ATrPawn*)dwCallingObject;
+	ATrPawn_eventRechargeHealthPool_Parms* params = (ATrPawn_eventRechargeHealthPool_Parms*)pParams;
+
+	if (!g_config.serverSettings.UseGOTYShieldPack) {
+		return false;
+	}
+
+	if (that->Role != ROLE_Authority) return true;
+
+	if (!that->GetCurrCharClassInfo()) return true;
+
+	if (that->Health >= that->HealthMax) {
+		if (that->r_bIsHealthRecharging) {
+			ATrPlayerController* TrPC = (ATrPlayerController*)that->Owner;
+			if (TrPC && TrPC->IsA(ATrPlayerController::StaticClass())) {
+				if (TrPC->AlienFX && TrPC->EnableAlienFX) {
+					TrPC->AlienFX->SetHealth(100);
+				}
+
+				if (TrPC->Stats) {
+					// Disable stats due to crashes
+					//TrPC->Stats->RegeneratedToFull(TrPC);
+				}
+			}
+			that->r_bIsHealthRecharging = false;
+			that->bNetDirty = true;
+		}
+
+		return true;
+	}
+
+	// Do not regen health if you are a flag carrier
+	ATrPlayerReplicationInfo* TrPRI = that->GetTribesReplicationInfo();
+	if (TrPRI && TrPRI->bHasFlag) {
+		that->r_bIsHealthRecharging = false;
+		that->bNetDirty = true;
+		return true;
+	}
+
+	if (that->WorldInfo->TimeSeconds - that->m_fLastDamagerTimeStamp <= that->m_fSecondsBeforeAutoHeal) {
+		that->r_bIsHealthRecharging = false;
+		that->bNetDirty = true;
+		return true;
+	}
+	
+	float RechargeRateMultiplier = 1.0f;
+
+	// Get skill / perk influence
+	if (TrPRI) {
+		UTrValueModifier* VM = TrPRI->GetCurrentValueModifier();
+		if (VM) {
+			RechargeRateMultiplier += VM->m_fHealthRegenRateBuffPct;
+		}
+	}
+
+	float fRecharge = that->Health + ((UTrFamilyInfo*)that->GetCurrCharClassInfo()->Default)->m_fHealthPoolRechargeRate * RechargeRateMultiplier * params->DeltaSeconds * that->HealthMax;
+
+	that->m_fTickedRegenDecimal += fRecharge - (float)that->Health;
+
+	fRecharge += that->m_fTickedRegenDecimal;
+
+	if (fRecharge > that->HealthMax) {
+		fRecharge = that->HealthMax;
+		that->m_fTickedRegenDecimal = 0;
+	}
+	else {
+		that->m_fTickedRegenDecimal -= that->Abs((int)that->m_fTickedRegenDecimal);
+	}
+
+	that->Health = fRecharge;
+
+	that->r_bIsHealthRecharging = true;
+	that->bNetDirty = true;
+
+	// Clear out any assists when regen begins
+	for (int i = 0; i < that->m_KillAssisters.Count; ++i) {
+		FAssistInfo emptyInfo;
+		emptyInfo.m_Damager = NULL;
+		emptyInfo.m_fDamagerTime = 0;
+		emptyInfo.m_AccumulatedDamage = 0;
+		that->m_KillAssisters.Set(i, emptyInfo);
+	}
+
+	that->ClientPlayHealthRegenEffect();
+
+	return true;
+}
+
+////////////////////////
+// Honorfusor hitreg fix
+////////////////////////
+
+void TrProj_Honorfusor_ProjectileHurtRadius(ATrProj_Honorfusor* that, ATrProj_Honorfusor_execProjectileHurtRadius_Parms* params, bool* result) {
+	*result = that->ATrProjectile::ProjectileHurtRadius(params->HurtOrigin, params->HitNormal);
 }
 
 ////////////////////////
@@ -323,7 +542,6 @@ void TrDevice_Blink_OnBlink(ATrDevice_Blink* that, ATrDevice_Blink_execOnBlink_P
 ////////////////////////
 
 void TrPawn_RefreshInventory(ATrPawn* that, ATrPawn_execRefreshInventory_Parms* params) {
-	Logger::debug("RefreshInventory");
 	if (!params->bIsRespawn && g_config.serverSettings.InventoryStationsRestoreEnergy) {
 		that->ConsumePowerPool(-1.0 * that->r_fMaxPowerPool);
 	}

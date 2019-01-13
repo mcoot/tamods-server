@@ -2,6 +2,7 @@
 
 static FILE* _file = NULL;
 static Logger::Level _level = Logger::LOG_DEBUG;
+static bool useMultipleLogFiles = false;
 
 static bool openFile() {
 	if (_level == Logger::LOG_NONE)
@@ -15,7 +16,21 @@ static bool openFile() {
 			directory = std::string(profile) + "\\Documents\\";
 		else
 			directory = std::string("C:\\");
-		_file = fopen(std::string(directory + LOGFILE_NAME).c_str(), "w+");
+
+		// Find a non-existent file
+		int logFileNum = 0;
+		std::string logFilePath = std::string(directory + LOGFILE_NAME);
+		if (useMultipleLogFiles) {
+			while (true) {
+				FILE* f = fopen(logFilePath.c_str(), "r");
+				if (!f) break;
+				fclose(f);
+				logFileNum++;
+				logFilePath = std::string(directory + LOGFILE_NAME + std::to_string(logFileNum));
+			}
+		}
+
+		_file = fopen(logFilePath.c_str(), "w+");
 	}
 	return !!_file;
 }

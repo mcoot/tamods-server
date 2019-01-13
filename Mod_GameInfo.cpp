@@ -9,12 +9,12 @@ static TAServer::PersistentContext controllerContext;
 static void checkForScoreChange() {
 	static int beScoreCached = 0;
 	static int dsScoreCached = 0;
+
 	int beScoreCurrent = (int)Utils::tr_gri->Teams.Data[0]->Score;
 	int dsScoreCurrent = (int)Utils::tr_gri->Teams.Data[1]->Score;
 	if (beScoreCurrent != beScoreCached || dsScoreCurrent != dsScoreCached) {
 		beScoreCached = beScoreCurrent;
 		dsScoreCached = dsScoreCurrent;
-
 		if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {
 			g_TAServerClient.sendScoreInfo(beScoreCurrent, dsScoreCurrent);
 		}
@@ -123,8 +123,13 @@ void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* resu
 	Utils::serverGameStatus = Utils::ServerGameStatus::ENDED;
 	that->EndGame(params->Winner, params->Reason);
 
+	Logger::debug("Game ended");
+
 	// Tell TAServer that the game is ending
 	if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {
+		// Stop the polling thread
+		g_TAServerClient.killPollingThread();
+
 		{
 			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 			g_TAServerClient.sendMatchTime(0, false);
@@ -213,20 +218,7 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 
 	// If we haven't already, start the Direct Connection server
 	if (!startedDCServer && g_config.connectToClients && that->WorldInfo) {
-		std::string url = Utils::f2std(that->WorldInfo->GetAddressURL());
-
-		int port = 7777;
-		size_t portPos = url.rfind(':');
-		if (portPos != std::string::npos) {
-			try {
-				// Server will be connected through UDP proxy
-				// We subtract 100 from the proxied port to get the 'real' UDP port clients are connecting to
-				// and run the DC Server on the TCP port equivalent to that UDP port
-				port = std::stoi(url.substr(portPos + 1)) - 100;
-			}
-			catch (std::invalid_argument&) {}
-		}
-
+		int port = DCServer::getServerPort(that->WorldInfo);
 		Logger::info("Starting DC Server on TCP port %d..", port);
 		g_DCServer.start(port);
 		startedDCServer = true;
@@ -276,7 +268,9 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 
 	if (changeMapTickCounter > 0) changeMapTickCounter--;
 	if (changeMapTickCounter == 0) {
+		//std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 		Utils::tr_gri = that;
+		Logger::debug("Just set GRI to that!");
 		changeMapTickCounter = -1;
 		json j;
 		g_TAServerClient.handler_Launcher2GameNextMapMessage(j);
@@ -311,6 +305,8 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
 	// This is actually called from two places:
 	// 1) handler for the next map message (only relevant if using SeamlessTravel switching, rather than blue-green dual server)
 	// 2) When the initialisation map tick counter hits zero (relevant regardless of switching method)
+
+	Logger::debug("Beginning map change process");
 
 	if (!g_config.connectToTAServer || !g_TAServerClient.isConnected()) return;
 
@@ -358,8 +354,6 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
 			//nextMapName = getNextMapName();
 		}
 	}
-
-	
 
 	// Tell the login server what the new map is
 	// Reverse searching the mapid -> mapname because it's small and cbf'd using boost::bimap
@@ -420,7 +414,6 @@ static ATrPlayerReplicationInfo* getPriForPlayerId(TArray<APlayerReplicationInfo
 static bool cachedWasInOvertime = false;
 static int pollsSinceLastStateUpdate = 0;
 void pollForGameInfoChanges() {
-
 	// Lock the GRI to ensure it can't be unset during polling
 	std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 	if (!Utils::tr_gri) {
