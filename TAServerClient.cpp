@@ -58,7 +58,10 @@ namespace TAServer {
 			killPollingThreadFlag = true;
 		}
 		pollingThreadCV.notify_all();
-		gameInfoPollingThread->join();
+		if (gameInfoPollingThread->joinable()) {
+			gameInfoPollingThread->join();
+		}
+		
 	}
 
 	void Client::performGamePolling() {

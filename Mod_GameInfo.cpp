@@ -120,8 +120,11 @@ static std::string getNextMapName() {
 }
 
 void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* result, Hooks::CallInfo* callInfo) {
+	bool isDuplicateEndGame = Utils::serverGameStatus == Utils::ServerGameStatus::ENDED;
 	Utils::serverGameStatus = Utils::ServerGameStatus::ENDED;
 	that->EndGame(params->Winner, params->Reason);
+
+	if (isDuplicateEndGame) return;
 
 	Logger::debug("Game ended");
 
