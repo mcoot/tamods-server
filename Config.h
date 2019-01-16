@@ -142,6 +142,9 @@ struct ServerSettings {
 	// Whether to revert sniper charge behaviour to GOTY
 	bool UseGOTYBXTCharging = false;
 
+	// Whether Jackal airburst should be reverted to GOTY
+	bool UseGOTYJackalAirburst = false;
+
 	// Whether the speed given by the Thrust pack should depend on capper speed during Rage
 	bool RageThrustPackDependsOnCapperSpeed = true;
 

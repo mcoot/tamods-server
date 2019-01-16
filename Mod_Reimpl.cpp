@@ -668,3 +668,27 @@ void TrDevice_SniperRifle_ModifyInstantHitDamage(ATrDevice_SniperRifle* that, AT
 
 	*result = that->ATrDevice::ModifyInstantHitDamage(params->FiringMode, params->Impact, damage);
 }
+
+////////////////////////
+// Jackal Airburst reimplementation
+////////////////////////
+
+void ATrDevice_RemoteArxBuster_ActivateRemoteRounds(ATrDevice_RemoteArxBuster* that, ATrDevice_RemoteArxBuster_execActivateRemoteRounds_Parms* params) {
+	if (!g_config.serverSettings.UseGOTYJackalAirburst) {
+		that->ActivateRemoteRounds(params->bDoNoDamage);
+		return;
+	}
+
+	Logger::debug("BOOMY BOOM BOOM");
+
+	for (int i = 0; i < that->RemoteArxRounds.Count; ++i) {
+		ATrProj_RemoteArxBuster* proj = that->RemoteArxRounds.GetStd(i);
+		if (params->bDoNoDamage) {
+			proj->Damage = 0;
+		}
+		proj->m_bIsDetonating = true;
+		proj->Explode(proj->Location, FVector(0, 0, 1));
+	}
+
+	that->ActivateRemoteRounds(false);
+}
