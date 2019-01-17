@@ -6,6 +6,7 @@
 
 #include "FunctionalUtils.h"
 
+#include "TenantedDataStore.h"
 #include "TAServerClient.h"
 #include "DirectConnectionServer.h"
 

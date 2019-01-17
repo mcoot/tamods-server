@@ -354,6 +354,9 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TenantedDataStore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TAMods-Server.cpp">
@@ -652,6 +655,9 @@
     </ClCompile>
     <ClCompile Include="Mod_CallIn.cpp">
       <Filter>Source Files\Mods</Filter>
+    </ClCompile>
+    <ClCompile Include="TenantedDataStore.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

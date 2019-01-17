@@ -253,6 +253,7 @@
     <ClInclude Include="TAServerClient.h" />
     <ClInclude Include="TAServerTypes.h" />
     <ClInclude Include="TCP.h" />
+    <ClInclude Include="TenantedDataStore.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="zlib\crc32.h" />
     <ClInclude Include="zlib\deflate.h" />
@@ -351,6 +352,7 @@
     <ClCompile Include="TAMods-Server.cpp" />
     <ClCompile Include="TAServerClient.cpp" />
     <ClCompile Include="TCP.cpp" />
+    <ClCompile Include="TenantedDataStore.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="zlib\adler32.c" />
     <ClCompile Include="zlib\compress.c" />

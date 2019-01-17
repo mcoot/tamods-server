@@ -4,42 +4,35 @@
 //// Keep track of players' call-in status
 //////////////////////////
 
-class _CallInData {
-private:
-	struct _CallInPlayerData {
-		long long playerId = -1;
-		float lastInvCallInTime = -1;
-		float invCallInEndTime = -1;
-		FVector lastTargetPos = FVector(0, 0, 0);
-	};
-
-	std::map<long long, _CallInPlayerData> callInPlayerData;
-
-	_CallInPlayerData getByLaserTargeter(ATrDevice_LaserTargeter* that) {
-		if (!that->Owner) return _CallInPlayerData();
+namespace CallInCache {
+	TenantedDataStore::CallInData getByLaserTargeter(ATrDevice_LaserTargeter* that) {
+		if (!that->Owner) return TenantedDataStore::CallInData();
 
 		APawn* pawn = (APawn*)that->Owner;
-		if (!pawn->PlayerReplicationInfo) return _CallInPlayerData();
+		if (!pawn->PlayerReplicationInfo) return TenantedDataStore::CallInData();
 		long long playerId = TAServer::netIdToLong(pawn->PlayerReplicationInfo->UniqueId);
 
-		_CallInPlayerData data;
-		if (callInPlayerData.find(playerId) != callInPlayerData.end()) data = callInPlayerData[playerId];
-		data.playerId = playerId;
-		return data;
+		return TenantedDataStore::playerData.get(playerId).callInData;
 	}
 
-	void set(_CallInPlayerData data) {
-		callInPlayerData[data.playerId] = data;
-	}
-public:
-	void ClearAllData() {
-		callInPlayerData.clear();
+	void setCallInData(ATrDevice_LaserTargeter* that, TenantedDataStore::CallInData data) {
+		if (!that->Owner) return;
+
+		APawn* pawn = (APawn*)that->Owner;
+		if (!pawn->PlayerReplicationInfo) return;
+		long long playerId = TAServer::netIdToLong(pawn->PlayerReplicationInfo->UniqueId);
+
+		TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(playerId);
+
+		pData.callInData = data;
+
+		TenantedDataStore::playerData.set(playerId, pData);
 	}
 
 	void BeginFiring(ATrDevice_LaserTargeter* that) {
 		if (!that->WorldInfo || !that->Owner) return;
-		_CallInPlayerData data = getByLaserTargeter(that);
-		
+		TenantedDataStore::CallInData data = getByLaserTargeter(that);
+
 		// Personal cooldown remaining, if any
 		float remainingCooldown = 0;
 		if (data.lastInvCallInTime >= 0.f) {
@@ -48,28 +41,28 @@ public:
 			remainingCooldown = that->FMax(cooldownTime - timeSinceLastCallIn, 0);
 			Logger::debug("Remaining cooldown is: %f", remainingCooldown);
 		}
-		
+
 		float buildUpTime = g_config.serverSettings.InventoryCallInBuildUpTime;
 
 		// Time at which the call-in would successfully happen
 		data.invCallInEndTime = that->WorldInfo->TimeSeconds + remainingCooldown + buildUpTime;
-		set(data);
+		setCallInData(that, data);
 	}
 
 	void EndFiring(ATrDevice_LaserTargeter* that) {
 		if (!that->WorldInfo || !that->Owner) return;
-		_CallInPlayerData data = getByLaserTargeter(that);
+		TenantedDataStore::CallInData data = getByLaserTargeter(that);
 
 		// Reset the successful call-in time as the user has cancelled firing
 		data.invCallInEndTime = -1;
 		data.lastTargetPos = FVector(0, 0, 0);
 
-		set(data);
+		setCallInData(that, data);
 	}
 
 	void UpdateTarget(ATrDevice_LaserTargeter* that, bool hasHitSomething, FVector laserEnd) {
 		if (!that->WorldInfo || !that->Owner) return;
-		_CallInPlayerData data = getByLaserTargeter(that);
+		TenantedDataStore::CallInData data = getByLaserTargeter(that);
 
 		float buildUpTime = g_config.serverSettings.InventoryCallInBuildUpTime;
 
@@ -88,34 +81,34 @@ public:
 			data.lastTargetPos = FVector(0, 0, 0);
 		}
 
-		set(data);
+		setCallInData(that, data);
 	}
 
 	void RecordActivation(ATrDevice_LaserTargeter* that) {
 		if (!that->WorldInfo || !that->Owner) return;
-		_CallInPlayerData data = getByLaserTargeter(that);
+		TenantedDataStore::CallInData data = getByLaserTargeter(that);
 
 		data.lastInvCallInTime = that->WorldInfo->TimeSeconds;
-		set(data);
+		setCallInData(that, data);
 	}
 
 	FVector GetTargetPos(ATrDevice_LaserTargeter* that) {
 		if (!that->WorldInfo || !that->Owner) return FVector(0, 0, 0);
-		_CallInPlayerData data = getByLaserTargeter(that);
+		TenantedDataStore::CallInData data = getByLaserTargeter(that);
 
 		return data.lastTargetPos;
 	}
 
 	bool IsTimeToActivate(ATrDevice_LaserTargeter* that) {
 		if (!that->WorldInfo || !that->Owner) return false;
-		_CallInPlayerData data = getByLaserTargeter(that);
+		TenantedDataStore::CallInData data = getByLaserTargeter(that);
 
 		return data.invCallInEndTime > 0 && data.invCallInEndTime <= that->WorldInfo->TimeSeconds;
 	}
 
 	float CalcHUDAimChargePercent(ATrDevice_LaserTargeter* that) {
 		if (!that->WorldInfo || !that->Owner) return 0.f;
-		_CallInPlayerData data = getByLaserTargeter(that);
+		TenantedDataStore::CallInData data = getByLaserTargeter(that);
 
 		// Personal cooldown remaining, if any
 		float remainingCooldown = 0;
@@ -139,10 +132,8 @@ public:
 	}
 };
 
-static _CallInData callInData;
-
 void ResetLaserTargetCallInCache() {
-	callInData.ClearAllData();
+	//callInData.ClearAllData();
 }
 
 //////////////////////////
@@ -210,7 +201,7 @@ static bool GetLaserStartAndEnd(ATrDevice_LaserTargeter* that, FVector& startLoc
 	}
 
 	startLocation = startTrace;
-	return testImpact.HitActor != NULL && IsValidTargetLocation(that, endLocation, callInData.GetTargetPos(that), testImpact.HitActor);
+	return testImpact.HitActor != NULL && IsValidTargetLocation(that, endLocation, CallInCache::GetTargetPos(that), testImpact.HitActor);
 }
 
 static void CallInConfirmed(ATrDevice_LaserTargeter* that) {
@@ -220,18 +211,18 @@ static void CallInConfirmed(ATrDevice_LaserTargeter* that) {
 static void ServerPerformCallIn(ATrDevice_LaserTargeter* that, FVector endLocation, FVector hitNormal) {
 	//if (that->Role != ROLE_Authority) return;
 
-	if (IsValidTargetLocation(that, endLocation, callInData.GetTargetPos(that), NULL)) {
+	if (IsValidTargetLocation(that, endLocation, CallInCache::GetTargetPos(that), NULL)) {
 		ATrCallIn_SupportInventory* callIn = (ATrCallIn_SupportInventory*)that->Spawn(ATrCallIn_SupportInventory::StaticClass(), 
 																							 that->Owner, FName(), FVector(), FRotator(), NULL, false);
 		callIn->Initialize(0, 0, 0);
-		callInData.RecordActivation(that);
+		CallInCache::RecordActivation(that);
 		if (callIn->FireCompletedCallIn(1, endLocation, hitNormal)) {
 			CallInConfirmed(that);
 		}
 
 		callIn->bPendingDelete = true;
 
-		callInData.EndFiring(that);
+		CallInCache::EndFiring(that);
 
 		if (that->Instigator->Controller) {
 			ATrPlayerController* pc = (ATrPlayerController*)(that->Instigator->Controller);
@@ -254,7 +245,7 @@ void TrDevice_LaserTargeter_OnStartConstantFire(ATrDevice_LaserTargeter* that, A
 	}
 	
 	that->SpawnLaserEffect();
-	callInData.BeginFiring(that);
+	CallInCache::BeginFiring(that);
 }
 
 void TrDevice_LaserTargeter_OnEndConstantFire(ATrDevice_LaserTargeter* that, ATrDevice_LaserTargeter_execOnEndConstantFire_Parms* params, void* result, Hooks::CallInfo* callInfo) {
@@ -272,12 +263,12 @@ void TrDevice_LaserTargeter_OnEndConstantFire(ATrDevice_LaserTargeter* that, ATr
 	that->KillLaserEffect();
 
 	if (that->WorldInfo->NetMode != NM_DedicatedServer) {
-		callInData.EndFiring(that);
+		CallInCache::EndFiring(that);
 	}
 }
 
 float TrDevice_LaserTargeter_CalcHUDAimChargePercent(ATrDevice_LaserTargeter* that) {
-	return callInData.CalcHUDAimChargePercent(that);
+	return CallInCache::CalcHUDAimChargePercent(that);
 }
 
 // Disabled due to OutParam weirdness
@@ -299,7 +290,7 @@ void TrDevice_LaserTargeter_UpdateTarget(ATrDevice_LaserTargeter* that, ATrDevic
 	FVector start, end, hitNormal;
 	bool hasLaserHit = GetLaserStartAndEnd(that, start, end, hitNormal);
 
-	callInData.UpdateTarget(that, params->hasHitSomething && hasLaserHit, params->End);
+	CallInCache::UpdateTarget(that, params->hasHitSomething && hasLaserHit, params->End);
 }
 
 // Not currently hooked...
@@ -329,7 +320,7 @@ void TrDevice_LaserTargeter_SpawnLaserEffect(ATrDevice_LaserTargeter* that, ATrD
 		//UMaterialInstanceConstant* beamMIC = 
 	}
 
-	callInData.UpdateTarget(that, hasLaserHit, end);
+	CallInCache::UpdateTarget(that, hasLaserHit, end);
 }
 
 void TrDevice_LaserTargeter_UpdateLaserEffect(ATrDevice_LaserTargeter* that, ATrDevice_LaserTargeter_execUpdateLaserEffect_Parms* params, void* result, Hooks::CallInfo* callInfo) {
@@ -359,7 +350,7 @@ void TrDevice_LaserTargeter_UpdateLaserEffect(ATrDevice_LaserTargeter* that, ATr
 	TrDevice_LaserTargeter_UpdateTarget(that, &utParams, NULL, NULL);
 
 	// Is it time to activate the call-in?
-	if (callInData.IsTimeToActivate(that)) {
+	if (CallInCache::IsTimeToActivate(that)) {
 		ServerPerformCallIn(that, end, hitNormal);
 		that->EndFire(that->CurrentFireMode);
 		that->GotoState(that->m_PostFireState, NULL, NULL, NULL);
