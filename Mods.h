@@ -73,6 +73,8 @@ extern int bNextMapOverrideValue;
 void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, void* result, Hooks::CallInfo* callinfo);
 void TrPawn_RememberLastDamager(ATrPawn* that, ATrPawn_execRememberLastDamager_Parms* params);
 bool TrPawn_RechargeHealthPool(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult);
+void TrPawn_GetLastDamager(ATrPawn* that, ATrPawn_execGetLastDamager_Parms* params, ATrPlayerController** result);
+void TrPawn_ProcessKillAssists(ATrPawn* that, ATrPawn_execProcessKillAssists_Parms* params);
 
 // Reimplemented thrust pack acceleration to revert Rage behaviour
 void TrPlayerController_GetBlinkPackAccel(ATrPlayerController* that, ATrPlayerController_execGetBlinkPackAccel_Parms* params);

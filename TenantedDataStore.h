@@ -33,10 +33,13 @@ namespace TenantedDataStore {
 	struct PlayerSpecificData {
 		long long playerId = -1;
 
+		// Data used for call-ins
 		CallInData callInData;
 
 		// Data used to determine assists and kill credits
 		std::vector<FAssistInfo> assistInfo;
+
+
 	};
 
 	// A thread-safe map which returns the default constructed value if a key isn't found

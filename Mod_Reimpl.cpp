@@ -54,7 +54,56 @@ void TrDevice_FireAmmunition(ATrDevice* that, ATrDevice_execFireAmmunition_Parms
 ////////////////////////
 // TakeDamage reimplementation
 // Used to modify shield pack behaviour
+// Requires reimplementation of kill assists since we can't easily manipulate TArrays that get dynamically allocated
 ////////////////////////
+
+static std::vector<FAssistInfo> getKillAssisters(ATrPawn* that) {
+	if (!that->GetTribesReplicationInfo()) return std::vector<FAssistInfo>();
+
+	long long playerId = TAServer::netIdToLong(that->PlayerReplicationInfo->UniqueId);
+
+	return TenantedDataStore::playerData.get(playerId).assistInfo;
+}
+
+static void addKillAssister(ATrPawn* that, FAssistInfo curAssister) {
+	if (!that->GetTribesReplicationInfo()) return;
+
+	long long playerId = TAServer::netIdToLong(that->PlayerReplicationInfo->UniqueId);
+
+	TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(playerId);
+
+	pData.assistInfo.push_back(curAssister);
+
+	TenantedDataStore::playerData.set(playerId, pData);
+}
+
+static void updateKillAssister(ATrPawn* that, ATrPlayerController* damager, FAssistInfo newAssisterInfo) {
+	if (!that->GetTribesReplicationInfo()) return;
+
+	long long playerId = TAServer::netIdToLong(that->PlayerReplicationInfo->UniqueId);
+
+	TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(playerId);
+
+	for (int i = 0; i < pData.assistInfo.size(); ++i) {
+		if (pData.assistInfo[i].m_Damager != newAssisterInfo.m_Damager) continue;
+
+		pData.assistInfo[i] = newAssisterInfo;
+		TenantedDataStore::playerData.set(playerId, pData);
+		return;
+	}
+}
+
+static void clearKillAssisters(ATrPawn* that) {
+	if (!that->GetTribesReplicationInfo()) return;
+
+	long long playerId = TAServer::netIdToLong(that->PlayerReplicationInfo->UniqueId);
+
+	TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(playerId);
+
+	pData.assistInfo.clear();
+
+	TenantedDataStore::playerData.set(playerId, pData);
+}
 
 void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, void* result, Hooks::CallInfo* callinfo) {
 	if (!g_config.serverSettings.UseGOTYShieldPack) {
@@ -330,58 +379,31 @@ void TrPawn_RememberLastDamager(ATrPawn* that, ATrPawn_execRememberLastDamager_P
 	if (!bSameTeam) {
 		if (TrDamager && TrDamager->IsA(ATrPlayerController::StaticClass())) TrDamager->CashForDamage(params->DamageAmount);
 	}
+	
+	std::vector<FAssistInfo> assisters = getKillAssisters(that);
 
-	for (int i = 0; i < that->m_KillAssisters.Count; ++i) {
-		FAssistInfo* assistInfo = that->m_KillAssisters.Get(i);
-		if (assistInfo->m_Damager != TrDamager) continue;
+	for (FAssistInfo assistInfo : assisters) {
+		if (assistInfo.m_Damager != TrDamager) continue;
 
-		if (assistInfo->m_fDamagerTime < (that->WorldInfo->TimeSeconds - that->m_fSecondsBeforeAutoHeal)) {
+		if (assistInfo.m_fDamagerTime < (that->WorldInfo->TimeSeconds - that->m_fSecondsBeforeAutoHeal)) {
 			// Reset damage done since player has healed since being shot
-			assistInfo->m_AccumulatedDamage = params->DamageAmount;
+			assistInfo.m_AccumulatedDamage = params->DamageAmount;
 		}
 		else {
-			assistInfo->m_AccumulatedDamage += params->DamageAmount;
+			assistInfo.m_AccumulatedDamage += params->DamageAmount;
 		}
 
-		assistInfo->m_fDamagerTime = that->WorldInfo->TimeSeconds;
+		assistInfo.m_fDamagerTime = that->WorldInfo->TimeSeconds;
+
+		updateKillAssister(that, assistInfo.m_Damager, assistInfo);
 		return;
 	}
 
-	// Disabled as this causes a crash when you start regening after someone shot you
-	// Because we're manipulating TAMods managed memory and then the UScript VM goes and tries to remove from the array later...
-	// Add new assist record since we didn't have one already
-	//bool foundEmptySpot = false;
-	//for (int i = 0; i < that->m_KillAssisters.Count; ++i) {
-	//	if (!that->m_KillAssisters.GetStd(i).m_Damager) {
-	//		foundEmptySpot = true;
-	//		that->m_KillAssisters.Set(i, that->CreateAssistRecord(params->Damager, params->DamageAmount));
-	//		break;
-	//	}
-	//}
-	//if (!foundEmptySpot) {
-	//	that->m_KillAssisters.Add(that->CreateAssistRecord(params->Damager, params->DamageAmount));
-	//}
-	//if (that->m_KillAssisters.Count < 32) {
-	//	for (int i = that->m_KillAssisters.Count; i < 32; ++i) {
-	//		FAssistInfo emptyInfo;
-	//		emptyInfo.m_Damager = NULL;
-	//		emptyInfo.m_fDamagerTime = 0;
-	//		emptyInfo.m_AccumulatedDamage = 0;
-	//		that->m_KillAssisters.Add(emptyInfo);
-	//	}
-	//}
-	//for (int i = 0;; ++i) {
-	//	if (!that->m_KillAssisters.GetStd(i).m_Damager) {
-	//		that->m_KillAssisters.Set(i, that->CreateAssistRecord(params->Damager, params->DamageAmount));
-	//		break;
-	//	}
-	//}
+	// Add new record since we didn't have one previously
+	addKillAssister(that, that->CreateAssistRecord(params->Damager, params->DamageAmount));
 }
 
 bool TrPawn_RechargeHealthPool(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
-	// This hook is disabled as I can't fix assist
-	return false;
-
 	ATrPawn* that = (ATrPawn*)dwCallingObject;
 	ATrPawn_eventRechargeHealthPool_Parms* params = (ATrPawn_eventRechargeHealthPool_Parms*)pParams;
 
@@ -457,17 +479,42 @@ bool TrPawn_RechargeHealthPool(int ID, UObject *dwCallingObject, UFunction* pFun
 	that->bNetDirty = true;
 
 	// Clear out any assists when regen begins
-	for (int i = 0; i < that->m_KillAssisters.Count; ++i) {
-		FAssistInfo emptyInfo;
-		emptyInfo.m_Damager = NULL;
-		emptyInfo.m_fDamagerTime = 0;
-		emptyInfo.m_AccumulatedDamage = 0;
-		that->m_KillAssisters.Set(i, emptyInfo);
-	}
+	clearKillAssisters(that);
 
 	that->ClientPlayHealthRegenEffect();
 
 	return true;
+}
+
+void TrPawn_GetLastDamager(ATrPawn* that, ATrPawn_execGetLastDamager_Parms* params, ATrPlayerController** result) {
+	ATrPlayerController* BestDamager = NULL;
+	float MostRecentTimestamp = 0;
+
+	for (FAssistInfo info : getKillAssisters(that)) {
+		if (info.m_fDamagerTime > MostRecentTimestamp) {
+			MostRecentTimestamp = info.m_fDamagerTime;
+			BestDamager = info.m_Damager;
+		}
+	}
+
+	*result = BestDamager;
+}
+
+void TrPawn_ProcessKillAssists(ATrPawn* that, ATrPawn_execProcessKillAssists_Parms* params) {
+	ATrPlayerController* TrKiller = (ATrPlayerController*)params->Killer;
+
+	for (FAssistInfo assister : getKillAssisters(that)) {
+		if (!assister.m_Damager) continue;
+
+		if (assister.m_Damager != TrKiller &&
+				assister.m_AccumulatedDamage > that->HealthMax * that->m_AssistDamagePercentQualifier &&
+				assister.m_fDamagerTime > (that->WorldInfo->TimeSeconds - that->m_fSecondsBeforeAutoHeal)) {
+			//if (that->Stats) that->Stats->AddAssist(assister.m_Damager);
+			ATrPlayerReplicationInfo* DamagerPRI = (ATrPlayerReplicationInfo*)assister.m_Damager->PlayerReplicationInfo;
+			DamagerPRI->m_nAssists++;
+			assister.m_Damager->m_AccoladeManager->GiveAssist();
+		}
+	}
 }
 
 ////////////////////////
@@ -672,6 +719,13 @@ void TrDevice_SniperRifle_ModifyInstantHitDamage(ATrDevice_SniperRifle* that, AT
 ////////////////////////
 // Jackal Airburst reimplementation
 ////////////////////////
+
+void ATrDevice_RemoteArxBuster_PerformInactiveReload(ATrDevice_RemoteArxBuster* that, ATrDevice_Remote) {
+	if (!g_config.serverSettings.UseGOTYJackalAirburst) {
+		that->ActivateRemoteRounds(params->bDoNoDamage);
+		return;
+	}
+}
 
 void ATrDevice_RemoteArxBuster_ActivateRemoteRounds(ATrDevice_RemoteArxBuster* that, ATrDevice_RemoteArxBuster_execActivateRemoteRounds_Parms* params) {
 	if (!g_config.serverSettings.UseGOTYJackalAirburst) {
