@@ -58,7 +58,7 @@ void TrDevice_FireAmmunition(ATrDevice* that, ATrDevice_execFireAmmunition_Parms
 ////////////////////////
 
 static std::vector<FAssistInfo> getKillAssisters(ATrPawn* that) {
-	if (!that->GetTribesReplicationInfo()) return std::vector<FAssistInfo>();
+	if (!that || !that->PlayerReplicationInfo) return std::vector<FAssistInfo>();
 
 	long long playerId = TAServer::netIdToLong(that->PlayerReplicationInfo->UniqueId);
 
@@ -66,7 +66,7 @@ static std::vector<FAssistInfo> getKillAssisters(ATrPawn* that) {
 }
 
 static void addKillAssister(ATrPawn* that, FAssistInfo curAssister) {
-	if (!that->GetTribesReplicationInfo()) return;
+	if (!that || !that->PlayerReplicationInfo) return;
 
 	long long playerId = TAServer::netIdToLong(that->PlayerReplicationInfo->UniqueId);
 
@@ -78,7 +78,7 @@ static void addKillAssister(ATrPawn* that, FAssistInfo curAssister) {
 }
 
 static void updateKillAssister(ATrPawn* that, ATrPlayerController* damager, FAssistInfo newAssisterInfo) {
-	if (!that->GetTribesReplicationInfo()) return;
+	if (!that || !that->PlayerReplicationInfo) return;
 
 	long long playerId = TAServer::netIdToLong(that->PlayerReplicationInfo->UniqueId);
 
@@ -94,7 +94,7 @@ static void updateKillAssister(ATrPawn* that, ATrPlayerController* damager, FAss
 }
 
 static void clearKillAssisters(ATrPawn* that) {
-	if (!that->GetTribesReplicationInfo()) return;
+	if (!that || !that->PlayerReplicationInfo) return;
 
 	long long playerId = TAServer::netIdToLong(that->PlayerReplicationInfo->UniqueId);
 
@@ -115,7 +115,7 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 
 	AActor* DamagingActor = ((UTrDmgType_Base*)UTrDmgType_Base::StaticClass()->Default)->GetActorCausingDamage(params->EventInstigator, params->DamageCauser);
 
-	if (!strcmp(DamagingActor->Class->GetName(), "TrProj_Honorfusor")) {
+	if (DamagingActor && DamagingActor->Class && !strcmp(DamagingActor->Class->GetName(), "TrProj_Honorfusor")) {
 		// Use OOTB TakeDamage, because honorfusor is borked in the reimplementation
 		that->eventTakeDamage(params->DamageAmount, params->EventInstigator, params->HitLocation,
 			params->Momentum, params->DamageType, params->HitInfo, params->DamageCauser);
