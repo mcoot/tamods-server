@@ -107,4 +107,6 @@ void TrDevice_PlayWeaponEquip(ATrDevice* that, ATrDevice_execPlayWeaponEquip_Par
 void TrDevice_UpdateWeaponMICs(ATrDevice* that, ATrDevice_eventUpdateWeaponMICs_Parms* params, void* result, Hooks::CallInfo* callInfo);
 
 // Jackal airburst reimplementation
+void ATrDevice_RemoteArxBuster_PerformInactiveReload(ATrDevice_RemoteArxBuster* that, ATrDevice_RemoteArxBuster_execPerformInactiveReload_Parms* params);
+void ATrDevice_RemoteArxBuster_ProjectileFire(ATrDevice_RemoteArxBuster* that, ATrDevice_RemoteArxBuster_execProjectileFire_Parms* params, AProjectile** result);
 void ATrDevice_RemoteArxBuster_ActivateRemoteRounds(ATrDevice_RemoteArxBuster* that, ATrDevice_RemoteArxBuster_execActivateRemoteRounds_Parms* params);

@@ -39,7 +39,8 @@ namespace TenantedDataStore {
 		// Data used to determine assists and kill credits
 		std::vector<FAssistInfo> assistInfo;
 
-
+		// Jackal rounds currently out
+		std::vector<ATrProj_RemoteArxBuster*> remoteArxRounds;
 	};
 
 	// A thread-safe map which returns the default constructed value if a key isn't found

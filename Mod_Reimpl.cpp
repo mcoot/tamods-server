@@ -487,23 +487,37 @@ bool TrPawn_RechargeHealthPool(int ID, UObject *dwCallingObject, UFunction* pFun
 }
 
 void TrPawn_GetLastDamager(ATrPawn* that, ATrPawn_execGetLastDamager_Parms* params, ATrPlayerController** result) {
-	ATrPlayerController* BestDamager = NULL;
+	if (!g_config.serverSettings.UseGOTYShieldPack) {
+		*result = that->GetLastDamager();
+		return;
+	}
+
+	int BestIndex = CONST_INDEX_NONE;
 	float MostRecentTimestamp = 0;
 
-	for (FAssistInfo info : getKillAssisters(that)) {
-		if (info.m_fDamagerTime > MostRecentTimestamp) {
-			MostRecentTimestamp = info.m_fDamagerTime;
-			BestDamager = info.m_Damager;
+	std::vector<FAssistInfo> killAssisters = getKillAssisters(that);
+
+	for (int i = 0; i < killAssisters.size(); ++i) {
+		if (killAssisters[i].m_fDamagerTime > MostRecentTimestamp) {
+			MostRecentTimestamp = killAssisters[i].m_fDamagerTime;
+			BestIndex = i;
 		}
 	}
 
-	*result = BestDamager;
+	*result = BestIndex == CONST_INDEX_NONE ? NULL : killAssisters[BestIndex].m_Damager;
 }
 
 void TrPawn_ProcessKillAssists(ATrPawn* that, ATrPawn_execProcessKillAssists_Parms* params) {
+	if (!g_config.serverSettings.UseGOTYShieldPack) {
+		that->ProcessKillAssists(params->Killer);
+		return;
+	}
+
 	ATrPlayerController* TrKiller = (ATrPlayerController*)params->Killer;
 
-	for (FAssistInfo assister : getKillAssisters(that)) {
+	std::vector<FAssistInfo> killAssisters = getKillAssisters(that);
+
+	for (FAssistInfo assister : killAssisters) {
 		if (!assister.m_Damager) continue;
 
 		if (assister.m_Damager != TrKiller &&
@@ -515,6 +529,10 @@ void TrPawn_ProcessKillAssists(ATrPawn* that, ATrPawn_execProcessKillAssists_Par
 			assister.m_Damager->m_AccoladeManager->GiveAssist();
 		}
 	}
+
+	clearKillAssisters(that);
+
+	std::vector<FAssistInfo> postVals = getKillAssisters(that);
 }
 
 ////////////////////////
@@ -720,11 +738,72 @@ void TrDevice_SniperRifle_ModifyInstantHitDamage(ATrDevice_SniperRifle* that, AT
 // Jackal Airburst reimplementation
 ////////////////////////
 
-void ATrDevice_RemoteArxBuster_PerformInactiveReload(ATrDevice_RemoteArxBuster* that, ATrDevice_Remote) {
+static long long getPlayerIdFromRemoteArxBuster(ATrDevice_RemoteArxBuster* that) {
+	if (!that || !that->Owner) return -1;
+
+	APawn* pawn = (APawn*)that->Owner;
+	if (!pawn->PlayerReplicationInfo) return -1;
+	return TAServer::netIdToLong(pawn->PlayerReplicationInfo->UniqueId);
+}
+
+static void addJackalRound(ATrDevice_RemoteArxBuster* that, ATrProj_RemoteArxBuster* proj) {
+	long long playerId = getPlayerIdFromRemoteArxBuster(that);
+	if (playerId == -1) return;
+
+	TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(playerId);
+
+	pData.remoteArxRounds.push_back(proj);
+
+	TenantedDataStore::playerData.set(playerId, pData);
+}
+
+static void removeJackalRounds(ATrDevice_RemoteArxBuster* that, int idx, int count) {
+	long long playerId = getPlayerIdFromRemoteArxBuster(that);
+	if (playerId == -1) return;
+
+	TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(playerId);
+
+	pData.remoteArxRounds.erase(pData.remoteArxRounds.begin() + idx, pData.remoteArxRounds.begin() + idx + count);
+
+	TenantedDataStore::playerData.set(playerId, pData);
+}
+
+static std::vector<ATrProj_RemoteArxBuster*> getJackalRounds(ATrDevice_RemoteArxBuster* that) {
+	long long playerId = getPlayerIdFromRemoteArxBuster(that);
+	if (playerId == -1) return std::vector<ATrProj_RemoteArxBuster*>();
+
+	return TenantedDataStore::playerData.get(playerId).remoteArxRounds;
+}
+
+
+void ATrDevice_RemoteArxBuster_PerformInactiveReload(ATrDevice_RemoteArxBuster* that, ATrDevice_RemoteArxBuster_execPerformInactiveReload_Parms* params) {
 	if (!g_config.serverSettings.UseGOTYJackalAirburst) {
-		that->ActivateRemoteRounds(params->bDoNoDamage);
+		that->PerformInactiveReload();
 		return;
 	}
+
+	if (getJackalRounds(that).empty()) {
+		that->ATrDevice::PerformInactiveReload();
+	}
+}
+
+void ATrDevice_RemoteArxBuster_ProjectileFire(ATrDevice_RemoteArxBuster* that, ATrDevice_RemoteArxBuster_execProjectileFire_Parms* params, AProjectile** result) {
+	if (!g_config.serverSettings.UseGOTYJackalAirburst) {
+		*result = that->ProjectileFire();
+		return;
+	}
+
+	AProjectile* ProjCreated = that->ATrDevice::ProjectileFire();
+
+	// Add the newly created projectile to the rounds ready to fire
+	ATrProj_RemoteArxBuster* TrProj = (ATrProj_RemoteArxBuster*)ProjCreated;
+	if (TrProj) {
+		addJackalRound(that, TrProj);
+	}
+
+	that->SetLeftArmVisible(true);
+
+	*result = ProjCreated;
 }
 
 void ATrDevice_RemoteArxBuster_ActivateRemoteRounds(ATrDevice_RemoteArxBuster* that, ATrDevice_RemoteArxBuster_execActivateRemoteRounds_Parms* params) {
@@ -733,16 +812,21 @@ void ATrDevice_RemoteArxBuster_ActivateRemoteRounds(ATrDevice_RemoteArxBuster* t
 		return;
 	}
 
-	Logger::debug("BOOMY BOOM BOOM");
-
-	for (int i = 0; i < that->RemoteArxRounds.Count; ++i) {
-		ATrProj_RemoteArxBuster* proj = that->RemoteArxRounds.GetStd(i);
+	// Explode all rounds on reload
+	std::vector< ATrProj_RemoteArxBuster*> rounds = getJackalRounds(that);
+	for (ATrProj_RemoteArxBuster* proj : rounds) {
 		if (params->bDoNoDamage) {
 			proj->Damage = 0;
 		}
-		proj->m_bIsDetonating = true;
+		proj->m_bIsDetonating = true; 
 		proj->Explode(proj->Location, FVector(0, 0, 1));
 	}
 
-	that->ActivateRemoteRounds(false);
+	// Clear the remote rounds list
+	removeJackalRounds(that, 0, rounds.size());
+
+	if (that->Role == ROLE_Authority) {
+		that->SetTimer(0.75, false, "HideArmTimer", NULL);
+	}
 }
+
