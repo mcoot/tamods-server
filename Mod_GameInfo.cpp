@@ -106,6 +106,7 @@ static int getNextMapIdx() {
 }
 
 static std::string getNextMapName() {
+	Logger::debug("trying to figure out next map...");
 	std::string nextMapName;
 	if (bNextMapOverrideValue != 0 && Data::map_id_to_filename.find(bNextMapOverrideValue) != Data::map_id_to_filename.end()) {
 		// Override for next map has been set
@@ -158,7 +159,7 @@ void TAServer::Client::handler_Launcher2GameInitMessage(const json& msgBody) {
 	g_config.serverSettings.mapRotationIndex = controllerContext.nextMapIndex;
 
 	if (controllerContext.hasContext) {
-		Logger::info("Received controller context; switching to rotation index %d; map override \"%s\"", controllerContext.nextMapIndex, controllerContext.nextMapOverride);
+		Logger::info("Received controller context; switching to rotation index %d; map override \"%s\"", controllerContext.nextMapIndex, controllerContext.nextMapOverride.c_str());
 	}
 	else {
 		Logger::info("Received empty controller context, starting map rotation");
@@ -271,9 +272,10 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 
 	if (changeMapTickCounter > 0) changeMapTickCounter--;
 	if (changeMapTickCounter == 0) {
+		Logger::debug("changeMapTickCounter hit zero");
 		//std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 		Utils::tr_gri = that;
-		Logger::debug("Just set GRI to that!");
+		
 		changeMapTickCounter = -1;
 		json j;
 		g_TAServerClient.handler_Launcher2GameNextMapMessage(j);
@@ -337,6 +339,7 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
 			if (controllerContext.nextMapOverride != "") {
 				// Override, use that
 				nextMapName = controllerContext.nextMapOverride;
+				Logger::debug("Got map override: %s", nextMapName.c_str());
 			}
 			else {
 				// No override, use the rotation index
@@ -345,8 +348,9 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
 					Logger::error("Context message rotation index %d is out of rotation bounds", controllerContext.nextMapIndex);
 					nextMapName = g_config.serverSettings.mapRotation[0];
 				}
-				else {
-					nextMapName = g_config.serverSettings.mapRotation[getNextMapIdx()];
+				else {					
+					nextMapName = getNextMapName();
+					Logger::debug("Changing to the map... %s", nextMapName.c_str());
 				}
 			}
 		}

@@ -518,7 +518,7 @@ void TrPawn_ProcessKillAssists(ATrPawn* that, ATrPawn_execProcessKillAssists_Par
 	std::vector<FAssistInfo> killAssisters = getKillAssisters(that);
 
 	for (FAssistInfo assister : killAssisters) {
-		if (!assister.m_Damager) continue;
+		if (!assister.m_Damager || !assister.m_Damager->PlayerReplicationInfo) continue;
 
 		if (assister.m_Damager != TrKiller &&
 				assister.m_AccumulatedDamage > that->HealthMax * that->m_AssistDamagePercentQualifier &&
