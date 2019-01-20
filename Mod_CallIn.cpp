@@ -6,7 +6,7 @@
 
 namespace CallInCache {
 	TenantedDataStore::CallInData getByLaserTargeter(ATrDevice_LaserTargeter* that) {
-		if (!that->Owner) return TenantedDataStore::CallInData();
+		if (!that || !that->Owner) return TenantedDataStore::CallInData();
 
 		APawn* pawn = (APawn*)that->Owner;
 		if (!pawn->PlayerReplicationInfo) return TenantedDataStore::CallInData();
@@ -16,7 +16,7 @@ namespace CallInCache {
 	}
 
 	void setCallInData(ATrDevice_LaserTargeter* that, TenantedDataStore::CallInData data) {
-		if (!that->Owner) return;
+		if (!that || !that->Owner) return;
 
 		APawn* pawn = (APawn*)that->Owner;
 		if (!pawn->PlayerReplicationInfo) return;
