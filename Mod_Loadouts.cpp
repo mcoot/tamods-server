@@ -58,6 +58,7 @@ static void applyTAServerLoadout(ATrPlayerReplicationInfo* that, int classId, in
 
 	Logger::debug("Retrieved loadout for class %d!", classId);
 
+	// TODO: Delete all the logic and config stuff associated with the previous custom class feature implementation
 	// If in Custom Class mode, validate that this loadout matches a custom class, and apply the custom armour class if needed
 	//if (g_config.serverSettings.useCustomClasses) {
 	//	bool found = false;
@@ -263,6 +264,7 @@ static void applyCustomClassToPRI(ATrPlayerReplicationInfo* that) {
 	that->bNetDirty = true;
 }
 
+// TODO: Delete all the logic and config stuff associated with the previous custom class feature implementation
 void TrPlayerReplicationInfo_GetCurrentVoiceClass(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execGetCurrentVoiceClass_Parms* params, UClass** result, Hooks::CallInfo* callInfo) {
 	// Get the real voice
 	*result = that->InvHelper->GetEquipClass(that->r_EquipLevels[EQP_Voice].EquipId);

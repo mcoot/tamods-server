@@ -26,6 +26,7 @@ enum class MapRotationMode {
 	MAP_ROTATION_MAX
 };
 
+// TODO: Delete all the logic and config stuff associated with the previous custom class feature implementation
 // Definition of a server-defines Class
 // A set of allowed items the server may allow
 // Can be used to 'bring back' classes
@@ -165,6 +166,7 @@ struct ServerSettings {
 	std::set<int> disabledEquipPointsMedium;
 	std::set<int> disabledEquipPointsHeavy;
 	
+	// TODO: Delete all the logic and config stuff associated with the previous custom class feature implementation
 	// Whether the server requires players to adhere to allowed 'Item Sets' (analogous to server-defined allowed classes)
 	bool useCustomClasses;
 	std::map<std::string, CustomClass> customClasses;
