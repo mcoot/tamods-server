@@ -56,25 +56,27 @@ static void applyTAServerLoadout(ATrPlayerReplicationInfo* that, int classId, in
 		Logger::warn("Failed to retrieve loadout on class %d, slot %d for UniqueID %d from TAServer.", classId, slot, that->UniqueId);
 	}
 
+	Logger::debug("Retrieved loadout for class %d!", classId);
+
 	// If in Custom Class mode, validate that this loadout matches a custom class, and apply the custom armour class if needed
-	if (g_config.serverSettings.useCustomClasses) {
-		bool found = false;
-		for (auto& it : g_config.serverSettings.customClasses) {
-			if (it.second.doesLoadoutMatch(classId, taserverRetrievedMap)) {
-				found = true;
-				// Apply the custom armour class if one is specified
-				if (it.second.armorClass != 0) {
-					that->r_EquipLevels[EQP_Armor].EquipId = it.second.armorClass;
-					Logger::debug("Changed armor class to custom one: %d", it.second.armorClass);
-				}
-				break;
-			}
-		}
-		if (!found) {
-			// Failed to validate
-			return;
-		}
-	}
+	//if (g_config.serverSettings.useCustomClasses) {
+	//	bool found = false;
+	//	for (auto& it : g_config.serverSettings.customClasses) {
+	//		if (it.second.doesLoadoutMatch(classId, taserverRetrievedMap)) {
+	//			found = true;
+	//			// Apply the custom armour class if one is specified
+	//			if (it.second.armorClass != 0) {
+	//				that->r_EquipLevels[EQP_Armor].EquipId = it.second.armorClass;
+	//				Logger::debug("Changed armor class to custom one: %d", it.second.armorClass);
+	//			}
+	//			break;
+	//		}
+	//	}
+	//	if (!found) {
+	//		// Failed to validate
+	//		return;
+	//	}
+	//}
 
 	// Apply the equipment
 	for (auto& eqpItem : taserverRetrievedMap) {
@@ -141,6 +143,19 @@ static void applyWeaponBans(ATrPlayerReplicationInfo* that, int classId) {
 	}
 }
 
+void TrPlayerReplicationInfo_VerifyCharacter(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execVerifyCharacter_Parms* params, bool* result) {
+	*result = true;
+}
+
+void TrPlayerController_GetFamilyInfoFromId(ATrPlayerController* that, ATrPlayerController_execGetFamilyInfoFromId_Parms* params, UClass** result) {
+	if (Data::class_id_to_class.find(params->ClassId) == Data::class_id_to_class.end()) {
+		*result = NULL;
+	}
+	else {
+		*result = Data::class_id_to_class[params->ClassId];
+	}
+}
+
 void TrPlayerReplicationInfo_GetCharacterEquip(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execGetCharacterEquip_Parms* params, void* result, Hooks::CallInfo* callInfo) {
 	// Apply any server hardcoded loadout configuration
 	applyHardcodedLoadout(that, params->ClassId, params->Loadout);
@@ -178,6 +193,7 @@ void TrPlayerReplicationInfo_ResolveDefaultEquip(ATrPlayerReplicationInfo* that,
 }
 
 static void applyCustomClassToPRI(ATrPlayerReplicationInfo* that) {
+	Logger::debug("Attempting to apply custom class data to class %d", that->m_nPlayerClassId);
 	if (that->m_nPlayerClassId == that->r_EquipLevels[EQP_Armor].EquipId) {
 		// We don't need to set a custom class
 		return;
