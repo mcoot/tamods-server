@@ -23,6 +23,7 @@ GameBalance::ReplicatedSettings Config::getReplicatedSettings() {
 	repSet["EnableInventoryCallIn"] = serverSettings.EnableInventoryCallIn;
 	repSet["InventoryCallInCooldownTime"] = serverSettings.InventoryCallInCooldownTime;
 	repSet["InventoryCallInBuildUpTime"] = serverSettings.InventoryCallInBuildUpTime;
+	repSet["RageThrustPackDependsOnCapperSpeed"] = serverSettings.RageThrustPackDependsOnCapperSpeed;
 
 	repSet["UseGOTYBXTCharging"] = serverSettings.UseGOTYBXTCharging;
 
