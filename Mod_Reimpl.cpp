@@ -581,7 +581,8 @@ void TrPlayerController_PlayerWalking_ProcessMove(ATrPlayerController* that, APl
 	if (that->m_bPressingJetpack) {
 		if (that->Pawn->Physics != PHYS_Flying) {
 			if (that->m_bJumpJet) {
-				that->Pawn->DoJump(that->bUpdating);
+				that->bPressedJump = true;
+				that->CheckJumpOrDuck();
 			}
 
 			that->Pawn->SetPhysics(PHYS_Flying);
@@ -651,15 +652,22 @@ void TrPlayerController_GetBlinkPackAccel(ATrPlayerController* that, ATrPlayerCo
 	// Apply the effectiveness debuf
 	NewAccel = that->Multiply_FloatVector(BlinkPackPctEffectiveness, NewAccel);
 
-	BlinkPack->OnBlink(BlinkPackPctEffectiveness, false);
+	// Take energy from the player
+	//BlinkPack->OnBlink(BlinkPackPctEffectiveness, false);
+	float VMMultiplier = 1.0f;
+	ATrPlayerReplicationInfo* TrPRI = (ATrPlayerReplicationInfo*)TrP->PlayerReplicationInfo;
+	if (TrPRI) {
+		UTrValueModifier* VM = TrPRI->GetCurrentValueModifier();
+		if (VM) {
+			VMMultiplier = 1.0f - VM->m_fPackEnergyCostBuffPct;
+		}
+	}
+	TrP->ConsumePowerPool(BlinkPack->m_fPowerPoolCost * VMMultiplier);
+	TrP->SyncClientCurrentPowerPool();
 
 	// Out params
 	params->newAccel = NewAccel;
 	params->BlinkPackPctEffectiveness = BlinkPackPctEffectiveness;
-}
-
-void TrDevice_Blink_OnBlink(ATrDevice_Blink* that, ATrDevice_Blink_execOnBlink_Parms* params) {
-	that->OnBlink(params->PercentEffectiveness, params->wasRage && g_config.serverSettings.RageThrustPackDependsOnCapperSpeed);
 }
 
 ////////////////////////

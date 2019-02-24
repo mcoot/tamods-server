@@ -81,7 +81,6 @@ void TrPawn_ProcessKillAssists(ATrPawn* that, ATrPawn_execProcessKillAssists_Par
 
 // Reimplemented thrust pack acceleration to revert Rage behaviour
 void TrPlayerController_GetBlinkPackAccel(ATrPlayerController* that, ATrPlayerController_execGetBlinkPackAccel_Parms* params, void* result, Hooks::CallInfo* callInfo);
-void TrDevice_Blink_OnBlink(ATrDevice_Blink* that, ATrDevice_Blink_execOnBlink_Parms* params);
 void TrPlayerController_PlayerWalking_ProcessMove(ATrPlayerController* that, APlayerController_execProcessMove_Parms* params);
 
 // Inv stations give energy
