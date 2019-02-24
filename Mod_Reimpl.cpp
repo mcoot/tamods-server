@@ -383,7 +383,7 @@ void TrPawn_RememberLastDamager(ATrPawn* that, ATrPawn_execRememberLastDamager_P
 	std::vector<FAssistInfo> assisters = getKillAssisters(that);
 
 	for (FAssistInfo assistInfo : assisters) {
-		if (assistInfo.m_Damager != TrDamager) continue;
+		if (!assistInfo.m_Damager || assistInfo.m_Damager != TrDamager) continue;
 
 		if (assistInfo.m_fDamagerTime < (that->WorldInfo->TimeSeconds - that->m_fSecondsBeforeAutoHeal)) {
 			// Reset damage done since player has healed since being shot
@@ -400,7 +400,9 @@ void TrPawn_RememberLastDamager(ATrPawn* that, ATrPawn_execRememberLastDamager_P
 	}
 
 	// Add new record since we didn't have one previously
-	addKillAssister(that, that->CreateAssistRecord(params->Damager, params->DamageAmount));
+	if (params->Damager) {
+		addKillAssister(that, that->CreateAssistRecord(params->Damager, params->DamageAmount));
+	}
 }
 
 bool TrPawn_RechargeHealthPool(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
@@ -547,8 +549,63 @@ void TrProj_Honorfusor_ProjectileHurtRadius(ATrProj_Honorfusor* that, ATrProj_Ho
 // Thrust pack rage dependency fix
 ////////////////////////
 
-void TrPlayerController_GetBlinkPackAccel(ATrPlayerController* that, ATrPlayerController_execGetBlinkPackAccel_Parms* params) {
-	Logger::debug("GetBlinkPackAccel!");
+void TrPlayerController_PlayerWalking_ProcessMove(ATrPlayerController* that, APlayerController_execProcessMove_Parms* params) {
+	ATrPawn* TrP = (ATrPawn*)that->Pawn;
+	if (!TrP) return;
+
+	if (that->m_bBlink) {
+		
+
+		if (TrP->Physics != PHYS_Falling && TrP->Physics != PHYS_Flying) {
+			TrP->SetPhysics(PHYS_Falling);
+		}
+
+		ATrPlayerController_execGetBlinkPackAccel_Parms callParams;
+		callParams.BlinkPackPctEffectiveness = 0;
+		callParams.newAccel = FVector(0, 0, 0);
+		TrPlayerController_GetBlinkPackAccel(that, &callParams, NULL, NULL);
+		TrP->Velocity = Geom::add(TrP->Velocity, callParams.newAccel);
+
+		if (that->Role == ROLE_Authority) {
+			TrP->r_nBlinked++;
+		}
+
+		TrP->PlayBlinkPackEffect();
+
+		if (that->Role == ROLE_Authority) {
+			that->Pawn->SetRemoteViewPitch(that->Rotation.Pitch);
+		}
+		return;
+	}
+
+	if (that->m_bPressingJetpack) {
+		if (that->Pawn->Physics != PHYS_Flying) {
+			if (that->m_bJumpJet) {
+				that->bPressedJump = true;
+				that->CheckJumpOrDuck();
+			}
+
+			that->Pawn->SetPhysics(PHYS_Flying);
+		}
+	}
+	else {
+		if (that->Pawn->Physics == PHYS_Flying) {
+			that->Pawn->SetPhysics(PHYS_Falling);
+		}
+	}
+
+	if (that->Role == ROLE_Authority) {
+		that->Pawn->SetRemoteViewPitch(that->Rotation.Pitch);
+	}
+
+	that->Pawn->Acceleration = params->newAccel;
+
+	if (that->Pawn->Physics != PHYS_Flying) {
+		that->CheckJumpOrDuck();
+	}
+}
+
+void TrPlayerController_GetBlinkPackAccel(ATrPlayerController* that, ATrPlayerController_execGetBlinkPackAccel_Parms* params, void* result, Hooks::CallInfo* callInfo) {
 	if (g_config.serverSettings.RageThrustPackDependsOnCapperSpeed) {
 		that->GetBlinkPackAccel(&(params->newAccel), &(params->BlinkPackPctEffectiveness));
 		return;
@@ -559,6 +616,10 @@ void TrPlayerController_GetBlinkPackAccel(ATrPlayerController* that, ATrPlayerCo
 
 	ATrPawn* TrP = (ATrPawn*)that->Pawn;
 	ATrDevice_Blink* BlinkPack = (ATrDevice_Blink*)that->GetDeviceByEquipPoint(EQP_Pack);
+
+	if (!TrP || !BlinkPack) {
+		return;
+	}
 
 	if (!TrP->IsA(ATrPawn::StaticClass()) || !BlinkPack->IsA(ATrDevice_Blink::StaticClass())) return;
 
@@ -591,15 +652,22 @@ void TrPlayerController_GetBlinkPackAccel(ATrPlayerController* that, ATrPlayerCo
 	// Apply the effectiveness debuf
 	NewAccel = that->Multiply_FloatVector(BlinkPackPctEffectiveness, NewAccel);
 
-	BlinkPack->OnBlink(BlinkPackPctEffectiveness, false);
+	// Take energy from the player
+	//BlinkPack->OnBlink(BlinkPackPctEffectiveness, false);
+	float VMMultiplier = 1.0f;
+	ATrPlayerReplicationInfo* TrPRI = (ATrPlayerReplicationInfo*)TrP->PlayerReplicationInfo;
+	if (TrPRI) {
+		UTrValueModifier* VM = TrPRI->GetCurrentValueModifier();
+		if (VM) {
+			VMMultiplier = 1.0f - VM->m_fPackEnergyCostBuffPct;
+		}
+	}
+	TrP->ConsumePowerPool(BlinkPack->m_fPowerPoolCost * VMMultiplier);
+	TrP->SyncClientCurrentPowerPool();
 
 	// Out params
 	params->newAccel = NewAccel;
 	params->BlinkPackPctEffectiveness = BlinkPackPctEffectiveness;
-}
-
-void TrDevice_Blink_OnBlink(ATrDevice_Blink* that, ATrDevice_Blink_execOnBlink_Parms* params) {
-	that->OnBlink(params->PercentEffectiveness, params->wasRage && g_config.serverSettings.RageThrustPackDependsOnCapperSpeed);
 }
 
 ////////////////////////
