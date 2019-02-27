@@ -615,6 +615,7 @@ void TrPlayerController_GetBlinkPackAccel(ATrPlayerController* that, ATrPlayerCo
 	float BlinkPackPctEffectiveness;
 
 	ATrPawn* TrP = (ATrPawn*)that->Pawn;
+	ATrPlayerReplicationInfo* TrPRI = (ATrPlayerReplicationInfo*)TrP->PlayerReplicationInfo;
 	ATrDevice_Blink* BlinkPack = (ATrDevice_Blink*)that->GetDeviceByEquipPoint(EQP_Pack);
 
 	if (!TrP || !BlinkPack) {
@@ -628,7 +629,14 @@ void TrPlayerController_GetBlinkPackAccel(ATrPlayerController* that, ATrPlayerCo
 	that->eventGetPlayerViewPoint(&ViewPos, &ViewRot);
 	
 	// Start with a local-space impulse amount
-	NewAccel = BlinkPack->GetBlinkImpulse();
+	//NewAccel = BlinkPack->GetBlinkImpulse();
+	NewAccel = BlinkPack->m_vBlinkImpulse;
+	if (TrPRI) {
+		UTrValueModifier* VM = TrPRI->GetCurrentValueModifier();
+		if (VM) {
+			NewAccel = Geom::mult(NewAccel, 1.0 + VM->m_fBlinkPackPotencyBuffPct);
+		}
+	}
 
 	// Transform from local to world space
 	NewAccel = that->GreaterGreater_VectorRotator(NewAccel, ViewRot);
@@ -644,18 +652,17 @@ void TrPlayerController_GetBlinkPackAccel(ATrPlayerController* that, ATrPlayerCo
 	// Modify the acceleration based on a speed cap
 	float PawnSpeed = that->VSize(TrP->Velocity);
 	float BlinkPackSpeedCapMultiplier = 1.0f;
-	if ((that->Dot_VectorVector(that->Normal(TrP->Velocity), Geom::rotationToVector(ViewRot)) >= 0) && PawnSpeed > BlinkPack->m_fSpeedCapThreshold) {
+	if ((Geom::dot(Geom::normal(TrP->Velocity), Geom::rotationToVector(ViewRot)) >= 0) && PawnSpeed > BlinkPack->m_fSpeedCapThresholdStart) {
 		BlinkPackSpeedCapMultiplier = that->Lerp(1.0f, BlinkPack->m_fSpeedCapPct, that->FPctByRange(that->Min(PawnSpeed, BlinkPack->m_fSpeedCapThreshold), BlinkPack->m_fSpeedCapThresholdStart, BlinkPack->m_fSpeedCapThreshold));
 	}
 	BlinkPackPctEffectiveness *= BlinkPackSpeedCapMultiplier;
 
 	// Apply the effectiveness debuf
-	NewAccel = that->Multiply_FloatVector(BlinkPackPctEffectiveness, NewAccel);
+	NewAccel = Geom::mult(NewAccel, BlinkPackPctEffectiveness);
 
 	// Take energy from the player
 	//BlinkPack->OnBlink(BlinkPackPctEffectiveness, false);
 	float VMMultiplier = 1.0f;
-	ATrPlayerReplicationInfo* TrPRI = (ATrPlayerReplicationInfo*)TrP->PlayerReplicationInfo;
 	if (TrPRI) {
 		UTrValueModifier* VM = TrPRI->GetCurrentValueModifier();
 		if (VM) {
