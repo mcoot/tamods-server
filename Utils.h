@@ -15,7 +15,7 @@ namespace Utils {
 	std::string trim(const std::string &str);
 
 	// Map / Classes
-	int searchMapId(const std::map<std::string, int> map, const std::string &str, const std::string &location = "", bool print_on_fail = true);
+	int searchMapId(const std::map<std::string, int> map, const std::string &str, const std::string &location = "", bool print_on_fail = true, int failure_sentinel_value = 0);
 
 	// Files
 	std::string getConfigDir();

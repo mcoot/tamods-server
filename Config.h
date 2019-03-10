@@ -118,9 +118,14 @@ struct ServerSettings {
 	int GravCycleLimit = 4;
 	int BeowulfLimit = 2;
 	int ShrikeLimit = 2;
+	// No HERCs/Havocs by default
+	int HERCLimit = 0;
+	int HavocLimit = 0;
 	int GravCycleSpawnTime = 30;
 	int BeowulfSpawnTime = 120;
 	int ShrikeSpawnTime = 120;
+	int HERCSpawnTime = 120;
+	int HavocSpawnTime = 120;
 
 	bool BaseAssets = true;
 	bool BaseUpgrades = true;
@@ -153,7 +158,6 @@ struct ServerSettings {
 	bool EnableInventoryCallIn = false;
 	float InventoryCallInBuildUpTime = 2.f;
 	float InventoryCallInCooldownTime = 10.f;
-
 
 	MapRotationMode mapRotationMode = MapRotationMode::SEQUENTIAL;
 	std::vector<std::string> mapRotation;

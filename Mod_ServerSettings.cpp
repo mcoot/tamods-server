@@ -65,9 +65,14 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 	s->VehicleLimits[VEHICLE_GravCycle] = this->GravCycleLimit;
 	s->VehicleLimits[VEHICLE_Beowulf] = this->BeowulfLimit;
 	s->VehicleLimits[VEHICLE_Shrike] = this->ShrikeLimit;
+	s->VehicleLimits[VEHICLE_HERC] = this->HERCLimit;
+	s->VehicleLimits[VEHICLE_Havoc] = this->HavocLimit;
+	s->VehicleLimits[VEHICLE_Shrike] = this->ShrikeLimit;
 	s->VehicleTimes[VEHICLE_GravCycle] = this->GravCycleSpawnTime;
 	s->VehicleTimes[VEHICLE_Beowulf] = this->BeowulfSpawnTime;
 	s->VehicleTimes[VEHICLE_Shrike] = this->ShrikeSpawnTime;
+	s->VehicleTimes[VEHICLE_HERC] = this->HERCSpawnTime;
+	s->VehicleTimes[VEHICLE_Havoc] = this->HavocSpawnTime;
 
 	s->bPreplacedObjectives = this->BaseAssets;
 	s->bObjectiveUpgrades = this->BaseUpgrades;
@@ -235,9 +240,13 @@ SETTING_GETTERSETTER(float, VehicleHealthMultiplier)
 SETTING_GETTERSETTER(int, GravCycleLimit)
 SETTING_GETTERSETTER(int, BeowulfLimit)
 SETTING_GETTERSETTER(int, ShrikeLimit)
+SETTING_GETTERSETTER(int, HERCLimit)
+SETTING_GETTERSETTER(int, HavocLimit)
 SETTING_GETTERSETTER(int, GravCycleSpawnTime)
 SETTING_GETTERSETTER(int, BeowulfSpawnTime)
 SETTING_GETTERSETTER(int, ShrikeSpawnTime)
+SETTING_GETTERSETTER(int, HERCSpawnTime)
+SETTING_GETTERSETTER(int, HavocSpawnTime)
 
 SETTING_GETTERSETTER(bool, BaseAssets)
 SETTING_GETTERSETTER(bool, BaseUpgrades)
@@ -454,9 +463,13 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(GravCycleLimit)
 				.SETTING_LUAPROP(BeowulfLimit)
 				.SETTING_LUAPROP(ShrikeLimit)
+				.SETTING_LUAPROP(HERCLimit)
+				.SETTING_LUAPROP(HavocLimit)
 				.SETTING_LUAPROP(GravCycleSpawnTime)
 				.SETTING_LUAPROP(BeowulfSpawnTime)
 				.SETTING_LUAPROP(ShrikeSpawnTime)
+				.SETTING_LUAPROP(HERCSpawnTime)
+				.SETTING_LUAPROP(HavocSpawnTime)
 
 				.SETTING_LUAPROP(BaseAssets)
 				.SETTING_LUAPROP(BaseUpgrades)
