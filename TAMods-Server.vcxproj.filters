@@ -22,12 +22,6 @@
     <Filter Include="Source Files\lua_src">
       <UniqueIdentifier>{a374afb1-0ddd-40b5-9ba5-842cc8f0abf3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\zlib">
-      <UniqueIdentifier>{fa2a0409-11fe-49b0-ac6f-546db4e03719}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\libpng">
-      <UniqueIdentifier>{7aabaa73-b3eb-4307-94ef-87f528ec20fc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Mods">
       <UniqueIdentifier>{01dea90c-a2fe-4667-9872-d6a517b51d74}</UniqueIdentifier>
     </Filter>
@@ -255,57 +249,6 @@
     <ClInclude Include="lua_src\lauxlib.h">
       <Filter>Source Files\lua_src</Filter>
     </ClInclude>
-    <ClInclude Include="libpng\png.h">
-      <Filter>Source Files\libpng</Filter>
-    </ClInclude>
-    <ClInclude Include="libpng\pngconf.h">
-      <Filter>Source Files\libpng</Filter>
-    </ClInclude>
-    <ClInclude Include="libpng\pngdebug.h">
-      <Filter>Source Files\libpng</Filter>
-    </ClInclude>
-    <ClInclude Include="libpng\pnginfo.h">
-      <Filter>Source Files\libpng</Filter>
-    </ClInclude>
-    <ClInclude Include="libpng\pnglibconf.h">
-      <Filter>Source Files\libpng</Filter>
-    </ClInclude>
-    <ClInclude Include="libpng\pngpriv.h">
-      <Filter>Source Files\libpng</Filter>
-    </ClInclude>
-    <ClInclude Include="libpng\pngstruct.h">
-      <Filter>Source Files\libpng</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\crc32.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\deflate.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\inffast.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\inffixed.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\inflate.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\inftrees.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\trees.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\zconf.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\zlib.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\zutil.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
     <ClInclude Include="Lua.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -520,90 +463,6 @@
     </ClCompile>
     <ClCompile Include="lua_src\lauxlib.c">
       <Filter>Source Files\lua_src</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngerror.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngget.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngmem.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngpread.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngread.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngrio.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngrtran.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngrutil.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngset.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngtrans.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngwio.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngwrite.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngwtran.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\pngwutil.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="libpng\png.c">
-      <Filter>Source Files\libpng</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\compress.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\crc32.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\deflate.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\gzio.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\infback.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\inffast.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\inflate.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\inftrees.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\trees.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\uncompr.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\zlib-dllversion.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\zutil.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\adler32.c">
-      <Filter>Source Files\zlib</Filter>
     </ClCompile>
     <ClCompile Include="Lua.cpp">
       <Filter>Source Files</Filter>

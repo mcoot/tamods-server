@@ -167,13 +167,6 @@
     <ClInclude Include="Geom.h" />
     <ClInclude Include="GameBalance.h" />
     <ClInclude Include="Hooks.h" />
-    <ClInclude Include="libpng\png.h" />
-    <ClInclude Include="libpng\pngconf.h" />
-    <ClInclude Include="libpng\pngdebug.h" />
-    <ClInclude Include="libpng\pnginfo.h" />
-    <ClInclude Include="libpng\pnglibconf.h" />
-    <ClInclude Include="libpng\pngpriv.h" />
-    <ClInclude Include="libpng\pngstruct.h" />
     <ClInclude Include="LoadoutTypes.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Lua.h" />
@@ -255,16 +248,6 @@
     <ClInclude Include="TCP.h" />
     <ClInclude Include="TenantedDataStore.h" />
     <ClInclude Include="Utils.h" />
-    <ClInclude Include="zlib\crc32.h" />
-    <ClInclude Include="zlib\deflate.h" />
-    <ClInclude Include="zlib\inffast.h" />
-    <ClInclude Include="zlib\inffixed.h" />
-    <ClInclude Include="zlib\inflate.h" />
-    <ClInclude Include="zlib\inftrees.h" />
-    <ClInclude Include="zlib\trees.h" />
-    <ClInclude Include="zlib\zconf.h" />
-    <ClInclude Include="zlib\zlib.h" />
-    <ClInclude Include="zlib\zutil.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp" />
@@ -273,21 +256,6 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Geom.cpp" />
     <ClCompile Include="Hooks.cpp" />
-    <ClCompile Include="libpng\png.c" />
-    <ClCompile Include="libpng\pngerror.c" />
-    <ClCompile Include="libpng\pngget.c" />
-    <ClCompile Include="libpng\pngmem.c" />
-    <ClCompile Include="libpng\pngpread.c" />
-    <ClCompile Include="libpng\pngread.c" />
-    <ClCompile Include="libpng\pngrio.c" />
-    <ClCompile Include="libpng\pngrtran.c" />
-    <ClCompile Include="libpng\pngrutil.c" />
-    <ClCompile Include="libpng\pngset.c" />
-    <ClCompile Include="libpng\pngtrans.c" />
-    <ClCompile Include="libpng\pngwio.c" />
-    <ClCompile Include="libpng\pngwrite.c" />
-    <ClCompile Include="libpng\pngwtran.c" />
-    <ClCompile Include="libpng\pngwutil.c" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Lua.cpp" />
     <ClCompile Include="LuaAPI.cpp" />
@@ -354,19 +322,6 @@
     <ClCompile Include="TCP.cpp" />
     <ClCompile Include="TenantedDataStore.cpp" />
     <ClCompile Include="Utils.cpp" />
-    <ClCompile Include="zlib\adler32.c" />
-    <ClCompile Include="zlib\compress.c" />
-    <ClCompile Include="zlib\crc32.c" />
-    <ClCompile Include="zlib\deflate.c" />
-    <ClCompile Include="zlib\gzio.c" />
-    <ClCompile Include="zlib\infback.c" />
-    <ClCompile Include="zlib\inffast.c" />
-    <ClCompile Include="zlib\inflate.c" />
-    <ClCompile Include="zlib\inftrees.c" />
-    <ClCompile Include="zlib\trees.c" />
-    <ClCompile Include="zlib\uncompr.c" />
-    <ClCompile Include="zlib\zlib-dllversion.c" />
-    <ClCompile Include="zlib\zutil.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
