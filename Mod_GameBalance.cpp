@@ -483,8 +483,8 @@ static void setClassProp(std::string className, int intPropId, LuaRef val) {
 }
 
 static void setVehicleProp(std::string vehicleName, int intPropId, LuaRef val) {
-	int vehicleId = Utils::searchMapId(Data::vehicles, vehicleName, "", false);
-	if (vehicleId == 0) {
+	int vehicleId = Utils::searchMapId(Data::vehicles, vehicleName, "", false, -1);
+	if (vehicleId == -1) {
 		Logger::error("Unable to set property config; invalid vehicle %s", vehicleName.c_str());
 		return;
 	}

@@ -43,7 +43,7 @@ std::string Utils::trim(const std::string &str)
 
 // Regex search in a map of type <string, int> where the string are regexes
 // location and print_on_fail are only used for error messages
-int Utils::searchMapId(const std::map<std::string, int> map, const std::string &str, const std::string &location, bool print_on_fail)
+int Utils::searchMapId(const std::map<std::string, int> map, const std::string &str, const std::string &location, bool print_on_fail, int failure_sentinel_value)
 {
 	std::string clean = Utils::cleanString(str);
 	for (auto const &it : map)
@@ -52,12 +52,12 @@ int Utils::searchMapId(const std::map<std::string, int> map, const std::string &
 			return (it.second);
 	}
 	if (!print_on_fail)
-		return (0);
+		return (failure_sentinel_value);
 	if (!location.size())
 		Logger::error("WARNING: searched item '%s' could not be identified", str.c_str());
 	else
 		Logger::error("WARNING: searched item '%s' could not be identified as %s", str.c_str(), location.c_str());
-	return (0);
+	return (failure_sentinel_value);
 }
 
 // Returns the config directory path
