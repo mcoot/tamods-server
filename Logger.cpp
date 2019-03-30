@@ -62,36 +62,53 @@ void Logger::printLog(Level level, const char *str) {
 
 void Logger::log(Level level, const char *format, ...)
 {
-	char buff[256];
-	va_list args;
-
 	// Only log things more important or equal to the current level
 	if (level < _level) return;
 	if (!openFile()) return;
-
+	
+	va_list args;
 	va_start(args, format);
+	int line_length = _vscprintf(format, args);
+	char* buff = (char*)malloc((line_length + 1) * sizeof(char));
 	vsprintf(buff, format, args);
 	va_end(args);
 	fprintf(_file, "%s\n", buff);
 	fflush(_file);
+
+	free(buff);
 }
 
 void Logger::noln(Level level, const char *format, ...)
 {
-	char buff[256];
-	va_list args;
-
 	if (level < _level) return;
 	if (!openFile()) return;
-
+	
+	va_list args;
 	va_start(args, format);
+	int line_length = _vscprintf(format, args);
+	char* buff = (char*)malloc((line_length + 1) * sizeof(char));
 	vsprintf(buff, format, args);
 	va_end(args);
 	fprintf(_file, buff);
+
+	free(buff);
+}
+
+void Logger::putc(Level level, char c) {
+	if (level < _level) return;
+	if (!openFile()) return;
+	fputc(c, _file);
+}
+
+void Logger::flush(Level level) {
+	if (level < _level) return;
+	if (!openFile()) return;
+	fflush(_file);
 }
 
 static void vlog(Logger::Level level, const char *format, va_list args) {
-	char buff[256];
+	int line_length = _vscprintf(format, args);
+	char* buff = (char*)malloc((line_length + 1) * sizeof(char));
 
 	if (level < _level) return;
 	if (!openFile()) return;
@@ -99,6 +116,8 @@ static void vlog(Logger::Level level, const char *format, va_list args) {
 	vsprintf(buff, format, args);
 	fprintf(_file, "%s\n", buff);
 	fflush(_file);
+
+	free(buff);
 }
 
 void Logger::debug(const char *format, ...) {

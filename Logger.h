@@ -16,6 +16,8 @@ namespace Logger
 	void printLog(Level level, const char *str);
 	void log(Level level, const char *format, ...);
 	void noln(Level level, const char *format, ...);
+	void putc(Level level, char c);
+	void flush(Level level);
 
 	void setLevel(Level level);
 	Level getLevel();

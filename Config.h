@@ -210,6 +210,7 @@ public:
 	bool connectToTAServer;
 	bool connectToClients;
 	bool allowUnmoddedClients;
+	bool eventLogging;
 	HardCodedLoadouts hardcodedLoadouts;
 };
 

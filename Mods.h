@@ -16,6 +16,7 @@
 #include "Geom.h"
 #include "Logger.h"
 #include "LuaAPI.h"
+#include "EventLogger.h"
 //#include "TAServerClient.h"
 
 
@@ -68,6 +69,9 @@ void TrPlayerController_GetRespawnDelayTotalTime(ATrPlayerController* that, ATrP
 // Fix helping Nova Colt ping dependency
 void TrDevice_FireAmmunition(ATrDevice* that, ATrDevice_execFireAmmunition_Parms* params, void* result, Hooks::CallInfo callInfo);
 void TrDevice_NovaSlug_FireAmmunition(ATrDevice_NovaSlug* that, ATrDevice_NovaSlug_execFireAmmunition_Parms* params, void* result, Hooks::CallInfo callInfo);
+
+// Fix crashing/reconnecting causing players to end up with names like "Player256"
+void UTGame_ChangeName(AUTGame* that, AUTGame_execChangeName_Parms* params);
 
 // Server admin commands
 extern int bNextMapOverrideValue;
