@@ -300,6 +300,9 @@
     <ClInclude Include="TenantedDataStore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EventLogger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TAMods-Server.cpp">
@@ -516,6 +519,9 @@
       <Filter>Source Files\Mods</Filter>
     </ClCompile>
     <ClCompile Include="TenantedDataStore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EventLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

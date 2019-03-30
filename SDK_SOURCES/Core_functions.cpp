@@ -198,6 +198,14 @@ bool UObject::IsA ( UClass* pClass )
 	return false; 
 } 
 
+bool UObject::IsAByName(const char* name) {
+	for (UClass* SuperClass = this->Class; SuperClass; SuperClass = (UClass*)SuperClass->SuperField) {
+		if (!strcmp(this->GetName(), name)) return true;
+	}
+
+	return false;
+}
+
 /*
 # ========================================================================================= #
 # Functions

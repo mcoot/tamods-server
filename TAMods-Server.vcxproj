@@ -163,6 +163,7 @@
     <ClInclude Include="DirectConnectionServer.h" />
     <ClInclude Include="DirectConnectionTypes.h" />
     <ClInclude Include="dllmain.h" />
+    <ClInclude Include="EventLogger.h" />
     <ClInclude Include="FunctionalUtils.h" />
     <ClInclude Include="Geom.h" />
     <ClInclude Include="GameBalance.h" />
@@ -254,6 +255,7 @@
     <ClCompile Include="Data.cpp" />
     <ClCompile Include="DirectConnectionServer.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="EventLogger.cpp" />
     <ClCompile Include="Geom.cpp" />
     <ClCompile Include="Hooks.cpp" />
     <ClCompile Include="Logger.cpp" />

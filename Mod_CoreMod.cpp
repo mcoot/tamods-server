@@ -56,6 +56,7 @@ namespace LuaAPI {
 				.addVariable("ConnectToTAServer", &g_config.connectToTAServer, true)
 				.addVariable("ConnectToClients", &g_config.connectToClients, true)
 				.addVariable("AllowUnmoddedClients", &g_config.allowUnmoddedClients, true)
+				.addVariable("EventLogging", &g_config.eventLogging, true)
 			.endNamespace()
 
 			;

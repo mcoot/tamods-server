@@ -13,6 +13,7 @@ static void checkForScoreChange() {
 	int beScoreCurrent = (int)Utils::tr_gri->Teams.Data[0]->Score;
 	int dsScoreCurrent = (int)Utils::tr_gri->Teams.Data[1]->Score;
 	if (beScoreCurrent != beScoreCached || dsScoreCurrent != dsScoreCached) {
+		EventLogger::log_basic(EventLogger::Kind::SCORE_CHANGE);
 		beScoreCached = beScoreCurrent;
 		dsScoreCached = dsScoreCurrent;
 		if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {
@@ -73,6 +74,8 @@ void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bo
 }
 
 bool UTGame_MatchInProgress_BeginState(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
+	EventLogger::log_basic(EventLogger::Kind::GAME_START);
+
 	Utils::serverGameStatus = Utils::ServerGameStatus::IN_PROGRESS;
 	if (g_config.connectToTAServer && g_TAServerClient.isConnected() && Utils::tr_gri) {
 		{
@@ -81,6 +84,7 @@ bool UTGame_MatchInProgress_BeginState(int ID, UObject *dwCallingObject, UFuncti
 		}
 		
 	}
+
 	return false;
 }
 
@@ -122,6 +126,9 @@ static std::string getNextMapName() {
 
 void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* result, Hooks::CallInfo* callInfo) {
 	bool isDuplicateEndGame = Utils::serverGameStatus == Utils::ServerGameStatus::ENDED;
+	if (!isDuplicateEndGame) {
+		EventLogger::log_basic(EventLogger::Kind::GAME_END);
+	}
 	Utils::serverGameStatus = Utils::ServerGameStatus::ENDED;
 	that->EndGame(params->Winner, params->Reason);
 
@@ -416,6 +423,19 @@ static ATrPlayerReplicationInfo* getPriForPlayerId(TArray<APlayerReplicationInfo
 	}
 
 	return NULL;
+}
+
+// Fix crashing/reconnecting causing players to end up with names like "Player256"
+void UTGame_ChangeName(AUTGame* that, AUTGame_execChangeName_Parms* params) {
+	// Basically, just don't check for duplicates
+	// This is verified at the login server level anyway
+
+	// Don't change if the current name is the same, case insensitive
+	std::string playerName = Utils::f2std(params->Other->PlayerReplicationInfo->PlayerName);
+	std::string s = Utils::f2std(params->S);
+	if (!_stricmp(playerName.c_str(), s.c_str())) return;
+
+	params->Other->PlayerReplicationInfo->eventSetPlayerName(params->S);
 }
 
 static bool cachedWasInOvertime = false;

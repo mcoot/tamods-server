@@ -14,6 +14,7 @@ void Config::reset() {
 	connectToTAServer = true;
 	connectToClients = true;
 	allowUnmoddedClients = true;
+	eventLogging = false;
 	hardcodedLoadouts = HardCodedLoadouts();
 }
 

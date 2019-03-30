@@ -227,7 +227,8 @@ public:
 	
 	static UClass* FindClass ( const char* ClassFullName ); 
 
-	bool IsA ( UClass* pClass ); 
+	bool IsA ( UClass* pClass );
+	bool IsAByName(const char* name);
 
 	static UClass* StaticClass()
 	{
