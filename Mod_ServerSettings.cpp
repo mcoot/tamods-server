@@ -106,6 +106,10 @@ void TrPlayerController_GetRespawnDelayTotalTime(ATrPlayerController* that, ATrP
 	}
 }
 
+// Server info constants
+static std::string gameSettingModeOOTB = "ootb";
+static std::string gameSettingModeGOTY = "goty";
+
 // Map codes
 static int mapCodeCTFKatabatic = CONST_MAP_ID_CTF_KATABATIC;
 static int mapCodeCTFArxNovena = CONST_MAP_ID_CTF_ARXNOVENA;
@@ -196,6 +200,11 @@ static void set ## var ##(type n) { \
 #define SETTING_LUAPROP(var) addProperty(STRINGIFY(var), &get ## var ## , &set ## var ## )
 
 // Server setting getter/setters
+SETTING_GETTERSETTER(std::string, Description)
+SETTING_GETTERSETTER(std::string, Motd)
+SETTING_GETTERSETTER(std::string, Password)
+SETTING_GETTERSETTER(std::string, GameSettingMode)
+
 SETTING_GETTERSETTER(int, TimeLimit)
 SETTING_GETTERSETTER(int, WarmupTime)
 SETTING_GETTERSETTER(int, OvertimeLimit)
@@ -420,6 +429,11 @@ namespace LuaAPI {
 	void addServerSettingsAPI(luabridge::Namespace ns) {
 		ns
 			.beginNamespace("ServerSettings")
+				.SETTING_LUAPROP(Description)
+				.SETTING_LUAPROP(Motd)
+				.SETTING_LUAPROP(Password)
+				.SETTING_LUAPROP(GameSettingMode)
+
 				.SETTING_LUAPROP(TimeLimit)
 				.SETTING_LUAPROP(WarmupTime)
 				.SETTING_LUAPROP(OvertimeLimit)
@@ -493,6 +507,10 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(InventoryCallInCooldownTime)
 				.SETTING_LUAPROP(BE_SensorRadius)
 				.SETTING_LUAPROP(DS_SensorRadius)
+				.beginNamespace("GameSettingModes")
+					.addVariable("OOTB", &gameSettingModeOOTB, false)
+					.addVariable("GOTY", &gameSettingModeGOTY, false)
+				.endNamespace()
 				.beginNamespace("MapRotation")
 					.addVariable("Mode", (int*)&g_config.serverSettings.mapRotationMode, true)
 					.beginNamespace("Modes")

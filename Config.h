@@ -71,6 +71,12 @@ public:
 };
 
 struct ServerSettings {
+	// Server info
+	std::string Description = "Custom Server";
+	std::string Motd = "";
+	std::string Password = "";
+	std::string GameSettingMode = "ootb";
+
 	int TimeLimit = 25;
 	int WarmupTime = 20;
 	int OvertimeLimit = 10;

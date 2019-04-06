@@ -3,6 +3,10 @@ TAMods Server
 
 ## Dependencies
 
-Boost: should be located at `C:\boost_1_68_0`.
+You need to provide Boost v1.68.0, the Nlohmann JSON library and have a DirectX SDK installed.
 
-nlohmann/json: the main json.hpp should be located at `C:\nlohmannjson\include\nlohmann`.
+You should set the following environment variables for these:
+- DXSDK_DIR - path to DirectX SDK
+- TAMODS_BOOST_INCLUDE_PATH - Path to Boost (i.e. the main Boost directory)
+- TAMODS_BOOST_LIB_PATH  - Path to compiled Boost libraries (usually <Boost dir>\stage\lib)
+- TAMODS_NLOHMANNJSON_INCLUDE_PATH - Path to Nlohmann JSON include directory

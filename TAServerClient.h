@@ -52,6 +52,7 @@ namespace TAServer {
 		bool retrieveLoadout(FUniqueNetId uniquePlayerId, int classId, int slot, std::map<int, int>& resultEquipMap);
 
 		void sendProtocolVersion();
+		void sendServerInfo(std::string description, std::string motd, std::vector<unsigned char> password_hash, std::string game_setting_mode);
 		void sendTeamInfo(const std::map<long long, int>& playerToTeamId);
 		void sendScoreInfo(int beScore, int dsScore);
 		void sendMapInfo(int mapId);
