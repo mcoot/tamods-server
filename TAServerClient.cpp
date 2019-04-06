@@ -135,6 +135,19 @@ namespace TAServer {
 		return true;
 	}
 
+	void Client::sendServerInfo(std::string description, std::string motd, std::vector<unsigned char> password_hash, std::string game_setting_mode) {
+		Game2LauncherServerInfoMessage msg;
+		msg.description = description;
+		msg.motd = motd;
+		msg.password_hash = password_hash;
+		msg.game_setting_mode = game_setting_mode;
+
+		json j;
+		msg.toJson(j);
+
+		tcpClient->send(msg.getMessageKind(), j);
+	}
+
 	void Client::sendTeamInfo(const std::map<long long, int>& playerToTeamId) {
 		Game2LauncherTeamInfoMessage msg;
 		for (auto& elem : playerToTeamId) {

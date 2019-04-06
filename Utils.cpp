@@ -112,3 +112,16 @@ int Utils::perks_DecodeA(int encoded) {
 int Utils::perks_DecodeB(int encoded) {
 	return encoded & 0x0000FFFF;
 }
+
+// Server Password Hashing
+static char hash_xor_constants[8] = { 0x55, 0x93, 0x55, 0x58, 0xBA, 0x6f, 0xe9, 0xf9 };
+static char hash_interspersed_constants[8] = { 0x7a, 0x1e, 0x9f, 0x47, 0xf9, 0x17, 0xb0, 0x03 };
+
+std::vector<unsigned char> Utils::passwordHash(std::string password) {
+	std::vector<unsigned char> result;
+	for (int i = 0; i < password.length(); ++i) {
+		result.push_back((password[i] ^ hash_xor_constants[i % 8]));
+		result.push_back(hash_interspersed_constants[i % 8]);
+	}
+	return result;
+}

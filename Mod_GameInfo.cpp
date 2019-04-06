@@ -291,8 +291,17 @@ bool TrGameReplicationInfo_Tick(int ID, UObject *dwCallingObject, UFunction* pFu
 }
 
 void TAServer::Client::handler_OnConnect() {
+	Logger::info("[Connected]");
+
 	// Immediately send TAServer the protocol version
 	g_TAServerClient.sendProtocolVersion();
+
+	// Immediately send server info
+	std::vector<unsigned char> password_hash = Utils::passwordHash(g_config.serverSettings.Password);
+	g_TAServerClient.sendServerInfo(g_config.serverSettings.Description,
+		g_config.serverSettings.Motd,
+		password_hash,
+		g_config.serverSettings.GameSettingMode);
 
 	// Below is commented out for the new blue-green dual server approach to map switches
 	// Instead, we will wait until the launcher sends its initialisation message before starting up

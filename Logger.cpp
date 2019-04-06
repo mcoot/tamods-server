@@ -108,7 +108,7 @@ void Logger::flush(Level level) {
 
 static void vlog(Logger::Level level, const char *format, va_list args) {
 	int line_length = _vscprintf(format, args);
-	char* buff = (char*)malloc((line_length + 1) * sizeof(char));
+	char* buff = (char*)calloc((line_length + 1), sizeof(char));
 
 	if (level < _level) return;
 	if (!openFile()) return;

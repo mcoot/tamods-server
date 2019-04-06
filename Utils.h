@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <sstream>
 #include <mutex>
 #include <regex>
 #include <map>
@@ -26,6 +27,9 @@ namespace Utils {
 	int perks_Encode(int perkA, int perkB);
 	int perks_DecodeA(int encoded);
 	int perks_DecodeB(int encoded);
+
+	// Server Password Hashing
+	std::vector<unsigned char> passwordHash(std::string password);
 
 	enum class ServerGameStatus {
 		UNKNOWN = 0,

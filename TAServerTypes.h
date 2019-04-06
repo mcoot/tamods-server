@@ -25,6 +25,7 @@ using json = nlohmann::json;
 #define TASRV_MSG_KIND_GAME_2_LAUNCHER_MATCHEND 0x3004
 #define TASRV_MSG_KIND_GAME_2_LAUNCHER_LOADOUT_REQUEST 0x3005
 #define TASRV_MSG_KIND_GAME_2_LAUNCHER_MAPINFO 0x3006
+#define TASRV_MSG_KIND_GAME_2_LAUNCHER_SERVERINFO 0x3007
 
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_LOADOUT_MESSAGE 0x4000
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_NEXT_MAP_MESSAGE 0x4001
@@ -464,6 +465,35 @@ namespace TAServer {
 			}
 
 			return succeeded;
+		}
+	};
+
+	class Game2LauncherServerInfoMessage : public Message {
+	public:
+		std::string description;
+		std::string motd;
+		std::vector<unsigned char> password_hash;
+		std::string game_setting_mode;
+	public:
+		short getMessageKind() override {
+			return TASRV_MSG_KIND_GAME_2_LAUNCHER_SERVERINFO;
+		}
+
+		void toJson(json& j) {
+			j["description"] = description;
+			j["motd"] = motd;
+			if (password_hash.empty()) {
+				j["password_hash"] = json();
+			} 
+			else {
+				j["password_hash"] = password_hash;
+			}
+			j["game_setting_mode"] = game_setting_mode;
+		}
+
+		bool fromJson(const json& j) {
+			// Not needed
+			return false;
 		}
 	};
 }
