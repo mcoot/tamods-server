@@ -655,6 +655,10 @@ namespace LuaAPI {
 					.addProperty<int, int>("DeployableMinProximity", &getPropId<Items::PropId, Items::PropId::DEPLOYABLE_MIN_PROXIMITY>)
 					.addProperty<int, int>("TurretTimeToAcquireTarget", &getPropId<Items::PropId, Items::PropId::TURRET_TIME_TO_ACQUIRE_TARGET>)
 					.addProperty<int, int>("TurretCanTargetVehicles", &getPropId<Items::PropId, Items::PropId::TURRET_CAN_TARGET_VEHICLES>)
+					.addProperty<int, int>("ForcefieldMinDamage", &getPropId<Items::PropId, Items::PropId::FORCEFIELD_MIN_DAMAGE>)
+					.addProperty<int, int>("ForcefieldMaxDamage", &getPropId<Items::PropId, Items::PropId::FORCEFIELD_MAX_DAMAGE>)
+					.addProperty<int, int>("ForcefieldMinDamageSpeed", &getPropId<Items::PropId, Items::PropId::FORCEFIELD_MIN_DAMAGE_SPEED>)
+					.addProperty<int, int>("ForcefieldMaxDamageSpeed", &getPropId<Items::PropId, Items::PropId::FORCEFIELD_MAX_DAMAGE_SPEED>)
 					// Mines
 					.addProperty<int, int>("MineDeployTime", &getPropId<Items::PropId, Items::PropId::MINE_DEPLOY_TIME>)
 					.addProperty<int, int>("MineMaxAllowed", &getPropId<Items::PropId, Items::PropId::MINE_MAX_ALLOWED>)
