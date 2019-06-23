@@ -210,10 +210,14 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 		}
 	}
 
-	DamagingPawn = (APawn*)DamagingActor;
-	if (!DamagingPawn && DamagingActor) {
-		DamagingPawn = DamagingActor->Instigator;
-	}
+	if (DamagingActor) {
+		if (DamagingActor->IsA(APawn::StaticClass())) {
+			DamagingPawn = (APawn*)DamagingActor;
+		}
+		else {
+			DamagingPawn = DamagingActor->Instigator;
+		}
+	}	
 
 	// Drain energy
 	if (TrDamageType) {
