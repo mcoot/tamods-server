@@ -133,6 +133,13 @@ struct ServerSettings {
 	int HERCSpawnTime = 120;
 	int HavocSpawnTime = 120;
 
+	// Whether vehicles should eject or not: (OOTB default is yes for gravs, no for others)
+	bool GravCycleEjectionSeat = true;
+	bool BeowulfEjectionSeat = false;
+	bool ShrikeEjectionSeat = false;
+	bool HERCEjectionSeat = false;
+	bool HavocEjectionSeat = false;
+
 	bool BaseAssets = true;
 	bool BaseUpgrades = true;
 	bool PoweredDeployables = true;

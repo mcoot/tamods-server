@@ -257,6 +257,12 @@ SETTING_GETTERSETTER(int, ShrikeSpawnTime)
 SETTING_GETTERSETTER(int, HERCSpawnTime)
 SETTING_GETTERSETTER(int, HavocSpawnTime)
 
+SETTING_GETTERSETTER(bool, GravCycleEjectionSeat)
+SETTING_GETTERSETTER(bool, BeowulfEjectionSeat)
+SETTING_GETTERSETTER(bool, ShrikeEjectionSeat)
+SETTING_GETTERSETTER(bool, HERCEjectionSeat)
+SETTING_GETTERSETTER(bool, HavocEjectionSeat)
+
 SETTING_GETTERSETTER(bool, BaseAssets)
 SETTING_GETTERSETTER(bool, BaseUpgrades)
 SETTING_GETTERSETTER(bool, PoweredDeployables)
@@ -484,6 +490,12 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(ShrikeSpawnTime)
 				.SETTING_LUAPROP(HERCSpawnTime)
 				.SETTING_LUAPROP(HavocSpawnTime)
+
+				.SETTING_LUAPROP(GravCycleEjectionSeat)
+				.SETTING_LUAPROP(BeowulfEjectionSeat)
+				.SETTING_LUAPROP(ShrikeEjectionSeat)
+				.SETTING_LUAPROP(HERCEjectionSeat)
+				.SETTING_LUAPROP(HavocEjectionSeat)
 
 				.SETTING_LUAPROP(BaseAssets)
 				.SETTING_LUAPROP(BaseUpgrades)

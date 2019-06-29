@@ -949,3 +949,76 @@ void ATrDevice_RemoteArxBuster_ActivateRemoteRounds(ATrDevice_RemoteArxBuster* t
 	}
 }
 
+////// Fix for pilot ejection perk not working: in OOTB grav always ejects and others don't
+
+static bool shouldPlayerEjectOnDeath(ATrVehicle* that, ATrPlayerReplicationInfo* pri) {
+	// Check for ejection seat perk
+	UTrValueModifier* vm = pri->GetCurrentValueModifier();
+	if (vm && vm->m_bEjectionSeat) {
+		return true;
+	}
+
+	// Check if vehicle should always eject
+	std::string n = that->Name.GetName();
+	if (n == "TrVehicle_GravCycle") {
+		return g_config.serverSettings.GravCycleEjectionSeat;
+	}
+	else if (n == "TrVehicle_Beowulf") {
+		return g_config.serverSettings.BeowulfEjectionSeat;
+	}
+	else if (n == "TrVehicle_Shrike") {
+		return g_config.serverSettings.ShrikeEjectionSeat;
+	}
+	else if (n == "TrVehicle_Havoc") {
+		return g_config.serverSettings.HavocEjectionSeat;
+	}
+	else if (n == "TrVehicle_HERC") {
+		return g_config.serverSettings.HERCEjectionSeat;
+	}
+
+	return false;
+}
+
+void ATrVehicle_Died(ATrVehicle* that, ATrVehicle_execDied_Parms* params, bool* result) {
+	for (int i = 0; i < that->Seats.Count; ++i) {
+		if (!that->Seats.GetStd(i).SeatPawn && !that->Seats.GetStd(i).StoragePawn) continue;
+		ATrPawn* aPawn = (ATrPawn*)that->Seats.GetStd(i).StoragePawn;
+		if (!aPawn) continue;
+		ATrPlayerReplicationInfo* pri = aPawn->GetTribesReplicationInfo();
+		if (!pri) continue;
+		if (shouldPlayerEjectOnDeath(that, pri)) {
+			aPawn->GoInvulnerable(0.01f);
+			that->EjectSeat(i);
+			that->RidingPawnLeave(i, true);
+		}
+	}
+
+	// Award the killer a vehicle destruction
+	ATrPlayerController* killerPC = (ATrPlayerController*)params->Killer;
+	if (killerPC && that->GetTeamNum() == killerPC->GetTeamNum()) {
+		// Stats disabled due to crashes
+		//if (that->Stats) that->Stats->AddVehicleDestruction(killerPC);
+		killerPC->m_AccoladeManager->VehicleDestroyed(that);
+	}
+
+	// APply damage to passengers and eject them
+	for (int i = 1; i < that->Seats.Count; ++i) {
+		ATrPawn* aPawn = (ATrPawn*)that->Seats.GetStd(i).StoragePawn;
+		if (!aPawn || that->Seats.GetStd(i).SeatPawn) continue;
+		that->RidingPawnLeave(i, true);
+
+		if (params->Killer == that->Controller) {
+			aPawn->eventTakeDamage(aPawn->HealthMax / 2, aPawn->Controller, that->LastTakeHitInfo.HitLocation, that->LastTakeHitInfo.Momentum, params->DamageType, FTraceHitInfo(), that);
+		}
+		else {
+			aPawn->eventTakeDamage(aPawn->HealthMax / 2, params->Killer, that->LastTakeHitInfo.HitLocation, that->LastTakeHitInfo.Momentum, params->DamageType, FTraceHitInfo(), that);
+		}
+	}
+
+	// Report back to vehicle station that spawned this, to update its inventory
+	if (that->m_OwnerStation) {
+		that->m_OwnerStation->AddVehicleToPackedList(that->m_VehicleType, -1);
+	}
+
+	*result = that->AUTVehicle::Died(params->Killer, params->DamageType, params->HitLocation);
+}
