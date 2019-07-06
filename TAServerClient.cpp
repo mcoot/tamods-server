@@ -195,12 +195,13 @@ namespace TAServer {
 		tcpClient->send(msg.getMessageKind(), j);
 	}
 
-	void Client::sendMatchEnded(int nextMatchIdx, std::string nextMapOverride, std::map<long long, PlayerXpRecord> playerXpsEarned) {
+	void Client::sendMatchEnded(int nextMatchIdx, std::string nextMapOverride, int waitTime, std::map<long long, PlayerXpRecord> playerXpsEarned) {
 		Game2LauncherMatchEndMessage msg;
 		msg.controllerContext.hasContext = true;
 		msg.controllerContext.nextMapIndex = nextMatchIdx;
 		msg.controllerContext.nextMapOverride = nextMapOverride;
 		msg.playerEarnedXps = playerXpsEarned;
+		msg.nextMapWaitTime = waitTime;
 
 		json j = json::object();
 		msg.toJson(j);

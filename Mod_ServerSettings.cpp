@@ -205,6 +205,8 @@ SETTING_GETTERSETTER(std::string, Motd)
 SETTING_GETTERSETTER(std::string, Password)
 SETTING_GETTERSETTER(std::string, GameSettingMode)
 
+SETTING_GETTERSETTER(int, EndMatchWaitTime)
+
 SETTING_GETTERSETTER(int, TimeLimit)
 SETTING_GETTERSETTER(int, WarmupTime)
 SETTING_GETTERSETTER(int, OvertimeLimit)
@@ -439,6 +441,8 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(Motd)
 				.SETTING_LUAPROP(Password)
 				.SETTING_LUAPROP(GameSettingMode)
+
+				.SETTING_LUAPROP(EndMatchWaitTime)
 
 				.SETTING_LUAPROP(TimeLimit)
 				.SETTING_LUAPROP(WarmupTime)

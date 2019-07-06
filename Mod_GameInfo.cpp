@@ -177,7 +177,7 @@ void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* resu
 		// If a map override has been issued, we need to explicitly give the map name
 		std::string nextMapOverrideName = bNextMapOverrideValue == 0 ? "" : getNextMapName();
 		
-		g_TAServerClient.sendMatchEnded(getNextMapIdx(), nextMapOverrideName, playerXpsEarned);
+		g_TAServerClient.sendMatchEnded(getNextMapIdx(), nextMapOverrideName, g_config.serverSettings.EndMatchWaitTime, playerXpsEarned);
 	}
 }
 

@@ -77,6 +77,8 @@ struct ServerSettings {
 	std::string Password = "";
 	std::string GameSettingMode = "ootb";
 
+	int EndMatchWaitTime = 5;
+
 	int TimeLimit = 25;
 	int WarmupTime = 20;
 	int OvertimeLimit = 10;

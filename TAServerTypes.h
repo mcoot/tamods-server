@@ -335,6 +335,7 @@ namespace TAServer {
 	public:
 		PersistentContext controllerContext;
 		std::map<long long, PlayerXpRecord> playerEarnedXps;
+		int nextMapWaitTime;
 	public:
 		short getMessageKind() override {
 			return TASRV_MSG_KIND_GAME_2_LAUNCHER_MATCHEND;
@@ -356,6 +357,7 @@ namespace TAServer {
 			}
 
 			j["player_earned_xps"] = xpJson;
+			j["next_map_wait_time"] = nextMapWaitTime;
 		}
 
 		bool fromJson(const json& j) {
@@ -378,6 +380,9 @@ namespace TAServer {
 
 				playerEarnedXps[playerIdLong] = rec;
 			}
+
+			if (j.find("next_map_wait_time") == j.end()) return false;
+			nextMapWaitTime = j["next_map_wait_time"];
 
 			if (j.find("controller_context") == j.end()) return false;
 			json contextJson = j["controller_context"];
