@@ -110,7 +110,6 @@ static int getNextMapIdx() {
 }
 
 static std::string getNextMapName() {
-	Logger::debug("trying to figure out next map...");
 	std::string nextMapName;
 	if (bNextMapOverrideValue != 0 && Data::map_id_to_filename.find(bNextMapOverrideValue) != Data::map_id_to_filename.end()) {
 		// Override for next map has been set
@@ -124,6 +123,35 @@ static std::string getNextMapName() {
 	return nextMapName;
 }
 
+static std::map<long long, TAServer::PlayerXpRecord> getPlayerXpsEarned(ATrGameReplicationInfo* gri) {
+	std::map<long long, TAServer::PlayerXpRecord> xps;
+	if (!gri) return xps;
+	if (!gri->WorldInfo->Game) return xps;
+	ATrGame* game = (ATrGame*)gri->WorldInfo->Game;
+
+	for (int i = 0; i < gri->PRIArray.Count; ++i) {
+		ATrPlayerReplicationInfo* pri = (ATrPlayerReplicationInfo*)gri->PRIArray.GetStd(i);
+		if (!pri) continue;
+		long long playerId = TAServer::netIdToLong(pri->UniqueId);
+
+		TAServer::PlayerXpRecord rec;
+
+		// We only care about base XP + FWotD for ranking purposes
+		rec.xp = (gri->ElapsedTime - pri->StartTime) * 0.5833;
+
+		ATrPlayerController* pc = (ATrPlayerController*)pri->Owner;
+		// First Win of the Day
+		TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(playerId);
+		if (pc && pData.eligibleForFirstWin && pri->GetTeamNum() == game->m_nWinningTeam) {
+			rec.xp += 1200;
+			rec.wasFirstWin = true;
+		}
+		xps[playerId] = rec;
+	}
+
+	return xps;
+}
+
 void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* result, Hooks::CallInfo* callInfo) {
 	bool isDuplicateEndGame = Utils::serverGameStatus == Utils::ServerGameStatus::ENDED;
 	if (!isDuplicateEndGame) {
@@ -134,22 +162,22 @@ void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* resu
 
 	if (isDuplicateEndGame) return;
 
-	Logger::debug("Game ended");
-
 	// Tell TAServer that the game is ending
+	
 	if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {
 		// Stop the polling thread
 		g_TAServerClient.killPollingThread();
-
+		std::map<long long, TAServer::PlayerXpRecord> playerXpsEarned;
 		{
 			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 			g_TAServerClient.sendMatchTime(0, false);
+			playerXpsEarned = getPlayerXpsEarned(Utils::tr_gri);
 		}
 
 		// If a map override has been issued, we need to explicitly give the map name
 		std::string nextMapOverrideName = bNextMapOverrideValue == 0 ? "" : getNextMapName();
 		
-		g_TAServerClient.sendMatchEnded(getNextMapIdx(), nextMapOverrideName);
+		g_TAServerClient.sendMatchEnded(getNextMapIdx(), nextMapOverrideName, playerXpsEarned);
 	}
 }
 
@@ -186,9 +214,7 @@ void UTGame_ProcessServerTravel(AUTGame* that, AUTGame_execProcessServerTravel_P
 		// Invalidate the GRI
 		Utils::tr_gri = NULL;
 	}
-	Logger::debug("About to perform ProcessServerTravel");
 	that->ProcessServerTravel(params->URL, params->bAbsolute);
-	Logger::debug("Done ProcessServerTravel");
 }
 
 void TrGame_ApplyServerSettings(ATrGame* that, ATrGame_execApplyServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo) {
@@ -217,6 +243,7 @@ bool TrGameReplicationInfo_PostBeginPlay(int ID, UObject *dwCallingObject, UFunc
 }
 
 void TrGame_SendShowSummary(ATrGame* that, ATrGame_execSendShowSummary_Parms* params, void* result, Hooks::CallInfo callInfo) {
+	//that->SendShowSummary();
 	// Seeing as we don't support the match end screen anyway, this can be blackholed
 	// It causes the 'getting stuck in the menu glitch'
 }
@@ -447,6 +474,45 @@ void UTGame_ChangeName(AUTGame* that, AUTGame_execChangeName_Parms* params) {
 	params->Other->PlayerReplicationInfo->eventSetPlayerName(params->S);
 }
 
+static std::map<long long, int> unsetPlayerRankXps;
+static std::mutex unsetPlayerRankXpsMutex;
+
+void TAServer::Client::handler_Launcher2GamePlayerInfoMessage(const json& msgBody) {
+	Launcher2GamePlayerInfoMessage msg;
+	if (!msg.fromJson(msgBody)) {
+		Logger::error("Failed to parse player info message: %s", msgBody.dump().c_str());
+		return;
+	}
+
+	std::lock_guard<std::mutex> rankXpLock(unsetPlayerRankXpsMutex);
+	unsetPlayerRankXps[msg.playerId] = msg.rankXp;
+
+	// Figure out if the player is eligible for a first win of the day this match
+	TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(msg.playerId);
+	pData.eligibleForFirstWin = msg.eligibleForFirstWin;
+	TenantedDataStore::playerData.set(msg.playerId, pData);
+}
+
+
+static void setPlayerXp(ATrPlayerController* that, int rankXp) {
+	// Check if we actually have an unprocessed rank xp message
+	if (!that->PlayerReplicationInfo) return;
+
+	ATrPlayerReplicationInfo* pri = (ATrPlayerReplicationInfo*)that->PlayerReplicationInfo;
+
+	pri->m_nBaseXP = rankXp;
+	pri->m_Rank = Data::getRankByXp(rankXp);
+	if (pri->m_Rank) {
+		pri->m_nRankNum = ((UTrRank*)pri->m_Rank->Default)->Rank;
+		pri->m_nRankIconIndex = ((UTrRank*)pri->m_Rank->Default)->IconIndex;
+		pri->bNetDirty = true;
+	}
+
+	if (that->Stats) that->Stats->SetXP(that, rankXp);
+	// Just in case we need to update rank icon
+	that->InitHUDObjects();
+}
+
 static bool cachedWasInOvertime = false;
 static int pollsSinceLastStateUpdate = 0;
 void pollForGameInfoChanges() {
@@ -469,6 +535,23 @@ void pollForGameInfoChanges() {
 		}
 	}
 
+	// Check for player rank updates
+	{
+		std::lock_guard<std::mutex> rankXpLock(unsetPlayerRankXpsMutex);
+		if (unsetPlayerRankXps.size() > 0) {
+			std::map<long long, int> cp(unsetPlayerRankXps);
+			for (auto& it : cp) {
+				ATrPlayerReplicationInfo* pri = getPriForPlayerId(Utils::tr_gri->PRIArray, it.first);
+				if (!pri) continue;
+
+				ATrPlayerController* pc = (ATrPlayerController*)pri->Owner;
+				if (!pc || !pc->IsA(ATrPlayerController::StaticClass())) continue;
+				int rankXp = it.second;
+				setPlayerXp(pc, rankXp);
+				unsetPlayerRankXps.erase(it.first);
+			}
+		}
+	}
 
 	// Send out player state every 10 seconds;
 	if (pollsSinceLastStateUpdate >= 5) {

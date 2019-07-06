@@ -226,6 +226,7 @@ public:
 	} 
 	
 	static UClass* FindClass ( const char* ClassFullName ); 
+	static TArray<UClass*> FindAllDuplicateClasses(const char* ClassFullName );
 
 	bool IsA ( UClass* pClass );
 	bool IsAByName(const char* name);

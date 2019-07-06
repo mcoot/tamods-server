@@ -33,6 +33,8 @@ namespace TenantedDataStore {
 	struct PlayerSpecificData {
 		long long playerId = -1;
 
+		bool eligibleForFirstWin = false;
+
 		// Data used for call-ins
 		CallInData callInData;
 

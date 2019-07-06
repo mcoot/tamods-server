@@ -30,7 +30,8 @@ using json = nlohmann::json;
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_LOADOUT_MESSAGE 0x4000
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_NEXT_MAP_MESSAGE 0x4001
 #define TASRV_MSG_KIND_LAUNCHER_2_GAME_PINGS_MESSAGE 0x4002
-#define TASRV_MSD_KIND_LAUNCHER_2_GAME_INIT_MESSAGE 0x4003
+#define TASRV_MSG_KIND_LAUNCHER_2_GAME_INIT_MESSAGE 0x4003
+#define TASRV_MSG_KIND_LAUNCHER_2_GAME_PLAYER_INFO 0x4004
 
 #define TASRV_EQP_CODE_LOADOUTNAME "1341"
 #define TASRV_EQP_CODE_PRIMARY "1086"
@@ -60,6 +61,25 @@ namespace TAServer {
 			if (j.find("next_map_index") == j.end()) return false;
 			nextMapIndex = j["next_map_index"];
 			nextMapOverride = j["next_map_override"].get<std::string>();
+			return true;
+		}
+	};
+
+	struct PlayerXpRecord {
+	public:
+		int xp = 0;
+		bool wasFirstWin = false;
+	public:
+		void toJson(json& j) {
+			j["xp"] = xp;
+			j["first_win"] = wasFirstWin;
+		}
+
+		bool fromJson(const json& j) {
+			if (j.find("xp") == j.end()) return false;
+			xp = j["xp"];
+			if (j.find("first_win") == j.end()) return false;
+			wasFirstWin = j["first_win"];
 			return true;
 		}
 	};
@@ -314,6 +334,7 @@ namespace TAServer {
 	class Game2LauncherMatchEndMessage : public Message {
 	public:
 		PersistentContext controllerContext;
+		std::map<long long, PlayerXpRecord> playerEarnedXps;
 	public:
 		short getMessageKind() override {
 			return TASRV_MSG_KIND_GAME_2_LAUNCHER_MATCHEND;
@@ -325,9 +346,39 @@ namespace TAServer {
 			controllerContext.toJson(contextJson);
 
 			j["controller_context"] = contextJson;
+
+			json xpJson = json::object();
+
+			for (auto& it : playerEarnedXps) {
+				json recJson;
+				it.second.toJson(recJson);
+				xpJson[std::to_string(it.first)] = recJson;
+			}
+
+			j["player_earned_xps"] = xpJson;
 		}
 
 		bool fromJson(const json& j) {
+			json mapping = j["player_earned_xps"];
+			for (json::iterator mapping_it = mapping.begin(); mapping_it != mapping.end(); ++mapping_it) {
+				std::string key = mapping_it.key();
+				long long playerIdLong;
+				try {
+					playerIdLong = std::stoll(key);
+				}
+				catch (std::invalid_argument&) {
+					return false;
+				}
+
+				json jsonRec = *mapping_it;
+				PlayerXpRecord rec;
+				if (!rec.fromJson(jsonRec)) {
+					return false;
+				}
+
+				playerEarnedXps[playerIdLong] = rec;
+			}
+
 			if (j.find("controller_context") == j.end()) return false;
 			json contextJson = j["controller_context"];
 
@@ -436,7 +487,7 @@ namespace TAServer {
 
 	public:
 		short getMessageKind() override {
-			return TASRV_MSD_KIND_LAUNCHER_2_GAME_INIT_MESSAGE;
+			return TASRV_MSG_KIND_LAUNCHER_2_GAME_INIT_MESSAGE;
 		}
 
 		void toJson(json& j) {
@@ -465,6 +516,36 @@ namespace TAServer {
 			}
 
 			return succeeded;
+		}
+	};
+
+	class Launcher2GamePlayerInfoMessage : public Message {
+	public:
+		long long playerId;
+		int rankXp;
+		bool eligibleForFirstWin;
+	public:
+		short getMessageKind() override {
+			return TASRV_MSG_KIND_LAUNCHER_2_GAME_PLAYER_INFO;
+		}
+
+		void toJson(json& j) {
+			j["player_unique_id"] = playerId;
+			j["rank_xp"] = rankXp;
+			j["eligible_for_first_win"] = eligibleForFirstWin;
+		}
+
+		bool fromJson(const json& j) {
+			if (j.find("player_unique_id") == j.end()) return false;
+			playerId = j["player_unique_id"];
+
+			if (j.find("rank_xp") == j.end()) return false;
+			rankXp = j["rank_xp"];
+
+			if (j.find("eligible_for_first_win") == j.end()) return false;
+			eligibleForFirstWin = j["eligible_for_first_win"];
+
+			return true;
 		}
 	};
 

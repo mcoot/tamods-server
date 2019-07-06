@@ -1282,5 +1282,83 @@ namespace Data {
 
 		return 0;
 	}
+
+	UClass* getRankByXp(int rankXp) {
+		static TArray<UClass*> rawRankUClasses = UObject::FindAllDuplicateClasses("Class TribesGame.TrRank");
+		static std::map<int, UClass*> rankClassMapping;
+
+		Logger::debug("Finding rank for xp value %d", rankXp);
+		std::vector<int> rankThresholds = {
+			CONST_RANK_XP,
+			CONST_RANK_XP01,
+			CONST_RANK_XP02,
+			CONST_RANK_XP03,
+			CONST_RANK_XP04,
+			CONST_RANK_XP05,
+			CONST_RANK_XP06,
+			CONST_RANK_XP07,
+			CONST_RANK_XP08,
+			CONST_RANK_XP09,
+			CONST_RANK_XP10,
+			CONST_RANK_XP11,
+			CONST_RANK_XP12,
+			CONST_RANK_XP13,
+			CONST_RANK_XP14,
+			CONST_RANK_XP15,
+			CONST_RANK_XP16,
+			CONST_RANK_XP17,
+			CONST_RANK_XP18,
+			CONST_RANK_XP19,
+			CONST_RANK_XP20,
+			CONST_RANK_XP21,
+			CONST_RANK_XP22,
+			CONST_RANK_XP23,
+			CONST_RANK_XP24,
+			CONST_RANK_XP25,
+			CONST_RANK_XP26,
+			CONST_RANK_XP27,
+			CONST_RANK_XP28,
+			CONST_RANK_XP29,
+			CONST_RANK_XP30,
+			CONST_RANK_XP31,
+			CONST_RANK_XP32,
+			CONST_RANK_XP33,
+			CONST_RANK_XP34,
+			CONST_RANK_XP35,
+			CONST_RANK_XP36,
+			CONST_RANK_XP37,
+			CONST_RANK_XP38,
+			CONST_RANK_XP39,
+			CONST_RANK_XP40,
+			CONST_RANK_XP41,
+			CONST_RANK_XP42,
+			CONST_RANK_XP43,
+			CONST_RANK_XP44,
+			CONST_RANK_XP45,
+			CONST_RANK_XP46,
+			CONST_RANK_XP47,
+			CONST_RANK_XP48,
+			CONST_RANK_XP49,
+		};
+
+		int rankNum = 0;
+		while (rankNum < rankThresholds.size() && rankXp > rankThresholds[rankNum]) rankNum++;
+
+		if (rankClassMapping.find(rankNum) != rankClassMapping.end()) {
+			return rankClassMapping[rankNum];
+		}
+
+		for (int i = 0; i < rawRankUClasses.Count; ++i) {
+			if (!rawRankUClasses.GetStd(i)) continue;
+			UTrRank* rankDef = (UTrRank*)rawRankUClasses.GetStd(i)->Default;
+			if (!rankDef) continue;
+			if (rankDef->Rank == rankNum) {
+				rankClassMapping[rankNum] = rawRankUClasses.GetStd(i);
+				return rankClassMapping[rankNum];
+			}
+		}
+
+		return NULL;
+	}
 }
 
