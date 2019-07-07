@@ -1283,12 +1283,7 @@ namespace Data {
 		return 0;
 	}
 
-	UClass* getRankByXp(int rankXp) {
-		static TArray<UClass*> rawRankUClasses = UObject::FindAllDuplicateClasses("Class TribesGame.TrRank");
-		static std::map<int, UClass*> rankClassMapping;
-
-		Logger::debug("Finding rank for xp value %d", rankXp);
-		std::vector<int> rankThresholds = {
+	static std::vector<int> rankThresholds = {
 			CONST_RANK_XP,
 			CONST_RANK_XP01,
 			CONST_RANK_XP02,
@@ -1339,7 +1334,11 @@ namespace Data {
 			CONST_RANK_XP47,
 			CONST_RANK_XP48,
 			CONST_RANK_XP49,
-		};
+	};
+
+	UClass* getRankByXp(int rankXp) {
+		static TArray<UClass*> rawRankUClasses = UObject::FindAllDuplicateClasses("Class TribesGame.TrRank");
+		static std::map<int, UClass*> rankClassMapping;
 
 		int rankNum = 0;
 		while (rankNum < rankThresholds.size() && rankXp > rankThresholds[rankNum]) rankNum++;
@@ -1359,6 +1358,10 @@ namespace Data {
 		}
 
 		return NULL;
+	}
+
+	int getTotalXpByRank(int rankNum, int xp) {
+		return rankThresholds[min(rankNum - 1, 49)] + xp;
 	}
 }
 

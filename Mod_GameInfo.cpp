@@ -243,7 +243,7 @@ bool TrGameReplicationInfo_PostBeginPlay(int ID, UObject *dwCallingObject, UFunc
 }
 
 void TrGame_SendShowSummary(ATrGame* that, ATrGame_execSendShowSummary_Parms* params, void* result, Hooks::CallInfo callInfo) {
-	//that->SendShowSummary();
+	that->SendShowSummary();
 	// Seeing as we don't support the match end screen anyway, this can be blackholed
 	// It causes the 'getting stuck in the menu glitch'
 }
@@ -521,6 +521,16 @@ void pollForGameInfoChanges() {
 	if (!Utils::tr_gri) {
 		return;
 	}
+
+	//// TESTING: Make RPC call
+	//if (Utils::tr_gri->PRIArray.Count > 0) {
+	//	ATrPlayerReplicationInfo* pri = (ATrPlayerReplicationInfo*)Utils::tr_gri->PRIArray.GetStd(0);
+	//	ATrPlayerController* pc = (ATrPlayerController*)pri->Owner;
+
+	//	static int rpcCounter = 0;
+	//	pc->UpdateCurrentCredits(rpcCounter++);
+	//	Logger::debug("Called UpdateCurrentCredits");
+	//}
 	
 	// Score polling
 	checkForScoreChange();

@@ -69,9 +69,8 @@
 namespace Data
 {
 	int getItemId(const std::string& className, const std::string &itemName);
-
-
 	UClass* getRankByXp(int rankXp);
+	int getTotalXpByRank(int rankNum, int xp);
 
 	extern std::map<std::string, int> weapons[3];
 	extern std::map<std::string, int> packs[3];
