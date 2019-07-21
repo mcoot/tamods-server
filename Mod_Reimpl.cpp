@@ -1022,3 +1022,63 @@ void ATrVehicle_Died(ATrVehicle* that, ATrVehicle_execDied_Parms* params, bool* 
 
 	*result = that->AUTVehicle::Died(params->Killer, params->DamageType, params->HitLocation);
 }
+
+////////////////////////
+// Vehicles cost credits
+////////////////////////
+
+void TrVehicleStation_AbleToSpawnVehicleType(ATrVehicleStation* that, ATrVehicleStation_execAbleToSpawnVehicleType_Parms* params, bool* result) {
+	if (g_config.serverSettings.VehiclesEarnedWithCredits) {
+		*result = that->GetNumVehiclesSpawnedByType(params->VehicleType) < that->GetMaxVehicleCountAllowed(params->VehicleType) && that->m_VehiclePad;
+	}
+	else {
+		*result = that->AbleToSpawnVehicleType(params->VehicleType);
+	}
+}
+
+int getVehicleCost(ATrPlayerController* that, EVehicleTypes vehicleType) {
+	int cost = 0;
+
+	ATrGameReplicationInfo* gri = (ATrGameReplicationInfo*)that->WorldInfo->GRI;
+	if (gri && gri->r_ServerConfig) {
+		cost = gri->r_ServerConfig->VehiclePrices[vehicleType];
+	}
+
+	// Vehicle cost perk
+	ATrPlayerReplicationInfo* pri = (ATrPlayerReplicationInfo*)that->PlayerReplicationInfo;
+	if (pri) {
+		UTrValueModifier* vm = pri->GetCurrentValueModifier();
+		if (vm) {
+			cost *= that->FClamp(1.0 - vm->m_fVehicleCostBuffPct, 0.0, 1.0);
+		}
+	}
+
+	return cost;
+}
+
+bool TrPlayerController_ServerRequestSpawnVehicle(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult) {
+	if (!g_config.serverSettings.VehiclesEarnedWithCredits) return false;
+
+	ATrPlayerController* that = (ATrPlayerController*)dwCallingObject;
+	ATrPlayerController_execServerRequestSpawnVehicle_Parms* params = (ATrPlayerController_execServerRequestSpawnVehicle_Parms*)pParams;
+
+	EVehicleTypes vehicleType = (EVehicleTypes)((ATrVehicle*)params->VehicleClass->Default)->m_VehicleType;
+
+	int creditCost = getVehicleCost(that, vehicleType);
+	if (!that->InTraining() && creditCost > that->GetCurrentCredits()) {
+		// Cannot afford vehicle
+		return true;
+	}
+
+	ATrVehicleStation* vehicleStation = (ATrVehicleStation*)that->m_CurrentStation;
+	if (vehicleStation && vehicleStation->IsA(ATrVehicleStation::StaticClass())) {
+		if (vehicleStation->RequestSpawnVehicle((unsigned char)vehicleType)) {
+			if (!that->InTraining()) {
+				// Charge credits for the purchase
+				that->ModifyCredits(-creditCost, false);
+			}
+		}
+	}
+
+	return true;
+}

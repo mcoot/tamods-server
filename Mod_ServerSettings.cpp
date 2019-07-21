@@ -39,6 +39,8 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 	defCTFFlag_BE->MaxDropTime = this->CTFFlagTimeout;
 	defCTFFlag_DS->MaxDropTime = this->CTFFlagTimeout;
 
+	s->bTeamCredits = this->TeamCredits;
+
 	s->bFriendlyFire = this->FriendlyFire;
 	s->fFriendlyFireDamageMultiplier = this->FriendlyFireMultiplier * 1000.0f;
 	s->BaseDestructionLimit = this->BaseDestructionKickLimit;
@@ -68,11 +70,34 @@ void ServerSettings::ApplyToGame(ATrServerSettingsInfo* s) {
 	s->VehicleLimits[VEHICLE_HERC] = this->HERCLimit;
 	s->VehicleLimits[VEHICLE_Havoc] = this->HavocLimit;
 	s->VehicleLimits[VEHICLE_Shrike] = this->ShrikeLimit;
-	s->VehicleTimes[VEHICLE_GravCycle] = this->GravCycleSpawnTime;
-	s->VehicleTimes[VEHICLE_Beowulf] = this->BeowulfSpawnTime;
-	s->VehicleTimes[VEHICLE_Shrike] = this->ShrikeSpawnTime;
-	s->VehicleTimes[VEHICLE_HERC] = this->HERCSpawnTime;
-	s->VehicleTimes[VEHICLE_Havoc] = this->HavocSpawnTime;
+
+	if (this->VehiclesEarnedWithCredits) {
+		s->VehiclePrices[VEHICLE_GravCycle] = this->GravCycleCost;
+		s->VehiclePrices[VEHICLE_Beowulf] = this->BeowulfCost;
+		s->VehiclePrices[VEHICLE_Shrike] = this->ShrikeCost;
+		s->VehiclePrices[VEHICLE_HERC] = this->HERCCost;
+		s->VehiclePrices[VEHICLE_Havoc] = this->HavocCost;
+
+		s->VehicleTimes[VEHICLE_GravCycle] = 5;
+		s->VehicleTimes[VEHICLE_Beowulf] = 5;
+		s->VehicleTimes[VEHICLE_Shrike] = 5;
+		s->VehicleTimes[VEHICLE_HERC] = 5;
+		s->VehicleTimes[VEHICLE_Havoc] = 5;
+	}
+	else {
+		s->VehiclePrices[VEHICLE_GravCycle] = 0;
+		s->VehiclePrices[VEHICLE_Beowulf] = 0;
+		s->VehiclePrices[VEHICLE_Shrike] = 0;
+		s->VehiclePrices[VEHICLE_HERC] = 0;
+		s->VehiclePrices[VEHICLE_Havoc] = 0;
+
+		s->VehicleTimes[VEHICLE_GravCycle] = this->GravCycleSpawnTime;
+		s->VehicleTimes[VEHICLE_Beowulf] = this->BeowulfSpawnTime;
+		s->VehicleTimes[VEHICLE_Shrike] = this->ShrikeSpawnTime;
+		s->VehicleTimes[VEHICLE_HERC] = this->HERCSpawnTime;
+		s->VehicleTimes[VEHICLE_Havoc] = this->HavocSpawnTime;
+	}
+	
 
 	s->bPreplacedObjectives = this->BaseAssets;
 	s->bObjectiveUpgrades = this->BaseUpgrades;
@@ -226,6 +251,8 @@ SETTING_GETTERSETTER(int, FlagDragDeceleration)
 SETTING_GETTERSETTER(float, AmmoPickupLifespan)
 SETTING_GETTERSETTER(float, CTFFlagTimeout)
 
+SETTING_GETTERSETTER(bool, TeamCredits)
+
 SETTING_GETTERSETTER(bool, FriendlyFire)
 SETTING_GETTERSETTER(float, FriendlyFireMultiplier)
 SETTING_GETTERSETTER(int, BaseDestructionKickLimit)
@@ -253,6 +280,15 @@ SETTING_GETTERSETTER(int, BeowulfLimit)
 SETTING_GETTERSETTER(int, ShrikeLimit)
 SETTING_GETTERSETTER(int, HERCLimit)
 SETTING_GETTERSETTER(int, HavocLimit)
+
+SETTING_GETTERSETTER(bool, VehiclesEarnedWithCredits)
+
+SETTING_GETTERSETTER(int, GravCycleCost)
+SETTING_GETTERSETTER(int, BeowulfCost)
+SETTING_GETTERSETTER(int, ShrikeCost)
+SETTING_GETTERSETTER(int, HERCCost)
+SETTING_GETTERSETTER(int, HavocCost)
+
 SETTING_GETTERSETTER(int, GravCycleSpawnTime)
 SETTING_GETTERSETTER(int, BeowulfSpawnTime)
 SETTING_GETTERSETTER(int, ShrikeSpawnTime)
@@ -283,6 +319,7 @@ SETTING_GETTERSETTER(bool, UseGOTYJackalAirburst)
 SETTING_GETTERSETTER(bool, RageThrustPackDependsOnCapperSpeed)
 SETTING_GETTERSETTER(bool, InventoryStationsRestoreEnergy)
 SETTING_GETTERSETTER(bool, EnableInventoryCallIn)
+SETTING_GETTERSETTER(int, InventoryCallInCost)
 SETTING_GETTERSETTER(float, InventoryCallInBuildUpTime)
 SETTING_GETTERSETTER(float, InventoryCallInCooldownTime)
 SETTING_GETTERSETTER(float, BE_SensorRadius)
@@ -463,6 +500,8 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(AmmoPickupLifespan)
 				.SETTING_LUAPROP(CTFFlagTimeout)
 
+				.SETTING_LUAPROP(TeamCredits)
+
 				.SETTING_LUAPROP(FriendlyFire)
 				.SETTING_LUAPROP(FriendlyFireMultiplier)
 				.SETTING_LUAPROP(BaseDestructionKickLimit)
@@ -483,12 +522,22 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(ArenaLives)
 				.SETTING_LUAPROP(RabbitScoreLimit)
 				.SETTING_LUAPROP(CaHScoreLimit)
+
 				.SETTING_LUAPROP(VehicleHealthMultiplier)
 				.SETTING_LUAPROP(GravCycleLimit)
 				.SETTING_LUAPROP(BeowulfLimit)
 				.SETTING_LUAPROP(ShrikeLimit)
 				.SETTING_LUAPROP(HERCLimit)
 				.SETTING_LUAPROP(HavocLimit)
+
+				.SETTING_LUAPROP(VehiclesEarnedWithCredits)
+
+				.SETTING_LUAPROP(GravCycleCost)
+				.SETTING_LUAPROP(BeowulfCost)
+				.SETTING_LUAPROP(ShrikeCost)
+				.SETTING_LUAPROP(HERCCost)
+				.SETTING_LUAPROP(HavocCost)
+
 				.SETTING_LUAPROP(GravCycleSpawnTime)
 				.SETTING_LUAPROP(BeowulfSpawnTime)
 				.SETTING_LUAPROP(ShrikeSpawnTime)
@@ -518,9 +567,12 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(UseGOTYJackalAirburst)
 				.SETTING_LUAPROP(RageThrustPackDependsOnCapperSpeed)
 				.SETTING_LUAPROP(InventoryStationsRestoreEnergy)
+
 				.SETTING_LUAPROP(EnableInventoryCallIn)
+				.SETTING_LUAPROP(InventoryCallInCost)
 				.SETTING_LUAPROP(InventoryCallInBuildUpTime)
 				.SETTING_LUAPROP(InventoryCallInCooldownTime)
+
 				.SETTING_LUAPROP(BE_SensorRadius)
 				.SETTING_LUAPROP(DS_SensorRadius)
 				.beginNamespace("GameSettingModes")

@@ -117,7 +117,11 @@ static std::string getNextMapName() {
 		bNextMapOverrideValue = 0;
 	}
 	else {
-		nextMapName = g_config.serverSettings.mapRotation[getNextMapIdx()];
+		int nextIdx = getNextMapIdx();
+		if (nextIdx >= 0 && nextIdx < g_config.serverSettings.mapRotation.size()) {
+			nextMapName = g_config.serverSettings.mapRotation[nextIdx];
+		}
+		
 	}
 
 	return nextMapName;

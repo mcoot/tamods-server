@@ -262,12 +262,21 @@ static bool IsValidTargetLocation(ATrDevice_LaserTargeter* that, FVector current
 
 	// Rules:
 	// 1) Nowhere is valid in pre-round
-	// 2) Must not collide with flag, other inv stations etc.
-	// 3) Must not be underneath any world geometry (e.g. inside a base)
+	// 2) Nowhere is valid if the player lacks enough credits
+	// 3) Must not collide with flag, other inv stations etc.
+	// 4) Must not be underneath any world geometry (e.g. inside a base)
 
 	// Check we aren't in preround
 	if (!that->WorldInfo || !that->WorldInfo->GRI) return false;
 	if (((ATrGameReplicationInfo*)that->WorldInfo->GRI)->bWarmupRound) {
+		return false;
+	}
+	// Check we have enough credits
+	APawn* pawn = (APawn*)that->Owner;
+	if (!pawn) return false;
+	ATrPlayerController* pc = (ATrPlayerController*)pawn->Controller;
+	if (!pc) return false;
+	if (g_config.serverSettings.InventoryCallInCost > 0 && pc->r_nCurrentCredits < g_config.serverSettings.InventoryCallInCost) {
 		return false;
 	}
 
@@ -355,9 +364,12 @@ static void ServerPerformCallIn(ATrDevice_LaserTargeter* that, FVector endLocati
 		if (that->Instigator->Controller) {
 			ATrPlayerController* pc = (ATrPlayerController*)(that->Instigator->Controller);
 
-			if (pc && pc->Stats) {
-				// Stats... 
-				//pc->Stats->CallIn(pc);
+			if (pc) {
+				if (pc->Stats) {
+					// Stats... 
+					//pc->Stats->CallIn(pc);
+				}
+				pc->ModifyCredits(-g_config.serverSettings.InventoryCallInCost, false);
 			}
 		}
 

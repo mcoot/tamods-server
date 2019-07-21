@@ -123,3 +123,7 @@ void ATrDevice_RemoteArxBuster_ActivateRemoteRounds(ATrDevice_RemoteArxBuster* t
 
 // Fix for ejection seats not working properly
 void ATrVehicle_Died(ATrVehicle* that, ATrVehicle_execDied_Parms* params, bool* result);
+
+// Vehicles cost credits
+void TrVehicleStation_AbleToSpawnVehicleType(ATrVehicleStation* that, ATrVehicleStation_execAbleToSpawnVehicleType_Parms* params, bool* result);
+bool TrPlayerController_ServerRequestSpawnVehicle(int ID, UObject *dwCallingObject, UFunction* pFunction, void* pParams, void* pResult);

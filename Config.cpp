@@ -22,11 +22,14 @@ GameBalance::ReplicatedSettings Config::getReplicatedSettings() {
 	GameBalance::ReplicatedSettings repSet;
 
 	repSet["EnableInventoryCallIn"] = serverSettings.EnableInventoryCallIn;
+	repSet["InventoryCallInCost"] = serverSettings.InventoryCallInCost;
 	repSet["InventoryCallInCooldownTime"] = serverSettings.InventoryCallInCooldownTime;
 	repSet["InventoryCallInBuildUpTime"] = serverSettings.InventoryCallInBuildUpTime;
 	repSet["RageThrustPackDependsOnCapperSpeed"] = serverSettings.RageThrustPackDependsOnCapperSpeed;
 
 	repSet["UseGOTYBXTCharging"] = serverSettings.UseGOTYBXTCharging;
+
+	repSet["VehiclesEarnedWithCredits"] = serverSettings.VehiclesEarnedWithCredits;
 
 	return repSet;
 }

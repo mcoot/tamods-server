@@ -101,6 +101,8 @@ struct ServerSettings {
 	float AmmoPickupLifespan = 15;
 	float CTFFlagTimeout = 40;
 
+	bool TeamCredits = false;
+
 	bool FriendlyFire = false;
 	float FriendlyFireMultiplier = 1.0f;
 	int BaseDestructionKickLimit = 0;
@@ -123,12 +125,24 @@ struct ServerSettings {
 	int CaHScoreLimit = 50;
 
 	float VehicleHealthMultiplier = 1.0f;
+
 	int GravCycleLimit = 4;
 	int BeowulfLimit = 2;
 	int ShrikeLimit = 2;
 	// No HERCs/Havocs by default
 	int HERCLimit = 0;
 	int HavocLimit = 0;
+
+	bool VehiclesEarnedWithCredits = false;
+
+	// GOTY style - credits
+	int GravCycleCost = 500;
+	int BeowulfCost = 2500;
+	int ShrikeCost = 4000;
+	int HERCCost = 4000;
+	int HavocCost = 4000;
+
+	// OOTB style - generation time
 	int GravCycleSpawnTime = 30;
 	int BeowulfSpawnTime = 120;
 	int ShrikeSpawnTime = 120;
@@ -171,6 +185,7 @@ struct ServerSettings {
 
 	// Whether to convert the Laser Targeter into an Inv Station call-in
 	bool EnableInventoryCallIn = false;
+	int InventoryCallInCost = 0;
 	float InventoryCallInBuildUpTime = 2.f;
 	float InventoryCallInCooldownTime = 10.f;
 
