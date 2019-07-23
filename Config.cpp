@@ -25,6 +25,11 @@ GameBalance::ReplicatedSettings Config::getReplicatedSettings() {
 	repSet["InventoryCallInCost"] = serverSettings.InventoryCallInCost;
 	repSet["InventoryCallInCooldownTime"] = serverSettings.InventoryCallInCooldownTime;
 	repSet["InventoryCallInBuildUpTime"] = serverSettings.InventoryCallInBuildUpTime;
+	repSet["InventoryCallInMapCollisionCheckExtent"] = serverSettings.InventoryCallInMapCollisionCheckExtent;
+	repSet["InventoryCallInStationCollisionCheckExtent"] = serverSettings.InventoryCallInStationCollisionCheckExtent;
+	repSet["InventoryCallInTerrainMaxAngle"] = serverSettings.InventoryCallInTerrainMaxAngle;
+	repSet["InventoryCallInMeshMaxAngle"] = serverSettings.InventoryCallInMeshMaxAngle;
+
 	repSet["RageThrustPackDependsOnCapperSpeed"] = serverSettings.RageThrustPackDependsOnCapperSpeed;
 
 	repSet["UseGOTYBXTCharging"] = serverSettings.UseGOTYBXTCharging;

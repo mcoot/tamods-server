@@ -188,6 +188,11 @@ struct ServerSettings {
 	int InventoryCallInCost = 0;
 	float InventoryCallInBuildUpTime = 2.f;
 	float InventoryCallInCooldownTime = 10.f;
+	// Invo collision check parameters
+	float InventoryCallInMapCollisionCheckExtent = 100;
+	float InventoryCallInStationCollisionCheckExtent = 700;
+	float InventoryCallInTerrainMaxAngle = 70;
+	float InventoryCallInMeshMaxAngle = 40;
 
 	MapRotationMode mapRotationMode = MapRotationMode::SEQUENTIAL;
 	std::vector<std::string> mapRotation;

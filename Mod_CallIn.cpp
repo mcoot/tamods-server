@@ -141,39 +141,16 @@ void ResetLaserTargetCallInCache() {
 //// Used to re-enable call-ins
 //////////////////////////
 
-
-// The length of the extent box use to check for collisions.
-float collisionExtentUnits = 100;
-
-// The following explanation was for the planar trace version. Some specifics
-// are not relevant. The size of each individual extent surface. If this length
-// is 10 times smaller than the length of the extent box then you are
-// essentially using 10*10=100 extent traces. Diving by 4 results in 16 traces,
-// by is 25 traces, etc. 10 is probably overkill if the extent length is small
-// but performace needs to be tested.
-
-// Since we're not using planar tracing but line tracing then this value is
-// basically the distance between neighbouring line traces.
-float subCollisionExtentUnits = collisionExtentUnits / 7;
-
-// The length of the extent box used to search for neighbouring inventories.
-// Basically the same thing as collisionExtentUnits.
-// Obviously this cannot differentiate between enemy or friendly inventories.
-float nearbyInventoryExtentUnits = 700;
-
-// Same thing as subCollisionExtentUnits but for nearbyInventoryExtentUnits.
-float subNearbyInventoryExtentUnits = nearbyInventoryExtentUnits / 7;
-
-// Any terrain with surface normal angle above this wil be rejected (too steep).
-float angle_terrain_max = 70;
-
-// Any mesh with surface normal angle above this wil be rejected (too steep).
-// Basically for stuff around the map like pillars.
-float angle_mesh_max = 40;
-
 // Check that the surface normal angle is within our set bounds.
 // Also have to check what exactly we hit in order to check the angle.
 bool TraceNormalAngleCheck(AActor* HitActor, FVector HitNormal) {
+	// Any terrain with surface normal angle above this wil be rejected (too steep).
+	float angle_terrain_max = g_config.serverSettings.InventoryCallInTerrainMaxAngle;
+
+	// Any mesh with surface normal angle above this wil be rejected (too steep).
+	// Basically for stuff around the map like pillars.
+	float angle_mesh_max = g_config.serverSettings.InventoryCallInMeshMaxAngle;
+
 	float angle = (std::acos(HitNormal.Z / Geom::distance3D(FVector(), HitNormal))) * CONST_RadToDeg;
 	char* name = HitActor->GetName();
 	bool isTerrain = strncmp(name, "Terrain", 7) == 0;
@@ -297,6 +274,28 @@ static bool IsValidTargetLocation(ATrDevice_LaserTargeter* that, FVector current
 		// There was something above the point we wanted to land
 		return false;
 	}
+
+	// The length of the extent box use to check for collisions.
+	float collisionExtentUnits = g_config.serverSettings.InventoryCallInMapCollisionCheckExtent;
+
+	// The following explanation was for the planar trace version. Some specifics
+	// are not relevant. The size of each individual extent surface. If this length
+	// is 10 times smaller than the length of the extent box then you are
+	// essentially using 10*10=100 extent traces. Diving by 4 results in 16 traces,
+	// by is 25 traces, etc. 10 is probably overkill if the extent length is small
+	// but performace needs to be tested.
+
+	// Since we're not using planar tracing but line tracing then this value is
+	// basically the distance between neighbouring line traces.
+	float subCollisionExtentUnits = collisionExtentUnits / 7;
+
+	// The length of the extent box used to search for neighbouring inventories.
+	// Basically the same thing as collisionExtentUnits.
+	// Obviously this cannot differentiate between enemy or friendly inventories.
+	float nearbyInventoryExtentUnits = g_config.serverSettings.InventoryCallInStationCollisionCheckExtent;
+
+	// Same thing as subCollisionExtentUnits but for nearbyInventoryExtentUnits.
+	float subNearbyInventoryExtentUnits = nearbyInventoryExtentUnits / 7;
 
 	// Find where the actual final location is. Maybe its equivalent to
 	// currentTarget? Trace again just to make sure.

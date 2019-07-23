@@ -318,10 +318,16 @@ SETTING_GETTERSETTER(bool, UseGOTYBXTCharging)
 SETTING_GETTERSETTER(bool, UseGOTYJackalAirburst)
 SETTING_GETTERSETTER(bool, RageThrustPackDependsOnCapperSpeed)
 SETTING_GETTERSETTER(bool, InventoryStationsRestoreEnergy)
+
 SETTING_GETTERSETTER(bool, EnableInventoryCallIn)
 SETTING_GETTERSETTER(int, InventoryCallInCost)
 SETTING_GETTERSETTER(float, InventoryCallInBuildUpTime)
 SETTING_GETTERSETTER(float, InventoryCallInCooldownTime)
+SETTING_GETTERSETTER(float, InventoryCallInMapCollisionCheckExtent)
+SETTING_GETTERSETTER(float, InventoryCallInStationCollisionCheckExtent)
+SETTING_GETTERSETTER(float, InventoryCallInTerrainMaxAngle)
+SETTING_GETTERSETTER(float, InventoryCallInMeshMaxAngle)
+
 SETTING_GETTERSETTER(float, BE_SensorRadius)
 SETTING_GETTERSETTER(float, DS_SensorRadius)
 
@@ -572,6 +578,10 @@ namespace LuaAPI {
 				.SETTING_LUAPROP(InventoryCallInCost)
 				.SETTING_LUAPROP(InventoryCallInBuildUpTime)
 				.SETTING_LUAPROP(InventoryCallInCooldownTime)
+				.SETTING_LUAPROP(InventoryCallInMapCollisionCheckExtent)
+				.SETTING_LUAPROP(InventoryCallInStationCollisionCheckExtent)
+				.SETTING_LUAPROP(InventoryCallInTerrainMaxAngle)
+				.SETTING_LUAPROP(InventoryCallInMeshMaxAngle)
 
 				.SETTING_LUAPROP(BE_SensorRadius)
 				.SETTING_LUAPROP(DS_SensorRadius)
