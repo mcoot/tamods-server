@@ -20,6 +20,58 @@ static std::string getGConfigDirectory() {
 	return g_config.getConfigDirectory();
 }
 
+static UTrStatsInterface* getStats() {
+	if (!Utils::tr_gri || !Utils::tr_gri->WorldInfo || !Utils::tr_gri->WorldInfo->Game) {
+		Logger::debug("[Failed call: no GRI / Game]");
+		return NULL;
+	}
+	UTrStatsInterface* stats = ((ATrGame*)Utils::tr_gri->WorldInfo->Game)->Stats;
+	if (!stats) {
+		Logger::debug("[Failed call: no stats interface]");
+		return NULL;
+	}
+
+	return stats;
+}
+
+static void callStatsWriteMatchStats() {
+	UTrStatsInterface* stats = getStats();
+	if (stats) {
+		stats->WriteMatchStats();
+	}
+}
+
+static void callStatsWritePlayerStats() {
+	UTrStatsInterface* stats = getStats();
+	if (stats) {
+		stats->WritePlayerStats(Utils::tr_gri->PRIArray);
+	}
+}
+
+static void callStatsGameEnd() {
+	UTrStatsInterface* stats = getStats();
+	if (stats) {
+		stats->GameEnd();
+	}
+}
+
+static void callStatsFlush() {
+	UTrStatsInterface* stats = getStats();
+	if (stats) {
+		stats->Flush();
+	}
+}
+
+static void callGameOnServerInitialized() {
+	Logger::debug("callGameOnServerInitialized's address is %p", &callGameOnServerInitialized);
+	if (!Utils::tr_gri || !Utils::tr_gri->WorldInfo || !Utils::tr_gri->WorldInfo->Game) {
+		Logger::debug("[Failed call: no GRI / Game]");
+		return;
+	}
+	ATrGame* g = (ATrGame*)Utils::tr_gri->WorldInfo->Game;
+	g->OnServerInitialized();
+}
+
 namespace LuaAPI {
 	void addCoreModAPI(luabridge::Namespace ns) {
 		ns
@@ -58,7 +110,13 @@ namespace LuaAPI {
 				.addVariable("AllowUnmoddedClients", &g_config.allowUnmoddedClients, true)
 				.addVariable("EventLogging", &g_config.eventLogging, true)
 			.endNamespace()
-
+			.beginNamespace("Debug")
+				.addFunction("WriteMatchStats", &callStatsWriteMatchStats)
+				.addFunction("WritePlayerStats", &callStatsWritePlayerStats)
+				.addFunction("GameEnd", &callStatsGameEnd)
+				.addFunction("Flush", &callStatsFlush)
+				.addFunction("OnServerInitialized", &callGameOnServerInitialized)
+			.endNamespace()
 			;
 	}
 }
