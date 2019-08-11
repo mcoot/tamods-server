@@ -959,35 +959,34 @@ static bool shouldPlayerEjectOnDeath(ATrVehicle* that, ATrPlayerReplicationInfo*
 	}
 
 	// Check if vehicle should always eject
-	std::string n = that->Name.GetName();
-	if (n == "TrVehicle_GravCycle") {
+	switch (that->m_VehicleType) {
+	case VEHICLE_GravCycle:
 		return g_config.serverSettings.GravCycleEjectionSeat;
-	}
-	else if (n == "TrVehicle_Beowulf") {
+	case VEHICLE_Beowulf:
 		return g_config.serverSettings.BeowulfEjectionSeat;
-	}
-	else if (n == "TrVehicle_Shrike") {
+	case VEHICLE_Shrike:
 		return g_config.serverSettings.ShrikeEjectionSeat;
-	}
-	else if (n == "TrVehicle_Havoc") {
+	case VEHICLE_Havoc:
 		return g_config.serverSettings.HavocEjectionSeat;
-	}
-	else if (n == "TrVehicle_HERC") {
+	case VEHICLE_HERC:
 		return g_config.serverSettings.HERCEjectionSeat;
+	default:
+		return false;
 	}
-
-	return false;
 }
 
 void ATrVehicle_Died(ATrVehicle* that, ATrVehicle_execDied_Parms* params, bool* result) {
 	for (int i = 0; i < that->Seats.Count; ++i) {
-		if (!that->Seats.GetStd(i).SeatPawn && !that->Seats.GetStd(i).StoragePawn) continue;
-		ATrPawn* aPawn = (ATrPawn*)that->Seats.GetStd(i).StoragePawn;
-		if (!aPawn) continue;
-		ATrPlayerReplicationInfo* pri = aPawn->GetTribesReplicationInfo();
+		APawn* storagePawn = that->Seats.GetStd(i).StoragePawn;		if (!storagePawn || !storagePawn->IsA(ATrPawn::StaticClass())) continue;
+
+		ATrPawn* trPawn = (ATrPawn*)that->Seats.GetStd(i).StoragePawn;
+
+		ATrPlayerReplicationInfo* pri = (ATrPlayerReplicationInfo*)trPawn->GetTribesReplicationInfo();
 		if (!pri) continue;
+
+
 		if (shouldPlayerEjectOnDeath(that, pri)) {
-			aPawn->GoInvulnerable(0.01f);
+			trPawn->GoInvulnerable(0.01f);
 			that->EjectSeat(i);
 			that->RidingPawnLeave(i, true);
 		}
@@ -995,29 +994,37 @@ void ATrVehicle_Died(ATrVehicle* that, ATrVehicle_execDied_Parms* params, bool* 
 
 	// Award the killer a vehicle destruction
 	ATrPlayerController* killerPC = (ATrPlayerController*)params->Killer;
-	if (killerPC && that->GetTeamNum() == killerPC->GetTeamNum()) {
+	if (killerPC && killerPC->IsA(ATrPlayerController::StaticClass()) && killerPC->m_AccoladeManager && that->GetTeamNum() == killerPC->GetTeamNum()) {
 		// Stats disabled due to crashes
 		//if (that->Stats) that->Stats->AddVehicleDestruction(killerPC);
 		killerPC->m_AccoladeManager->VehicleDestroyed(that);
 	}
 
-	// APply damage to passengers and eject them
+	// Apply damage to passengers and eject them
 	for (int i = 1; i < that->Seats.Count; ++i) {
-		ATrPawn* aPawn = (ATrPawn*)that->Seats.GetStd(i).StoragePawn;
-		if (!aPawn || that->Seats.GetStd(i).SeatPawn) continue;
+		APawn* storagePawn = that->Seats.GetStd(i).StoragePawn;
+		if (!storagePawn || !storagePawn->IsA(ATrPawn::StaticClass())) continue;
+
+		ATrPawn* trPawn = (ATrPawn*)that->Seats.GetStd(i).StoragePawn;
+		//if (!trPawn || that->Seats.GetStd(i).SeatPawn) continue;
 		that->RidingPawnLeave(i, true);
 
+		AController* instigator = params->Killer;
 		if (params->Killer == that->Controller) {
-			aPawn->eventTakeDamage(aPawn->HealthMax / 2, aPawn->Controller, that->LastTakeHitInfo.HitLocation, that->LastTakeHitInfo.Momentum, params->DamageType, FTraceHitInfo(), that);
+			instigator = trPawn->Controller;
 		}
-		else {
-			aPawn->eventTakeDamage(aPawn->HealthMax / 2, params->Killer, that->LastTakeHitInfo.HitLocation, that->LastTakeHitInfo.Momentum, params->DamageType, FTraceHitInfo(), that);
-		}
+		trPawn->eventTakeDamage(trPawn->HealthMax / 2, instigator, that->LastTakeHitInfo.HitLocation, that->LastTakeHitInfo.Momentum, params->DamageType, FTraceHitInfo(), that);
 	}
 
 	// Report back to vehicle station that spawned this, to update its inventory
 	if (that->m_OwnerStation) {
-		that->m_OwnerStation->AddVehicleToPackedList(that->m_VehicleType, -1);
+		// Reimplmented AddVehicleToPackedList... it wasn't working for reasons unknown
+		int curNum = that->m_OwnerStation->GetNumVehiclesSpawnedByType(that->m_VehicleType);
+		int newPackedSection = ((curNum - 1) & CONST_SPAWNED_VEHICLE_LIST_MASK) << (4 * that->m_VehicleType);
+		int zeroedPackedSection = ~(CONST_SPAWNED_VEHICLE_LIST_MASK << (4 * that->m_VehicleType)) & that->m_OwnerStation->r_nSpawnedVehicles;
+		that->m_OwnerStation->r_nSpawnedVehicles = zeroedPackedSection | newPackedSection;
+
+		//that->m_OwnerStation->AddVehicleToPackedList(that->m_VehicleType, -1);
 	}
 
 	*result = that->AUTVehicle::Died(params->Killer, params->DamageType, params->HitLocation);
