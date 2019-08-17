@@ -58,27 +58,6 @@ static void applyTAServerLoadout(ATrPlayerReplicationInfo* that, int classId, in
 
 	Logger::debug("Retrieved loadout for class %d!", classId);
 
-	// TODO: Delete all the logic and config stuff associated with the previous custom class feature implementation
-	// If in Custom Class mode, validate that this loadout matches a custom class, and apply the custom armour class if needed
-	//if (g_config.serverSettings.useCustomClasses) {
-	//	bool found = false;
-	//	for (auto& it : g_config.serverSettings.customClasses) {
-	//		if (it.second.doesLoadoutMatch(classId, taserverRetrievedMap)) {
-	//			found = true;
-	//			// Apply the custom armour class if one is specified
-	//			if (it.second.armorClass != 0) {
-	//				that->r_EquipLevels[EQP_Armor].EquipId = it.second.armorClass;
-	//				Logger::debug("Changed armor class to custom one: %d", it.second.armorClass);
-	//			}
-	//			break;
-	//		}
-	//	}
-	//	if (!found) {
-	//		// Failed to validate
-	//		return;
-	//	}
-	//}
-
 	// Apply the equipment
 	for (auto& eqpItem : taserverRetrievedMap) {
 		if (eqpItem.second != 0) {
@@ -101,6 +80,9 @@ static void applyTAServerLoadout(ATrPlayerReplicationInfo* that, int classId, in
 			}
 			else {
 				that->r_EquipLevels[eqpItem.first].EquipId = eqpItem.second;
+				if (eqpItem.first == EQP_Skin) {
+					Logger::debug("Applied skin: %d", eqpItem.second);
+				}
 			}
 		}
 	}
@@ -111,13 +93,19 @@ static void applyWeaponBans(ATrPlayerReplicationInfo* that, int classId) {
 		// Check the player's class to see if that class is not allowed to have that slot
 		bool shouldBanSlot = false;
 		switch (classId) {
-		case CONST_CLASS_TYPE_LIGHT:
+		case CONST_CLASS_TYPE_LIGHT_PATHFINDER:
+		case CONST_CLASS_TYPE_LIGHT_SENTINEL:
+		case CONST_CLASS_TYPE_LIGHT_INFILTRATOR:
 			shouldBanSlot = g_config.serverSettings.disabledEquipPointsLight.count(i) != 0;
 			break;
-		case CONST_CLASS_TYPE_MEDIUM:
+		case CONST_CLASS_TYPE_MEDIUM_SOLDIER:
+		case CONST_CLASS_TYPE_MEDIUM_RAIDER:
+		case CONST_CLASS_TYPE_MEDIUM_TECHNICIAN:
 			shouldBanSlot = g_config.serverSettings.disabledEquipPointsMedium.count(i) != 0;
 			break;
-		case CONST_CLASS_TYPE_HEAVY:
+		case CONST_CLASS_TYPE_HEAVY_JUGGERNAUGHT:
+		case CONST_CLASS_TYPE_HEAVY_DOOMBRINGER:
+		case CONST_CLASS_TYPE_HEAVY_BRUTE:
 			shouldBanSlot = g_config.serverSettings.disabledEquipPointsHeavy.count(i) != 0;
 			break;
 		}
@@ -139,6 +127,7 @@ static void applyWeaponBans(ATrPlayerReplicationInfo* that, int classId) {
 		// If the given weapon is banned or the slot is disabled, set its equipid to 0
 		if (shouldBanSlot || shouldBanMutualExclusion
 			|| g_config.serverSettings.bannedItems.count(itemId) != 0) {
+			Logger::debug("Banned item %d on slot %d", that->r_EquipLevels[i].EquipId, i);
 			that->r_EquipLevels[i].EquipId = 0;
 		}
 	}
@@ -168,7 +157,6 @@ void TrPlayerReplicationInfo_GetCharacterEquip(ATrPlayerReplicationInfo* that, A
 		applyHardcodedLoadout(that, params->ClassId, params->Loadout);
 	}
 	applyWeaponBans(that, params->ClassId);
-	Logger::debug("[Done GetCharacterEquip]");
 }
 
 void TrPlayerReplicationInfo_ResolveDefaultEquip(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execResolveDefaultEquip_Parms* params, void* result, Hooks::CallInfo* callInfo) {
@@ -177,106 +165,22 @@ void TrPlayerReplicationInfo_ResolveDefaultEquip(ATrPlayerReplicationInfo* that,
 	FDeviceSelectionList noWeapon;
 	noWeapon.ContentDeviceClassString = FString(L"");
 	noWeapon.DeviceClass = NULL;
-	TR_EQUIP_POINT eqpsToRemove[8] = { EQP_Primary, EQP_Secondary, EQP_Tertiary, EQP_Quaternary, EQP_Pack, EQP_Belt, EQP_Skin, EQP_Voice };
+	std::vector<TR_EQUIP_POINT> eqpsToRemove = { EQP_Primary, EQP_Secondary, EQP_Tertiary, EQP_Quaternary, EQP_Pack, EQP_Belt, EQP_Skin, EQP_Voice };
 	for (int i = 0; i < familyInfo->DevSelectionList.Count; ++i) {
-		if (!familyInfo->DevSelectionList.GetStd(i).DeviceClass) continue;
+		FDeviceSelectionList cur = familyInfo->DevSelectionList.GetStd(i);
+		if (!cur.DeviceClass) continue;
 		bool found = false;
-		for (int j = 0; j < 8; ++j) {
-			if (familyInfo->DevSelectionList.GetStd(i).equipPoint == eqpsToRemove[j]) {
+		for (int j = 0; j < eqpsToRemove.size(); ++j) {
+			if (cur.equipPoint == eqpsToRemove[j]) {
 				found = true;
 				break;
 			}
 		}
 		if (!found) continue;
-		noWeapon.equipPoint = familyInfo->DevSelectionList.GetStd(i).equipPoint;
+		noWeapon.equipPoint = cur.equipPoint;
 		familyInfo->DevSelectionList.Set(i, noWeapon);
 	}
 }
-
-static void applyCustomClassToPRI(ATrPlayerReplicationInfo* that) {
-	Logger::debug("Attempting to apply custom class data to class %d", that->m_nPlayerClassId);
-	if (that->m_nPlayerClassId == that->r_EquipLevels[EQP_Armor].EquipId) {
-		// We don't need to set a custom class
-		return;
-	}
-
-	// Find the armour class name
-	auto& it = Data::armor_class_id_to_name.find(that->r_EquipLevels[EQP_Armor].EquipId);
-	if (it == Data::armor_class_id_to_name.end()) {
-		Logger::warn("Loadout attempted to use invalid armor class %d", that->r_EquipLevels[EQP_Armor].EquipId);
-		return;
-	}
-
-	std::string baseClassName = "Class TribesGame.TrFamilyInfo_" + it->second;
-	std::string teamAppendPart = that->GetTeamNum() == 1 ? "_DS" : "_BE";
-	std::string className = "Class TribesGame.TrFamilyInfo_" + it->second + teamAppendPart;
-		
-
-	// Get base armor
-	//UTrFamilyInfo* baseFI = UObject::FindObject<UTrFamilyInfo>(baseClassName.c_str());
-	UClass* baseFIClass = UObject::FindClass(baseClassName.c_str());
-	if (!baseFIClass || !baseFIClass->Default) {
-		Logger::warn("Failed to retrieve base armour class \"%s\"", baseClassName.c_str());
-		return;
-	}
-	UTrFamilyInfo* baseFI = (UTrFamilyInfo*)baseFIClass->Default;
-	// Get team-specific armor
-	//UTrFamilyInfo* mainFI = UObject::FindObject<UTrFamilyInfo>(className.c_str());
-	UClass* mainFIClass = UObject::FindClass(className.c_str());
-	if (!mainFIClass || !mainFIClass->Default) {
-		Logger::warn("Failed to retrieve specific armour class \"%s\"", className.c_str());
-		return;
-	}
-	UTrFamilyInfo* mainFI = (UTrFamilyInfo*)mainFIClass->Default;
-
-	that->m_CurrentBaseClass = baseFIClass;
-	that->CharClassInfo = mainFIClass;
-
-	if (that->ClassIsChildOf(that->CharClassInfo, UTrFamilyInfo_Light::StaticClass())) {
-		that->m_ArmorType = ARMOR_Light;
-	}
-	else if (that->ClassIsChildOf(that->CharClassInfo, UTrFamilyInfo_Heavy::StaticClass())) {
-		that->m_ArmorType = ARMOR_Heavy;
-	}
-	else {
-		that->m_ArmorType = ARMOR_Medium;
-	}
-
-	that->m_nPlayerClassId = mainFI->ClassId;
-	that->m_nPlayerIconIndex = 140;
-
-	ATrPlayerController* thatPC = (ATrPlayerController*)that->Owner;
-
-	that->r_bSkinId = that->r_EquipLevels[EQP_Skin].EquipId;
-
-	if (that->Stats) that->Stats->SetActiveClass(thatPC, that->m_nPlayerClassId);
-
-	if (thatPC) {
-		ATrPawn* pawn = (ATrPawn*)thatPC->Pawn;
-
-		if (pawn) {
-			Logger::debug("Setting pawn with main class = \"%s\"", that->CharClassInfo->GetFullName());
-			pawn->SetCharacterClassFromInfo(that->CharClassInfo, true);
-			pawn->SetPending3PSkin(that->GetCurrentSkinClass(that->CharClassInfo));
-		}
-	}
-
-	that->bNetDirty = true;
-}
-
-// TODO: Delete all the logic and config stuff associated with the previous custom class feature implementation
-void TrPlayerReplicationInfo_GetCurrentVoiceClass(ATrPlayerReplicationInfo* that, ATrPlayerReplicationInfo_execGetCurrentVoiceClass_Parms* params, UClass** result, Hooks::CallInfo* callInfo) {
-	// Get the real voice
-	*result = that->InvHelper->GetEquipClass(that->r_EquipLevels[EQP_Voice].EquipId);
-	if (!*result) {
-		UTrFamilyInfo* fi = (UTrFamilyInfo*)params->FamilyInfo->Default;
-		*result = fi->DevSelectionList.GetStd(EQP_Voice).DeviceClass;
-	}
-
-	// Apply the custom class if appropriate
-	applyCustomClassToPRI(that);
-}
-
 
 void TAServer::Client::handler_Launcher2GameLoadoutMessage(const json& msgBody) {
 	// Parse the message
