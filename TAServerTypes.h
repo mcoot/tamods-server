@@ -84,10 +84,6 @@ namespace TAServer {
 		}
 	};
 
-	long long netIdToLong(FUniqueNetId id);
-
-	FUniqueNetId longToNetId(long long id);
-
 	class Message {
 	public:
 		virtual short getMessageKind() {
@@ -116,7 +112,7 @@ namespace TAServer {
 		}
 
 		void toJson(json& j) {
-			j["player_unique_id"] = netIdToLong(uniquePlayerId);
+			j["player_unique_id"] = Utils::netIdToLong(uniquePlayerId);
 			j["class_id"] = classId;
 			j["loadout_number"] = slot;
 		}
@@ -124,7 +120,7 @@ namespace TAServer {
 		bool fromJson(const json& j) {
 			auto& it = j.find("player_unique_id");
 			if (it == j.end()) return false;
-			uniquePlayerId = longToNetId(j["player_unique_id"]);
+			uniquePlayerId = Utils::longToNetId(j["player_unique_id"]);
 
 			it = j.find("class_id");
 			if (it == j.end()) return false;
@@ -159,7 +155,7 @@ namespace TAServer {
 		}
 
 		void toJson(json& j) {
-			j["player_unique_id"] = netIdToLong(uniquePlayerId);
+			j["player_unique_id"] = Utils::netIdToLong(uniquePlayerId);
 			j["class_id"] = classId;
 			j["loadout"] = {
 				{TASRV_EQP_CODE_LOADOUTNAME, loadoutName },
@@ -178,7 +174,7 @@ namespace TAServer {
 		bool fromJson(const json& j) {
 			auto& it = j.find("player_unique_id");
 			if (it == j.end()) return false;
-			uniquePlayerId = longToNetId(j["player_unique_id"]);
+			uniquePlayerId = Utils::longToNetId(j["player_unique_id"]);
 
 			it = j.find("class_id");
 			if (it == j.end()) return false;

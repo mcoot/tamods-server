@@ -41,7 +41,7 @@ void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bo
 			return;
 		}
 
-		if (!g_DCServer.isPlayerAKnownModdedConnection(params->C->PlayerReplicationInfo->UniqueId)) {
+		if (!g_DCServer.isPlayerAKnownModdedConnection(Utils::netIdToLong(params->C->PlayerReplicationInfo->UniqueId))) {
 			// Player hasn't connected to the server, don't allow
 			Logger::warn("Player with ID %d was blocked from joining a team as they are not a known connection");
 			return;
@@ -65,8 +65,8 @@ void TrGame_RequestTeam(ATrGame* that, ATrGame_execRequestTeam_Parms* params, bo
 			if (!pri) continue;
 			// There's always an extra 'player' with ID 0 connected; this is used by the real login servers to scrape info (we think)
 			// not useful here, ignore it
-			if (TAServer::netIdToLong(pri->UniqueId) == 0) continue;
-			playerToTeamId[TAServer::netIdToLong(pri->UniqueId)] = pri->GetTeamNum();
+			if (Utils::netIdToLong(pri->UniqueId) == 0) continue;
+			playerToTeamId[Utils::netIdToLong(pri->UniqueId)] = pri->GetTeamNum();
 		}
 
 		g_TAServerClient.sendTeamInfo(playerToTeamId);
@@ -136,7 +136,7 @@ static std::map<long long, TAServer::PlayerXpRecord> getPlayerXpsEarned(ATrGameR
 	for (int i = 0; i < gri->PRIArray.Count; ++i) {
 		ATrPlayerReplicationInfo* pri = (ATrPlayerReplicationInfo*)gri->PRIArray.GetStd(i);
 		if (!pri) continue;
-		long long playerId = TAServer::netIdToLong(pri->UniqueId);
+		long long playerId = Utils::netIdToLong(pri->UniqueId);
 
 		TAServer::PlayerXpRecord rec;
 
@@ -439,7 +439,7 @@ void TAServer::Client::handler_Launcher2GamePingsMessage(const json& msgBody) {
 
 	for (int i = 0; i < Utils::tr_gri->PRIArray.Count; ++i) {
 		ATrPlayerReplicationInfo* pri = (ATrPlayerReplicationInfo*)Utils::tr_gri->PRIArray.GetStd(i);
-		long long playerId = TAServer::netIdToLong(pri->UniqueId);
+		long long playerId = Utils::netIdToLong(pri->UniqueId);
 		auto& it = msg.playerToPing.find(playerId);
 		if (it == msg.playerToPing.end()) continue;
 
@@ -456,7 +456,7 @@ static ATrPlayerReplicationInfo* getPriForPlayerId(TArray<APlayerReplicationInfo
 	for (int i = 0; i < arr.Count; ++i) {
 		if (i > arr.Count) break; // Mediocre attempt at dealing with concurrent modifications
 		ATrPlayerReplicationInfo* curPRI = (ATrPlayerReplicationInfo*)arr.GetStd(i);
-		long long cur = TAServer::netIdToLong(curPRI->UniqueId);
+		long long cur = Utils::netIdToLong(curPRI->UniqueId);
 		if (cur == id) {
 			return curPRI;
 		}

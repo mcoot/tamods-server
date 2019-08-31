@@ -6,6 +6,7 @@
 #include <ctime>
 #include <iomanip>
 #include <chrono>
+#include <boost/format.hpp>
 
 #include "FunctionalUtils.h"
 

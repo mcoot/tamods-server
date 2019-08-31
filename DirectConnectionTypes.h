@@ -55,14 +55,14 @@ namespace DCServer {
 		}
 
 		void toJson(json& j) {
-			j["player_unique_id"] = TAServer::netIdToLong(uniquePlayerId);
+			j["player_unique_id"] = Utils::netIdToLong(uniquePlayerId);
 			j["protocol_version"] = protocolVersion;
 		}
 
 		bool fromJson(const json& j) {
 			auto& it = j.find("player_unique_id");
 			if (it == j.end()) return false;
-			uniquePlayerId = TAServer::longToNetId(j["player_unique_id"]);
+			uniquePlayerId = Utils::longToNetId(j["player_unique_id"]);
 
 			it = j.find("protocol_version");
 			if (it == j.end()) return false;

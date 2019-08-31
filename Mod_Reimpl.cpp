@@ -60,7 +60,7 @@ void TrDevice_FireAmmunition(ATrDevice* that, ATrDevice_execFireAmmunition_Parms
 static std::vector<FAssistInfo> getKillAssisters(ATrPawn* that) {
 	if (!that || !that->PlayerReplicationInfo) return std::vector<FAssistInfo>();
 
-	long long playerId = TAServer::netIdToLong(that->PlayerReplicationInfo->UniqueId);
+	long long playerId = Utils::netIdToLong(that->PlayerReplicationInfo->UniqueId);
 
 	return TenantedDataStore::playerData.get(playerId).assistInfo;
 }
@@ -68,7 +68,7 @@ static std::vector<FAssistInfo> getKillAssisters(ATrPawn* that) {
 static void addKillAssister(ATrPawn* that, FAssistInfo curAssister) {
 	if (!that || !that->PlayerReplicationInfo) return;
 
-	long long playerId = TAServer::netIdToLong(that->PlayerReplicationInfo->UniqueId);
+	long long playerId = Utils::netIdToLong(that->PlayerReplicationInfo->UniqueId);
 
 	TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(playerId);
 
@@ -80,7 +80,7 @@ static void addKillAssister(ATrPawn* that, FAssistInfo curAssister) {
 static void updateKillAssister(ATrPawn* that, ATrPlayerController* damager, FAssistInfo newAssisterInfo) {
 	if (!that || !that->PlayerReplicationInfo) return;
 
-	long long playerId = TAServer::netIdToLong(that->PlayerReplicationInfo->UniqueId);
+	long long playerId = Utils::netIdToLong(that->PlayerReplicationInfo->UniqueId);
 
 	TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(playerId);
 
@@ -96,7 +96,7 @@ static void updateKillAssister(ATrPawn* that, ATrPlayerController* damager, FAss
 static void clearKillAssisters(ATrPawn* that) {
 	if (!that || !that->PlayerReplicationInfo) return;
 
-	long long playerId = TAServer::netIdToLong(that->PlayerReplicationInfo->UniqueId);
+	long long playerId = Utils::netIdToLong(that->PlayerReplicationInfo->UniqueId);
 
 	TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(playerId);
 
@@ -862,7 +862,7 @@ static long long getPlayerIdFromRemoteArxBuster(ATrDevice_RemoteArxBuster* that)
 
 	APawn* pawn = (APawn*)that->Owner;
 	if (!pawn->PlayerReplicationInfo) return -1;
-	return TAServer::netIdToLong(pawn->PlayerReplicationInfo->UniqueId);
+	return Utils::netIdToLong(pawn->PlayerReplicationInfo->UniqueId);
 }
 
 static void addJackalRound(ATrDevice_RemoteArxBuster* that, ATrProj_RemoteArxBuster* proj) {

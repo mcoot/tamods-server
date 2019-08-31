@@ -125,3 +125,41 @@ std::vector<unsigned char> Utils::passwordHash(std::string password) {
 	}
 	return result;
 }
+
+// Player ID encoding
+long long Utils::netIdToLong(FUniqueNetId id) {
+	long long tmpB = id.Uid.B;
+	return (tmpB << 32) | (id.Uid.A);
+}
+
+FUniqueNetId Utils::longToNetId(long long id) {
+	FUniqueNetId r;
+	r.Uid.A = id & 0x00000000FFFFFFFF;
+	r.Uid.B = id >> 32;
+	return r;
+}
+
+// Get player PRI
+ATrPlayerReplicationInfo* Utils::getPRIForPlayerId(long long playerId) {
+	if (!Utils::tr_gri) return NULL;
+	auto arr = Utils::tr_gri->PRIArray;
+	for (int i = 0; i < arr.Count; ++i) {
+		if (arr.GetStd(i) && netIdToLong(arr.GetStd(i)->UniqueId) == playerId) {
+			return (ATrPlayerReplicationInfo*)arr.GetStd(i);
+		}
+	}
+
+	return NULL;
+}
+
+ATrPlayerReplicationInfo* Utils::getPRIForPlayerName(std::string playerName) {
+	if (!Utils::tr_gri) return NULL;
+	auto arr = Utils::tr_gri->PRIArray;
+	for (int i = 0; i < arr.Count; ++i) {
+		if (arr.GetStd(i) && Utils::f2std(arr.GetStd(i)->PlayerName) == playerName) {
+			return (ATrPlayerReplicationInfo*)arr.GetStd(i);
+		}
+	}
+
+	return NULL;
+}

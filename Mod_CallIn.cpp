@@ -10,7 +10,7 @@ namespace CallInCache {
 
 		APawn* pawn = (APawn*)that->Owner;
 		if (!pawn->PlayerReplicationInfo) return TenantedDataStore::CallInData();
-		long long playerId = TAServer::netIdToLong(pawn->PlayerReplicationInfo->UniqueId);
+		long long playerId = Utils::netIdToLong(pawn->PlayerReplicationInfo->UniqueId);
 
 		return TenantedDataStore::playerData.get(playerId).callInData;
 	}
@@ -20,7 +20,7 @@ namespace CallInCache {
 
 		APawn* pawn = (APawn*)that->Owner;
 		if (!pawn->PlayerReplicationInfo) return;
-		long long playerId = TAServer::netIdToLong(pawn->PlayerReplicationInfo->UniqueId);
+		long long playerId = Utils::netIdToLong(pawn->PlayerReplicationInfo->UniqueId);
 
 		TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(playerId);
 

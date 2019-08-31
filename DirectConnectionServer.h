@@ -34,9 +34,9 @@ namespace DCServer {
 		ConnectionPtr conn;
 		long long playerId = 0;
 		bool validated = false;
-		ServerRole role;
+		std::string role;
 	public:
-		PlayerConnection(ConnectionPtr conn) : conn(conn) {}
+		PlayerConnection(ConnectionPtr conn) : conn(conn), role("default") {}
 	};
 
 	int getServerPort(AWorldInfo* worldInfo);
@@ -84,7 +84,9 @@ namespace DCServer {
 
 		void sendMessageToClient(std::shared_ptr<PlayerConnection> pconn, std::vector<MessageToClientMessage::ConsoleMsgDetails>& consoleMessages, MessageToClientMessage::IngameMsgDetails& ingameMessage);
 
-		bool isPlayerAKnownModdedConnection(FUniqueNetId playerId);
+		bool isPlayerAKnownModdedConnection(long long playerId);
+		
+		std::shared_ptr<PlayerConnection> getPlayerConnection(long long playerId);
 	};
 
 }

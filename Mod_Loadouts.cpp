@@ -192,7 +192,7 @@ void TAServer::Client::handler_Launcher2GameLoadoutMessage(const json& msgBody) 
 
 	// Put it in the map
 	std::lock_guard<std::mutex> lock(receivedLoadoutsMutex);
-	receivedLoadouts[netIdToLong(msg.uniquePlayerId)] = msg;
+	receivedLoadouts[Utils::netIdToLong(msg.uniquePlayerId)] = msg;
 }
 
 // static variables for lua enum

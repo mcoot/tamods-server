@@ -22,12 +22,22 @@ namespace DCServer {
 		return port;
 	}
 
-	bool Server::isPlayerAKnownModdedConnection(FUniqueNetId playerId) {
-		long long lpid = TAServer::netIdToLong(playerId);
+	bool Server::isPlayerAKnownModdedConnection(long long playerId) {
 		{
 			std::lock_guard<std::mutex> lock(knownPlayerConnectionsMutex);
-			auto& it = knownPlayerConnections.find(lpid);
+			auto& it = knownPlayerConnections.find(playerId);
 			return it != knownPlayerConnections.end();
+		}
+	}
+
+	std::shared_ptr<PlayerConnection> Server::getPlayerConnection(long long playerId) {
+		{
+			std::lock_guard<std::mutex> lock(knownPlayerConnectionsMutex);
+			auto& it = knownPlayerConnections.find(playerId);
+			if (it == knownPlayerConnections.end()) {
+				return NULL;
+			}
+			return it->second;
 		}
 	}
 
@@ -139,7 +149,7 @@ namespace DCServer {
 		}
 
 		// Add the player to the map of known players
-		pconn->playerId = TAServer::netIdToLong(connDetails.uniquePlayerId);
+		pconn->playerId = Utils::netIdToLong(connDetails.uniquePlayerId);
 		{
 			std::lock_guard<std::mutex> lock(knownPlayerConnectionsMutex);
 			knownPlayerConnections[pconn->playerId] = pconn;

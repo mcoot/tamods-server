@@ -42,4 +42,11 @@ namespace Utils {
 	extern ATrGameReplicationInfo* tr_gri;
 	extern std::mutex tr_gri_mutex;
 
+	// Game info
+	long long netIdToLong(FUniqueNetId id);
+	FUniqueNetId longToNetId(long long id);
+	
+	// THESE FUNCTIONS DO NOT TAKE THE TR_GRI MUTEX
+	ATrPlayerReplicationInfo* getPRIForPlayerId(long long playerId);
+	ATrPlayerReplicationInfo* getPRIForPlayerName(std::string playerName);
 }
