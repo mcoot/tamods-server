@@ -270,7 +270,7 @@ void DCServer::Server::handler_ExecuteCommandMessage(std::shared_ptr<PlayerConne
 
 		std::string playerName;
 		{
-			std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+			//std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 			ATrPlayerReplicationInfo* pri = Utils::getPRIForPlayerId(pconn->playerId);
 			if (pri) {
 				playerName = Utils::f2std(pri->PlayerName);
@@ -415,7 +415,7 @@ static void sendConsoleMessageToPlayer(std::string playerName, std::string messa
 }
 
 static void endCurrentMap() {
-	std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+	//std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 	if (!Utils::tr_gri || !Utils::tr_gri->WorldInfo || !Utils::tr_gri->WorldInfo->Game) return;
 
 	if (!Utils::tr_gri->bMatchIsOver) {
@@ -427,7 +427,7 @@ static void endCurrentMap() {
 }
 
 static void startCurrentMap() {
-	std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
+	//std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
 	if (!Utils::tr_gri || !Utils::tr_gri->WorldInfo || !Utils::tr_gri->WorldInfo->Game) return;
 
 	if (Utils::tr_gri->bWarmupRound) {
