@@ -170,6 +170,8 @@ struct ServerSettings {
 
 	// Whether to revert to GOTY shield pack behaviour
 	bool UseGOTYShieldPack = false;
+	// Whether regen should be halted while shield pack is active
+	bool ShieldPackBlocksRegen = false;
 
 	// Whether inventory stations should restore energy
 	bool InventoryStationsRestoreEnergy = false;
@@ -185,6 +187,9 @@ struct ServerSettings {
 
 	// Whether to convert the Laser Targeter into an Inv Station call-in
 	bool EnableInventoryCallIn = false;
+	// If false, enemy players can pass through called-in Inv Stations
+	bool InventoryCallInBlocksPlayers = true;
+	bool FixDestroyedInventoryCallInCollision = false;
 	int InventoryCallInCost = 0;
 	float InventoryCallInBuildUpTime = 2.f;
 	float InventoryCallInCooldownTime = 10.f;

@@ -496,6 +496,33 @@ void TrDevice_LaserTargeter_UpdateLaserEffect(ATrDevice_LaserTargeter* that, ATr
 	}
 }
 
+// Collision options for inv stations
+
+static void disableInvCallInCollision(ATrCallIn_SupportItemPlatform* that) {
+	that->SetCollision(true, false, true);
+	ATrInventoryStation_Spawnable* station = (ATrInventoryStation_Spawnable*)that->r_DeployedItem;
+	if (station) {
+		station->SetCollision(true, false, true);
+	}
+}
+
+void TrCallIn_SupportItemPlatform_Init(ATrCallIn_SupportItemPlatform* that, ATrCallIn_SupportItemPlatform_execInit_Parms* params) {
+	that->Init(params->DeployableOwner, params->GameObjectiveClass);
+	
+	// If we want inv stations to be passed through, disable collision
+	if (!g_config.serverSettings.InventoryCallInBlocksPlayers) {
+		disableInvCallInCollision(that);
+	}
+}
+
+void TrCallIn_SupportItemPlatform_HideMesh(ATrCallIn_SupportItemPlatform* that, ATrCallIn_SupportItemPlatform_execHideMesh_Parms* params) {
+	that->HideMesh();
+
+	if (g_config.serverSettings.FixDestroyedInventoryCallInCollision) {
+		disableInvCallInCollision(that);
+	}
+}
+
 // Graphical effects for laser targeter
 
 static void UpdateCreditMaterial(ATrDevice_LaserTargeter* that) {

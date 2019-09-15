@@ -23,9 +23,6 @@
 #include "EventLogger.h"
 //#include "TAServerClient.h"
 
-
-void GameInfo_ProcessServerTravel(AGameInfo* that, AGameInfo_execProcessServerTravel_Parms* params);
-
 // Hook called on server settings load
 void TrServerSettingsInfo_LoadServerSettings(ATrServerSettingsInfo* that, ATrServerSettingsInfo_eventLoadServerSettings_Parms* params, void* result, Hooks::CallInfo* callInfo);
 
@@ -111,6 +108,9 @@ void TrDevice_LaserTargeter_UpdateTarget(ATrDevice_LaserTargeter* that, ATrDevic
 void TrDevice_LaserTargeter_SpawnLaserEffect(ATrDevice_LaserTargeter* that, ATrDevice_LaserTargeter_execSpawnLaserEffect_Parms* params, void* result, Hooks::CallInfo* callInfo);
 void TrDevice_LaserTargeter_UpdateLaserEffect(ATrDevice_LaserTargeter* that, ATrDevice_LaserTargeter_execUpdateLaserEffect_Parms* params, void* result, Hooks::CallInfo* callInfo);
 void ResetLaserTargetCallInCache();
+
+void TrCallIn_SupportItemPlatform_Init(ATrCallIn_SupportItemPlatform* that, ATrCallIn_SupportItemPlatform_execInit_Parms* params);
+void TrCallIn_SupportItemPlatform_HideMesh(ATrCallIn_SupportItemPlatform* that, ATrCallIn_SupportItemPlatform_execHideMesh_Parms* params);
 
 void TrDevice_PlayWeaponEquip(ATrDevice* that, ATrDevice_execPlayWeaponEquip_Parms* params, void* result, Hooks::CallInfo* callInfo);
 void TrDevice_UpdateWeaponMICs(ATrDevice* that, ATrDevice_eventUpdateWeaponMICs_Parms* params, void* result, Hooks::CallInfo* callInfo);
