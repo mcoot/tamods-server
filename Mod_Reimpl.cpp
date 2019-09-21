@@ -297,7 +297,8 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 	}
 
 	// Take shield pack damage from energy rather than health
-	ScaledDamage = that->GetUnshieldedDamage(ScaledDamage);
+	ATrPawn_execGetUnshieldedDamage_Parms getUnshieldedParams = { ScaledDamage, 0.f };
+	TrPawn_GetUnshieldedDamage(that, &getUnshieldedParams, &ScaledDamage);
 	ev.damage_unshielded_amount = ScaledDamage;
 
 	ATrPawn_execRememberLastDamager_Parms rememberLastDamagerParams;
@@ -363,6 +364,40 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
 
 	ev.collection_return_point = 6;
 	EventLogger::log(ev);
+}
+
+void TrPawn_GetUnshieldedDamage(ATrPawn* that, ATrPawn_execGetUnshieldedDamage_Parms* params, float* result) {
+	if (!g_config.serverSettings.UseGOTYShieldPack) {
+		*result = that->GetUnshieldedDamage(params->inputDamage);
+		return;
+	}
+
+	float shieldAbsorb = that->m_fShieldMultiple;
+
+	ATrPlayerReplicationInfo* pri = that->GetTribesReplicationInfo();
+	if (pri) {
+		UTrValueModifier* vm = pri->GetCurrentValueModifier();
+		if (vm) {
+			shieldAbsorb -= vm->m_fShieldPackEffectivenessBuff;
+		}
+	}
+
+	if (!that->r_bIsShielded) {
+		*result = params->inputDamage;
+		return;
+	}
+
+	if (that->m_fCurrentPowerPool >= params->inputDamage * shieldAbsorb) {
+		that->ConsumePowerPool(params->inputDamage * shieldAbsorb);
+		that->SyncClientCurrentPowerPool();
+		*result = 0;
+	}
+	else {
+		float tmp = params->inputDamage - (that->m_fCurrentPowerPool / shieldAbsorb);
+		that->ConsumePowerPool(that->m_fCurrentPowerPool);
+		that->SyncClientCurrentPowerPool();
+		*result = tmp;
+	}
 }
 
 void TrPawn_RememberLastDamager(ATrPawn* that, ATrPawn_execRememberLastDamager_Parms* params) {
@@ -579,6 +614,18 @@ void TrPawn_ProcessKillAssists(ATrPawn* that, ATrPawn_execProcessKillAssists_Par
 	clearKillAssisters(that);
 
 	std::vector<FAssistInfo> postVals = getKillAssisters(that);
+}
+
+void TrPawn_SetShieldPackActive(ATrPawn* that, ATrPawn_execSetShieldPackActive_Parms* params) {
+	if (!g_config.serverSettings.UseGOTYShieldPack) {
+		that->SetShieldPackActive(params->bActive, params->ShieldEnergyAbsorb);
+		return;
+	}
+
+	if (that->Role == ROLE_Authority) {
+		that->r_bIsShielded = params->bActive;
+		that->PlayShieldPackEffect();
+	}
 }
 
 ////////////////////////
