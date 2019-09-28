@@ -8,7 +8,7 @@ namespace TAServer {
         tcpClient = std::make_shared<TCP::Client<short> >(ios);
 
         // Run handlers for reading etc. in a new thread
-        iosThread = std::make_shared<std::thread>([&] {
+        iosThread = std::make_shared<std::thread>([&, host, port] {
             boost::asio::io_service::work work(ios);
             attachHandlers();
             tcpClient->start(host, port, std::bind(&Client::handler_OnConnect, this));
@@ -114,13 +114,14 @@ namespace TAServer {
             it = receivedLoadouts.find(Utils::netIdToLong(uniquePlayerId));
         }
 
+        Launcher2GameLoadoutMessage response = it->second;
+
         // Delete the entry
         {
             std::lock_guard<std::mutex> lock(receivedLoadoutsMutex);
             receivedLoadouts.erase(Utils::netIdToLong(uniquePlayerId));
         }
 
-        Launcher2GameLoadoutMessage response = it->second;
         response.toEquipPointMap(resultEquipMap);
 
         return true;

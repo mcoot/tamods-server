@@ -2141,8 +2141,8 @@ struct ATrPawn_execActivateSelectedDeployable_Parms
 // [0x00024102] 
 struct ATrPawn_execRefreshInventory_Parms
 {
-    unsigned long                                      bIsRespawn : 1;                                           // 0x0000 (0x0004) [0x0000000000000080] [0x00000001] ( CPF_Parm )
-    unsigned long                                      bCallin : 1;                                              // 0x0004 (0x0004) [0x0000000000000090] [0x00000001] ( CPF_OptionalParm | CPF_Parm )
+    unsigned long                                      bIsRespawn;                                               // 0x0000 (0x0004) [0x0000000000000080] [0x00000001] ( CPF_Parm )
+    unsigned long                                      bCallin;                                                  // 0x0004 (0x0004) [0x0000000000000090] [0x00000001] ( CPF_OptionalParm | CPF_Parm )
     // int                                             NewMaxPower;                                              // 0x0008 (0x0004) [0x0000000000000000]              
     // int                                             NewMaxHealth;                                             // 0x000C (0x0004) [0x0000000000000000]              
     // class ATrHUD*                                   TrH;                                                      // 0x0010 (0x0004) [0x0000000000000000]              
