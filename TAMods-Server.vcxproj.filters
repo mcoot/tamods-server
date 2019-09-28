@@ -303,6 +303,9 @@
     <ClInclude Include="EventLogger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MatchSummary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TAMods-Server.cpp">
@@ -522,6 +525,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EventLogger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MatchSummary.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -133,6 +133,7 @@
     <ClInclude Include="lua_src\lundump.h" />
     <ClInclude Include="lua_src\lvm.h" />
     <ClInclude Include="lua_src\lzio.h" />
+    <ClInclude Include="MatchSummary.h" />
     <ClInclude Include="Mods.h" />
     <ClInclude Include="NameCryptor.h" />
     <ClInclude Include="Profiler.h" />
@@ -196,6 +197,7 @@
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Lua.cpp" />
     <ClCompile Include="LuaAPI.cpp" />
+    <ClCompile Include="MatchSummary.cpp" />
     <ClCompile Include="Mod_Administration.cpp" />
     <ClCompile Include="Mod_GameBalance.cpp" />
     <ClCompile Include="Mod_GameInfo.cpp" />

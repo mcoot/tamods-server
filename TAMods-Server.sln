@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TAMods-Server", "TAMods-Server.vcxproj", "{BF082296-3D84-4336-8577-07573FB75EB1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TAMods-Server-Tests", "test\TAMods-Server-Tests.vcxproj", "{A729BAEA-E7C9-4E83-A502-F89DBB4F4623}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -15,6 +17,10 @@ Global
 		{BF082296-3D84-4336-8577-07573FB75EB1}.Debug|x86.Build.0 = Debug|Win32
 		{BF082296-3D84-4336-8577-07573FB75EB1}.Release|x86.ActiveCfg = Release|Win32
 		{BF082296-3D84-4336-8577-07573FB75EB1}.Release|x86.Build.0 = Release|Win32
+		{A729BAEA-E7C9-4E83-A502-F89DBB4F4623}.Debug|x86.ActiveCfg = Debug|Win32
+		{A729BAEA-E7C9-4E83-A502-F89DBB4F4623}.Debug|x86.Build.0 = Debug|Win32
+		{A729BAEA-E7C9-4E83-A502-F89DBB4F4623}.Release|x86.ActiveCfg = Release|Win32
+		{A729BAEA-E7C9-4E83-A502-F89DBB4F4623}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

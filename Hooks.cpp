@@ -1,4 +1,5 @@
 #include "Hooks.h"
+#include "MatchSummary.h"
 
 struct Hook
 {
@@ -107,11 +108,14 @@ void Hooks::init(bool print_hookable) {
 
     // Detour the function
     pProcessEvent = (ProcessEventFunction)DetourFunction((PBYTE)*ProcessEventsAddress, (PBYTE)&ProxyFunction);
+
+    MatchSummary::registerHooks();
 }
 
 void Hooks::cleanup()
 {
     DetourRemove((PBYTE)pProcessEvent, (PBYTE)&ProxyFunction);
+    MatchSummary::unregisterHooks();
 }
 
 // Returns the id of the created hook, 0 on failure
