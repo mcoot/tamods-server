@@ -18,38 +18,38 @@ using namespace luabridge;
 class           Lua
 {
 public:
-	Lua();
-	Lua(std::string workingDir);
-	~Lua();
+    Lua();
+    Lua(std::string workingDir);
+    ~Lua();
 
 private:
-	std::string   _error(int ret);
-	void          _pushvar(const char *name, unsigned char val);
-	void          _printTop();
-	void		  _initInputEvents();
+    std::string   _error(int ret);
+    void          _pushvar(const char *name, unsigned char val);
+    void          _printTop();
+    void          _initInputEvents();
 
 public:
-	// Located in LuaAPI.cpp. Because include hell.
-	void          init();
+    // Located in LuaAPI.cpp. Because include hell.
+    void          init();
 
-	void setRequireWorkingDir(std::string workingDir);
+    void setRequireWorkingDir(std::string workingDir);
 
-	lua_State     *getState() const { return (_state); }
-	std::string   doFile(const std::string &s);
-	void          doString(const std::string &s);
-	void          doFunc(const std::string &s);
-	void          doREPL();
+    lua_State     *getState() const { return (_state); }
+    std::string   doFile(const std::string &s);
+    void          doString(const std::string &s);
+    void          doFunc(const std::string &s);
+    void          doREPL();
 
-	template<typename T>
-	bool setVar(T &var, const char *name)
-	{
-		LuaRef ref = getGlobal(_state, name);
-		if (ref.isNil())
-			return false;
-		var = ref.cast<T>();
-		return true;
-	}
+    template<typename T>
+    bool setVar(T &var, const char *name)
+    {
+        LuaRef ref = getGlobal(_state, name);
+        if (ref.isNil())
+            return false;
+        var = ref.cast<T>();
+        return true;
+    }
 
 private:
-	lua_State * _state;
+    lua_State * _state;
 };
