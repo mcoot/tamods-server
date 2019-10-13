@@ -1,4 +1,5 @@
 #include "Profiler.h"
+#include <timeapi.h>
 
 static std::map<std::string, Profiler::Function> functions;
 static Profiler::Function *curr_function = NULL;

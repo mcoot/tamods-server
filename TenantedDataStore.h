@@ -5,16 +5,7 @@
 #include <random>
 
 #include "FunctionalUtils.h"
-
-#include "TAServerClient.h"
-#include "DirectConnectionServer.h"
-
-#include "Config.h"
 #include "Utils.h"
-#include "Data.h"
-#include "Geom.h"
-#include "Logger.h"
-#include "LuaAPI.h"
 
 /**
  * The TenantedDataStore is used to get around not being able to add fields to in-game classes
@@ -45,6 +36,10 @@ namespace TenantedDataStore {
 		std::vector<ATrProj_RemoteArxBuster*> remoteArxRounds;
 	};
 
+	struct ClassSpecificData {
+		int maxRegenMoveSpeed = -1;
+	};
+
 	// A thread-safe map which returns the default constructed value if a key isn't found
 	template <typename KeyType, typename ValueType>
 	class DataMap {
@@ -67,5 +62,5 @@ namespace TenantedDataStore {
 
 	
 	extern DataMap<long long, PlayerSpecificData> playerData;
-
+	extern DataMap<int, ClassSpecificData> classData;
 }

@@ -495,6 +495,7 @@ bool TrPawn_RechargeHealthPool(int ID, UObject *dwCallingObject, UFunction* pFun
 	if (that->Role != ROLE_Authority) return true;
 
 	if (!that->GetCurrCharClassInfo()) return true;
+	UTrFamilyInfo* familyInfo = (UTrFamilyInfo*)that->GetCurrCharClassInfo()->Default;
 
 	if (that->Health >= that->HealthMax) {
 		if (that->r_bIsHealthRecharging) {
@@ -524,6 +525,14 @@ bool TrPawn_RechargeHealthPool(int ID, UObject *dwCallingObject, UFunction* pFun
 		return true;
 	}
 
+	// Do not regen health if max regen speed is set and you are faster than it
+	TenantedDataStore::ClassSpecificData classData = TenantedDataStore::classData.get(familyInfo->ClassId);
+	if (classData.maxRegenMoveSpeed >= 0 && that->CalculatePawnSpeed() > classData.maxRegenMoveSpeed) {
+		that->r_bIsHealthRecharging = false;
+		that->bNetDirty = true;
+		return true;
+	}
+
 	if (that->WorldInfo->TimeSeconds - that->m_fLastDamagerTimeStamp <= that->m_fSecondsBeforeAutoHeal) {
 		that->r_bIsHealthRecharging = false;
 		that->bNetDirty = true;
@@ -540,7 +549,7 @@ bool TrPawn_RechargeHealthPool(int ID, UObject *dwCallingObject, UFunction* pFun
 		}
 	}
 
-	float fRecharge = that->Health + ((UTrFamilyInfo*)that->GetCurrCharClassInfo()->Default)->m_fHealthPoolRechargeRate * RechargeRateMultiplier * params->DeltaSeconds * that->HealthMax;
+	float fRecharge = that->Health + familyInfo->m_fHealthPoolRechargeRate * RechargeRateMultiplier * params->DeltaSeconds * that->HealthMax;
 
 	that->m_fTickedRegenDecimal += fRecharge - (float)that->Health;
 

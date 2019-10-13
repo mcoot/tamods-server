@@ -696,6 +696,7 @@ namespace LuaAPI {
 					.addProperty<int, int>("MomentumDampeningEnabled", &getPropId<Classes::PropId, Classes::PropId::MOMENTUM_DAMPENING_ENABLED>)
 					.addProperty<int, int>("MomentumDampeningThreshold", &getPropId<Classes::PropId, Classes::PropId::MOMENTUM_DAMPENING_THRESHOLD>)
 					.addProperty<int, int>("MomentumDampeningProportion", &getPropId<Classes::PropId, Classes::PropId::MOMENTUM_DAMPENING_PROPORTION>)
+					.addProperty<int, int>("MaxHealthRegenSpeed", &getPropId<Classes::PropId, Classes::PropId::MAX_HEALTH_REGEN_SPEED>)
 					// Jetting / Air Control
 					.addProperty<int, int>("MaxJettingSpeed", &getPropId<Classes::PropId, Classes::PropId::MAX_JETTING_SPEED>)
 					.addProperty<int, int>("JetAcceleration", &getPropId<Classes::PropId, Classes::PropId::JET_ACCELERATION>)

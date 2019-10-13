@@ -6,10 +6,9 @@
 #include <functional>
 #include <map>
 
-#include "Logger.h"
-#include "SdkHeaders.h"
 #include "Utils.h"
 #include "Lua.h"
+#include "TenantedDataStore.h"
 
 namespace GameBalance {
 
@@ -352,6 +351,7 @@ namespace GameBalance {
 			MOMENTUM_DAMPENING_ENABLED = 2008,
 			MOMENTUM_DAMPENING_THRESHOLD = 2009,
 			MOMENTUM_DAMPENING_PROPORTION = 2010,
+			MAX_HEALTH_REGEN_SPEED = 2011,
 
 			// Jetting / Air Control
 			MAX_JETTING_SPEED = 3000,

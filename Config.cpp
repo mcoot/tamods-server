@@ -1,4 +1,5 @@
 #include "Config.h"
+#include <shellapi.h>
 
 // Global config
 Config g_config;
