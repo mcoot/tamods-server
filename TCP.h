@@ -39,16 +39,27 @@ namespace TCP {
 	
 	protected:
 
-		void handle_read(boost::system::error_code readErr) {
+		void handle_read(boost::system::error_code readErr, size_t asyncBytesRead) {
 			if (stopped) return;
 			if (readErr) {
 				error_state.assign(readErr.value(), readErr.category());
 				stop();
 				return;
 			}
+			if (!readErr && asyncBytesRead != 2) {
+				error_state.assign(boost::system::errc::message_size, boost::system::generic_category());
+				stop();
+				return;
+			}
 
 			// Already read the message size
 			SizeType msgSize = read_msgsize_buff[0];
+
+#ifndef RELEASE
+			Logger::debug("[TCP] Received message size field: %d", msgSize);
+#endif // !RELEASE
+
+
 
 			// Synchronously read and extract the message kind
 			short msgKind;
@@ -63,6 +74,10 @@ namespace TCP {
 				stop();
 				return;
 			}
+
+#ifndef RELEASE
+			Logger::debug("[TCP] Received message kind field: %d", msgKind);
+#endif // !RELEASE
 
 			// Read the actual message
 			std::vector<char> rawMsg(msgSize - 2);
@@ -79,6 +94,10 @@ namespace TCP {
 			}
 			std::string msgString = std::string(rawMsg.begin(), rawMsg.end());
 
+#ifndef RELEASE
+			Logger::debug("[TCP] Received message JSON value: %s", msgString.c_str());
+#endif // !RELEASE
+
 			// Parse the message into json
 			json msgJson;
 			try {
@@ -94,14 +113,25 @@ namespace TCP {
 			// If there is no handler, ignore the message
 			auto& it = handlers.find(msgKind);
 			if (it != handlers.end()) {
+#ifndef RELEASE
+				Logger::debug("[TCP] Calling message handler for kind: %d", msgKind);
+#endif // !RELEASE
 				it->second(msgJson);
+#ifndef RELEASE
+				Logger::debug("[TCP] Finished message handler for kind: %d", msgKind);
+#endif // !RELEASE
+			}
+			else {
+#ifndef RELEASE
+				Logger::debug("[TCP] No message handler found for kind: %d", msgKind);
+#endif // !RELEASE
 			}
 
 			// Begin the next asynchronous read
 			boost::asio::async_read(socket,
 				boost::asio::buffer(read_msgsize_buff, sizeof(SizeType)),
 				boost::asio::transfer_exactly(sizeof(SizeType)),
-				boost::bind(&Connection::handle_read, this, _1));
+				boost::bind(&Connection::handle_read, this, _1, _2));
 		}
 
 		void write(short msgKind, const json& msgBody) {
@@ -110,6 +140,10 @@ namespace TCP {
 			// Serialise message
 			std::string msgString = msgBody.dump();
 			SizeType msgSize = (SizeType)msgString.length() + sizeof(msgKind);
+
+#ifndef RELEASE
+			Logger::debug("[TCP] Going to send message with: size = %d, kind = %d, JSON content = %s", msgSize, msgKind, msgString.c_str());
+#endif // !RELEASE
 
 			// Construct the bytes to send
 			std::ostringstream out_stream;
@@ -120,7 +154,7 @@ namespace TCP {
 			// Message writing is synchronous and serialised to avoid a data race
 			boost::system::error_code writeErr;
 
-			size_t bytesWritten;
+			size_t bytesWritten = 0;
 			{
 				std::lock_guard<std::mutex> lock(write_mutex);
 				bytesWritten = boost::asio::write(socket, boost::asio::buffer(out_stream.str(), out_stream.str().length()), writeErr);
@@ -132,6 +166,10 @@ namespace TCP {
 				error_state.assign(writeErr.value(), writeErr.category());
 				stop();
 			}
+
+#ifndef RELEASE
+			Logger::debug("[TCP] Sent message with kind: %d", msgKind);
+#endif // !RELEASE
 		}
 
 	public:
@@ -163,7 +201,7 @@ namespace TCP {
 			boost::asio::async_read(socket,
 				boost::asio::buffer(read_msgsize_buff, sizeof(SizeType)),
 				boost::asio::transfer_exactly(sizeof(SizeType)),
-				boost::bind(&Connection::handle_read, this, _1));
+				boost::bind(&Connection::handle_read, this, _1, _2));
 
 			if (connect_handler) {
 				connect_handler();

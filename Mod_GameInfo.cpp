@@ -231,9 +231,7 @@ bool TrGameReplicationInfo_PostBeginPlay(int ID, UObject *dwCallingObject, UFunc
 	{
 		Utils::serverGameStatus = Utils::ServerGameStatus::PREROUND;
 		std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
-
 		Utils::tr_gri = (ATrGameReplicationInfo*)dwCallingObject;
-
 		if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {
 			// GRI should only be set at the start of the match -> ergo not counting down
 			g_TAServerClient.sendMatchTime(Utils::tr_gri->r_ServerConfig->TimeLimit * 60, false);
@@ -350,7 +348,7 @@ static void performMapChange(std::string mapName) {
 
 	Utils::tr_gri->WorldInfo->eventServerTravel(FString(mapNameData), false, false);
 
-	delete mapNameData;
+	delete[] mapNameData;
 }
 
 void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) {
