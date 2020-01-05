@@ -1,10 +1,15 @@
 #include "MatchSummary.h"
 
+#include <boost/assert.hpp>
+#include <boost/dynamic_bitset.hpp>
+#include <iostream>
 #include <map>
 #include <vector>
 #include <windows.h>
 
 #include "detours.h"
+
+#pragma warning (disable : 4996)
 
 
 const char logFileName[] = "C:\\projects\\TribesProtocol\\taserver\\gameclient\\testdata\\matchends\\matchend.log";
@@ -124,22 +129,9 @@ namespace MatchSummary
         //OutputDebugString(L"tamods: fakeLevel8Function\n");
         bool modifyEdi = false;
 
+#ifdef DOPRINTS
         FILE* pFile = fopen(logFileName, "at");
-
-        OverallMatchStats overallStats;
-        overallStats.addStatistic(0x3adcf, 0x31ce1, 4000.0);
-        overallStats.addStatistic(0x3adcf, 0x31cef, 124.0);
-        overallStats.addStatistic(0x23a039, 0x31cec, 87.0);
-        overallStats.addStatistic(0x3adcf, 0x31ce7, 71.0);
-        overallStats.addStatistic(0x3adcf, 0x31cee, 0.0);
-
-        overallStats.addAccolade(0x23a039, 0x3191c, 87.0);
-        overallStats.addAccolade(0x3adcf, 0x31918, 8.0);
-        overallStats.addAccolade(0x3adcf, 0x31924, 1.0);
-
-        char pBuffer[4096];
-        size_t size = overallStats.size();
-        overallStats.toBytes(pBuffer);
+#endif
 
 #ifdef DOPRINTS
         char text[1000];
@@ -193,7 +185,6 @@ namespace MatchSummary
                         fprintf(pFile, text);
 #endif
 
-                        *(unsigned int*)fragment |= (clientData.seqnr + 1) << 13;
 
 #ifdef DOPRINTS
                         sprintf(text, "tamods:   first player %d copy %08X bits from %p+%08X to %p+%08X\n", currentPlayer, fragmentSizeInBits, &fragment[0], 0, pWriteBuffer, writeOffsetInBits);
@@ -203,60 +194,162 @@ namespace MatchSummary
                         writeBits(pFile, fragment, fragmentSizeInBits);
 #endif
 
-                        realLevel8Function(pWriteBuffer, writeOffsetInBits, &fragment[0], 0, fragmentSizeInBits);
                         clientData.fragmentInserted = true;
                         clientData.insertionOffset = writeOffsetInBits;
-                        clientData.insertionCount = fragmentSizeInBits;
                     }
                 }
 
             }
         }
-        else
-        {
-#ifdef DOPRINTS
-            sprintf(text, "tamods:   --------- ignored -----------\n");
-            OutputDebugStringA(text);
-            fprintf(pFile, text);
-#endif
-        }
 
-        if (clientData.fragmentInserted && !clientData.fragmentSent && writeOffsetInBits >= clientData.insertionOffset)
-        {
-            writeOffsetInBits += clientData.insertionCount;
-        }
 #ifdef DOPRINTS
         sprintf(text, "tamods:   player %d copy %08X bits from %p+%08X to %p+%08X\n", currentPlayer, bitsToCopy, pReadBuffer, readOffsetInBits, pWriteBuffer, writeOffsetInBits);
         OutputDebugStringA(text);
         fprintf(pFile, text);
         writeBits(pFile, (unsigned char*)pReadBuffer, readOffsetInBits + bitsToCopy);
+        fclose(pFile);
 #endif
         realLevel8Function(pWriteBuffer, writeOffsetInBits, pReadBuffer, readOffsetInBits, bitsToCopy);
         clientData.maxNumberOfBits = max(clientData.maxNumberOfBits, writeOffsetInBits + bitsToCopy);
-
-#ifdef DOPRINTS
-        sprintf(text, "tamods: updating maxNumberOfBits to 0x%08X\n", clientData.maxNumberOfBits);
-        OutputDebugStringA(text);
-        fprintf(pFile, text);
-#endif
-
-        fclose(pFile);
     }
+
+    void memMoveBits(unsigned char* pWriteBuffer, int fromOffsetInBits, int toOffsetInBits, int bitsToMove)
+    {
+        int fromByteIndex = fromOffsetInBits / 8;
+        int fromBitIndex = fromOffsetInBits - fromByteIndex * 8;
+        int lastToByteIndex = (toOffsetInBits + bitsToMove - 1) / 8;
+
+        boost::dynamic_bitset<unsigned char> movedBits;
+        movedBits.append(&pWriteBuffer[fromByteIndex], &pWriteBuffer[lastToByteIndex + 1]);
+
+        boost::dynamic_bitset<unsigned char> beginning(movedBits.size());
+        for (int i = 0; i < fromBitIndex; i++)
+        {
+            beginning[i] = movedBits[i];
+            movedBits[i] = 0;
+        }
+        movedBits <<= (toOffsetInBits - fromOffsetInBits);
+        movedBits |= beginning;
+
+        std::vector<unsigned char> result(&pWriteBuffer[fromByteIndex], &pWriteBuffer[lastToByteIndex + 1]);
+        boost::to_block_range(movedBits, result.begin());
+        memcpy(&pWriteBuffer[fromByteIndex], result.data(), result.size());
+    }
+
 
     int __stdcall fakeSendtoFunction(SOCKET s, char* buf, int len, int flags, const sockaddr* to, int tolen)
     {
+#ifdef DOPRINTS
         FILE* pFile = fopen(logFileName, "at");
+#endif
 
         ClientData& clientData = clientMap[(void *)buf];
         if (clientData.fragmentInserted && !clientData.fragmentSent)
         {
-            // 1 terminator bit + 7 to round up
-            int finalByteIndex = clientData.maxNumberOfBits / 8;
-            int finalBitIndex = clientData.maxNumberOfBits - finalByteIndex * 8;
-            char terminatorBit = 1 << finalBitIndex;
-            buf[finalByteIndex] |= terminatorBit;
+            OverallMatchStats overallStats;
+            overallStats.addStatistic(0x3adcf, 0x31ce1, 4000.0);
+            overallStats.addStatistic(0x3adcf, 0x31cef, 124.0);
+            overallStats.addStatistic(0x23a039, 0x31cec, 87.0);
+            overallStats.addStatistic(0x3adcf, 0x31ce7, 71.0);
+            overallStats.addStatistic(0x3adcf, 0x31cee, 0.0);
 
-            len = finalByteIndex + 1;
+            overallStats.addAccolade(0x23a039, 0x3191c, 87.0);
+            overallStats.addAccolade(0x3adcf, 0x31918, 8.0);
+            overallStats.addAccolade(0x3adcf, 0x31924, 1.0);
+
+            char pBuffer[4096];
+
+            PlayerMatchStats playerStats;
+            playerStats.addStatistic(0, 0x31ce1, 2175.0);
+            playerStats.addStatistic(0, 0x31ce7, 0.0);
+            playerStats.addStatistic(0, 0x31cec, 87.0);
+            playerStats.addStatistic(0, 0x31cee, 0.0);
+            playerStats.addStatistic(0, 0x31cef, 41.0);
+
+            playerStats.addAccolade(0, 0x3191C, 87.0);
+            playerStats.addAccolade(0, 0x31924, 1.0);
+
+
+            // 0 (flag1 = 0)
+            //  01 (flag1a = 2)
+            //    0000000000 (channel = 0)
+            unsigned int part1 = 0x00000004;
+            unsigned int part1size = 13;
+
+            //              01101 (counter = 22)
+            unsigned int counter = clientData.seqnr + 1;
+            unsigned int countersize = 5;
+
+            //                   00000100
+            unsigned int part2 = 0x00000020;
+            unsigned int part2size = 8;
+
+            //                                         10111000 (property = interestingproperty)
+            unsigned int prop = 0x0000001d;
+            unsigned int propsize = 8;
+            //                                      00000111000000000000000011100101000100000000 (prefix)
+            unsigned long long prefix1 = 0x008a70000e0;
+            unsigned int prefix1size = 44;
+
+            //                                      01101101000000000000110110101101000100000000 (prefix)
+            unsigned long long prefix2 = 0x008b5b000b6;
+            unsigned int prefix2size = 44;
+
+            unsigned int overallStatsSize = overallStats.size() * 8;
+            unsigned int playerStatsSize = playerStats.size() * 8;
+
+            //                           0001111100110 (payloadsize = 3320)
+            //                                        x (object = FirstServerObject_0)
+            unsigned int payloadsize = propsize + prefix1size + overallStatsSize + 
+                                       propsize + prefix2size + playerStatsSize;
+            unsigned int payloadsizesize = 13;
+
+
+//#define FRAGMENT
+
+#ifdef FRAGMENT
+            clientData.insertionCount = fragmentSizeInBits;
+#else
+            clientData.insertionCount = part1size + countersize + part2size + payloadsizesize + payloadsize;
+#endif
+
+#ifdef DOPRINTS
+            fprintf(pFile, "tamods: sendto before, aftermove and aftercopy\n");
+            writeBits(pFile, (unsigned char*)buf, len * 8);
+#endif
+            *(unsigned int*)fragment |= (clientData.seqnr + 1) << 13;
+            memMoveBits((unsigned char *)buf, clientData.insertionOffset, clientData.insertionOffset + clientData.insertionCount, len * 8 - clientData.insertionOffset);
+
+            len = (clientData.maxNumberOfBits + clientData.insertionCount) / 8 + 1;
+#ifdef DOPRINTS
+            writeBits(pFile, (unsigned char*)buf, len * 8);
+#endif
+#ifdef FRAGMENT
+            realLevel8Function(buf, clientData.insertionOffset, &fragment[0], 0, fragmentSizeInBits);
+#else
+            unsigned int writeOffset = clientData.insertionOffset;
+            realLevel8Function(buf, writeOffset, &part1, 0, part1size);             writeOffset += part1size;
+
+            realLevel8Function(buf, writeOffset, &counter, 0, countersize);         writeOffset += countersize;
+            realLevel8Function(buf, writeOffset, &part2, 0, part2size);             writeOffset += part2size;
+            realLevel8Function(buf, writeOffset, &payloadsize, 0, payloadsizesize); writeOffset += payloadsizesize;
+
+            realLevel8Function(buf, writeOffset, &prop, 0, propsize);               writeOffset += propsize;
+            realLevel8Function(buf, writeOffset, &prefix1, 0, prefix1size);         writeOffset += prefix1size;
+            overallStats.toBytes(pBuffer);
+            realLevel8Function(buf, writeOffset, &pBuffer, 0, overallStatsSize);    writeOffset += overallStatsSize;
+
+            realLevel8Function(buf, writeOffset, &prop, 0, propsize);               writeOffset += propsize;
+            realLevel8Function(buf, writeOffset, &prefix2, 0, prefix2size);         writeOffset += prefix2size;
+            playerStats.toBytes(pBuffer);
+            realLevel8Function(buf, writeOffset, &pBuffer, 0, playerStatsSize);     writeOffset += playerStatsSize;
+#endif
+
+
+#ifdef DOPRINTS
+            writeBits(pFile, (unsigned char*)buf, len * 8);
+#endif
+
             clientData.fragmentSent = true;
             clientData.insertionOffset = 0;
             clientData.insertionCount = 0;
@@ -265,9 +358,9 @@ namespace MatchSummary
 
 #ifdef DOPRINTS
         fprintf(pFile, "tamods:   sendto %08X bytes (%08X bits) from %p:\n", len, len * 8, buf);
-        writeBits(pFile, (unsigned char *)buf, len * 8);
-#endif
+        //writeBits(pFile, (unsigned char *)buf, len * 8);
         fclose(pFile);
+#endif
 
         return realSendtoFunction(s, buf, len, flags, to, tolen);
     }
@@ -278,10 +371,9 @@ namespace MatchSummary
         realEndGameFunction = (EndGameFunction)DetourFunction((PBYTE)0xcdb110, (PBYTE)fakeEndGameFunction);
         realLevel6Function = (Level6Function)DetourFunction((PBYTE)0xc1b160, (PBYTE)fakeLevel6Function);
         realLevel8Function = (Level8Function)DetourFunction((PBYTE)0x42baf0, (PBYTE)fakeLevel8Function);
-        char text[1000];
-        sprintf(text, "tamods:   ############################### sendto is at %p\n", sendto);
-        OutputDebugStringA(text);
-        realSendtoFunction = (SendtoFunction)DetourFunction((PBYTE)0x764a4a40, (PBYTE)fakeSendtoFunction);
+        HMODULE handle = GetModuleHandleA("ws2_32.dll");
+        void* pSendto = GetProcAddress(handle, "sendto");
+        realSendtoFunction = (SendtoFunction)DetourFunction((PBYTE)pSendto, (PBYTE)fakeSendtoFunction);
     }
 
     void unregisterHooks()

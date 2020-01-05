@@ -63,7 +63,7 @@ namespace MatchSummary
 
         size_t size()
         {
-            size_t size = 0;
+            size_t size = 2;
             for (auto item : dataMap)
             {
                 switch (s_typeMap.at(item.first))
@@ -78,14 +78,16 @@ namespace MatchSummary
                 }
             }
 
-            size += 4 + statistics.size() * sizeOfStat() * 6;
-            size += 4 + accolades.size() * sizeOfStat() * 6;
+            size += 4 + statistics.size() * (2 + sizeOfStat() * 6);
+            size += 4 + accolades.size() * (2 + sizeOfStat() * 6);
 
             return size;
         }
 
         void toBytes(void* pBuffer)
         {
+            pBuffer = serializeInt16(pBuffer, (unsigned short)dataMap.size() + 2);
+
             for (auto& item : dataMap)
             {
                 pBuffer = serializeInt16(pBuffer, item.first);
@@ -104,7 +106,7 @@ namespace MatchSummary
             }
 
             pBuffer = serializeInt16(pBuffer, 0x0170);
-            pBuffer = serializeInt32(pBuffer, statistics.size());
+            pBuffer = serializeInt16(pBuffer, (unsigned short)statistics.size());
             for (auto& item : statistics)
             {
                 pBuffer = serializeStat(pBuffer,
@@ -114,7 +116,7 @@ namespace MatchSummary
             }
 
             pBuffer = serializeInt16(pBuffer, 0x016f);
-            pBuffer = serializeInt32(pBuffer, accolades.size());
+            pBuffer = serializeInt16(pBuffer, (unsigned short)accolades.size());
             for (auto& item : accolades)
             {
                 pBuffer = serializeStat(pBuffer,
@@ -203,7 +205,7 @@ namespace MatchSummary
 
         void* serializeStat(void* pBuffer, int who, int what, float howMuch) override
         {
-            pBuffer = serializeInt32(pBuffer, 3);
+            pBuffer = serializeInt16(pBuffer, 3);
             pBuffer = serializeInt16(pBuffer, 0x0595);
             pBuffer = serializeInt32(pBuffer, what);
             pBuffer = serializeInt16(pBuffer, 0x049b);
@@ -241,7 +243,7 @@ namespace MatchSummary
 
         void* serializeStat(void* pBuffer, int who, int what, float howMuch) override
         {
-            pBuffer = serializeInt32(pBuffer, 3);
+            pBuffer = serializeInt16(pBuffer, 2);
             pBuffer = serializeInt16(pBuffer, 0x0595);
             pBuffer = serializeInt32(pBuffer, what);
             pBuffer = serializeInt16(pBuffer, 0x049b);
@@ -250,4 +252,5 @@ namespace MatchSummary
         }
     };
 
+    void memMoveBits(unsigned char* pWriteBuffer, int fromOffsetInBits, int toOffsetInBits, int bitsToMove);
 };
