@@ -89,7 +89,27 @@ static void applyTAServerLoadout(ATrPlayerReplicationInfo* that, int classId, in
 }
 
 static void applyWeaponBans(ATrPlayerReplicationInfo* that, int classId) {
-    for (int i = 0; i < EQP_MAX; ++i) {
+    // Order in which we want to apply mutual exclusion bans on different equip points
+    // e.g. if we have a mutual exclusion between a pack and a weapon, discard the pack
+    static std::vector<int> eqpCheckOrder = {
+        EQP_NONE,
+        EQP_Melee,
+        EQP_Pack,
+        EQP_Belt,
+        EQP_Deployable,
+        EQP_LaserTarget,
+        EQP_Armor,
+        EQP_PerkA,
+        EQP_PerkB,
+        EQP_Primary,
+        EQP_Secondary,
+        EQP_Tertiary,
+        EQP_Quaternary,
+        EQP_Skin,
+        EQP_Voice,
+    };
+
+    for (int i : eqpCheckOrder) {
         // Check the player's class to see if that class is not allowed to have that slot
         bool shouldBanSlot = false;
         switch (classId) {
@@ -115,7 +135,7 @@ static void applyWeaponBans(ATrPlayerReplicationInfo* that, int classId) {
         for (auto& mutualExclusion : g_config.serverSettings.mutuallyExclusiveItems) {
             if (mutualExclusion.first != itemId && mutualExclusion.second != itemId) continue;
             int exclusiveItemId = mutualExclusion.first == itemId ? mutualExclusion.second : mutualExclusion.first;
-            for (int j = 0; j < EQP_MAX; ++j) {
+            for (int j : eqpCheckOrder) {
                 if (i != j && that->r_EquipLevels[j].EquipId == exclusiveItemId) {
                     shouldBanMutualExclusion = true;
                     break;
