@@ -127,10 +127,10 @@ static std::string getNextMapName() {
     return nextMapName;
 }
 
-static std::map<long long, TAServer::PlayerXpRecord> getPlayerXpsEarned(ATrGameReplicationInfo* gri) {
-    std::map<long long, TAServer::PlayerXpRecord> xps;
-    if (!gri) return xps;
-    if (!gri->WorldInfo->Game) return xps;
+static std::map<long long, TAServer::PlayerTimePlayedRecord> getPlayersTimePlayed(ATrGameReplicationInfo* gri) {
+    std::map<long long, TAServer::PlayerTimePlayedRecord> result;
+    if (!gri) return result;
+    if (!gri->WorldInfo->Game) return result;
     ATrGame* game = (ATrGame*)gri->WorldInfo->Game;
 
     for (int i = 0; i < gri->PRIArray.Count; ++i) {
@@ -138,22 +138,15 @@ static std::map<long long, TAServer::PlayerXpRecord> getPlayerXpsEarned(ATrGameR
         if (!pri) continue;
         long long playerId = Utils::netIdToLong(pri->UniqueId);
 
-        TAServer::PlayerXpRecord rec;
+        TAServer::PlayerTimePlayedRecord rec;
 
-        // We only care about base XP + FWotD for ranking purposes
-        rec.xp = (gri->ElapsedTime - pri->StartTime) * 0.5833;
+        rec.timePlayed = gri->ElapsedTime - pri->StartTime;
+        rec.wasWin = pri->GetTeamNum() == game->m_nWinningTeam;
 
-        ATrPlayerController* pc = (ATrPlayerController*)pri->Owner;
-        // First Win of the Day
-        TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(playerId);
-        if (pc && pData.eligibleForFirstWin && pri->GetTeamNum() == game->m_nWinningTeam) {
-            rec.xp += 1200;
-            rec.wasFirstWin = true;
-        }
-        xps[playerId] = rec;
+        result[playerId] = rec;
     }
 
-    return xps;
+    return result;
 }
 
 void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* result, Hooks::CallInfo* callInfo) {
@@ -171,17 +164,17 @@ void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* resu
     if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {
         // Stop the polling thread
         g_TAServerClient.killPollingThread();
-        std::map<long long, TAServer::PlayerXpRecord> playerXpsEarned;
+        std::map<long long, TAServer::PlayerTimePlayedRecord> playersTimePlayed;
         {
             std::lock_guard<std::mutex> lock(Utils::tr_gri_mutex);
             g_TAServerClient.sendMatchTime(0, false);
-            playerXpsEarned = getPlayerXpsEarned(Utils::tr_gri);
+            playersTimePlayed = getPlayersTimePlayed(Utils::tr_gri);
         }
 
         // If a map override has been issued, we need to explicitly give the map name
         std::string nextMapOverrideName = bNextMapOverrideValue == 0 ? "" : getNextMapName();
         
-        g_TAServerClient.sendMatchEnded(getNextMapIdx(), nextMapOverrideName, g_config.serverSettings.EndMatchWaitTime, playerXpsEarned);
+        g_TAServerClient.sendMatchEnded(getNextMapIdx(), nextMapOverrideName, g_config.serverSettings.EndMatchWaitTime, playersTimePlayed);
     }
 }
 

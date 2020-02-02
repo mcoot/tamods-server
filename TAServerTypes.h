@@ -65,21 +65,21 @@ namespace TAServer {
         }
     };
 
-    struct PlayerXpRecord {
+    struct PlayerTimePlayedRecord {
     public:
-        int xp = 0;
-        bool wasFirstWin = false;
+        int timePlayed = 0;
+        bool wasWin = false;
     public:
-        void toJson(json& j) {
-            j["xp"] = xp;
-            j["first_win"] = wasFirstWin;
+        void toJson(json & j) {
+            j["time"] = timePlayed;
+            j["win"] = wasWin;
         }
 
         bool fromJson(const json& j) {
-            if (j.find("xp") == j.end()) return false;
-            xp = j["xp"];
-            if (j.find("first_win") == j.end()) return false;
-            wasFirstWin = j["first_win"];
+            if (j.find("time") == j.end()) return false;
+            timePlayed = j["time"];
+            if (j.find("win") == j.end()) return false;
+            wasWin = j["win"];
             return true;
         }
     };
@@ -330,7 +330,7 @@ namespace TAServer {
     class Game2LauncherMatchEndMessage : public Message {
     public:
         PersistentContext controllerContext;
-        std::map<long long, PlayerXpRecord> playerEarnedXps;
+        std::map<long long, PlayerTimePlayedRecord> playersTimePlayed;
         int nextMapWaitTime;
     public:
         short getMessageKind() override {
@@ -344,20 +344,20 @@ namespace TAServer {
 
             j["controller_context"] = contextJson;
 
-            json xpJson = json::object();
+            json timePlayedJson = json::object();
 
-            for (auto& it : playerEarnedXps) {
+            for (auto& it : playersTimePlayed) {
                 json recJson;
                 it.second.toJson(recJson);
-                xpJson[std::to_string(it.first)] = recJson;
+                timePlayedJson[std::to_string(it.first)] = recJson;
             }
 
-            j["player_earned_xps"] = xpJson;
+            j["players_time_played"] = timePlayedJson;
             j["next_map_wait_time"] = nextMapWaitTime;
         }
 
         bool fromJson(const json& j) {
-            json mapping = j["player_earned_xps"];
+            json mapping = j["players_time_played"];
             for (json::iterator mapping_it = mapping.begin(); mapping_it != mapping.end(); ++mapping_it) {
                 std::string key = mapping_it.key();
                 long long playerIdLong;
@@ -369,12 +369,12 @@ namespace TAServer {
                 }
 
                 json jsonRec = *mapping_it;
-                PlayerXpRecord rec;
+                PlayerTimePlayedRecord rec;
                 if (!rec.fromJson(jsonRec)) {
                     return false;
                 }
 
-                playerEarnedXps[playerIdLong] = rec;
+                playersTimePlayed[playerIdLong] = rec;
             }
 
             if (j.find("next_map_wait_time") == j.end()) return false;
