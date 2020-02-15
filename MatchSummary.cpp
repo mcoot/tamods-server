@@ -1,18 +1,12 @@
 #include "MatchSummary.h"
 
-#include <boost/assert.hpp>
 #include <boost/dynamic_bitset.hpp>
-#include <iostream>
-#include <map>
-#include <vector>
 #include <windows.h>
 
 #include "detours.h"
 
 #pragma warning (disable : 4996)
 
-
-const char logFileName[] = "C:\\projects\\TribesProtocol\\taserver\\gameclient\\testdata\\matchends\\matchend.log";
 
 namespace MatchSummary
 {
@@ -44,39 +38,6 @@ namespace MatchSummary
         bool fragmentSent;
         int maxNumberOfBits;
     };
-
-
-    const unsigned int fragmentSizeInBits = 3359;
-    unsigned char fragment[] = {
-        0x04, 0x00, 0x80, 0xE0, 0xB3, 0x0E, 0x70, 0x00, 0x80, 0x53, 0x04, 0x50, 0x00, 0xF0, 0x25, 0xF8,
-        0xFF, 0xFF, 0xFF, 0x27, 0x16, 0x00, 0x00, 0x00, 0x00, 0x10, 0x16, 0x70, 0x0C, 0x00, 0x00, 0x60,
-        0x23, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xA0, 0x15, 0x00, 0x00, 0x00, 0x00, 0x90,
-        0x15, 0x08, 0x00, 0x00, 0x00, 0xB0, 0x2C, 0x00, 0x00, 0x00, 0x00, 0xB8, 0x2C, 0x00, 0x00, 0x00,
-        0x00, 0x80, 0x0B, 0x28, 0x00, 0x18, 0x00, 0xA8, 0x2C, 0x08, 0xE7, 0x18, 0x00, 0xD8, 0x24, 0x00,
-        0x00, 0xD0, 0x2B, 0x42, 0x1A, 0x78, 0x6E, 0x1D, 0x00, 0x18, 0x00, 0xA8, 0x2C, 0x78, 0xE7, 0x18,
-        0x00, 0xD8, 0x24, 0x00, 0x00, 0xC0, 0x17, 0x42, 0x1A, 0x78, 0x6E, 0x1D, 0x00, 0x18, 0x00, 0xA8,
-        0x2C, 0x60, 0xE7, 0x18, 0x00, 0xD8, 0x24, 0x00, 0x00, 0x70, 0x15, 0x42, 0x1A, 0xC8, 0x01, 0x1D,
-        0x01, 0x18, 0x00, 0xA8, 0x2C, 0x38, 0xE7, 0x18, 0x00, 0xD8, 0x24, 0x00, 0x00, 0x70, 0x14, 0x42,
-        0x1A, 0x78, 0x6E, 0x1D, 0x00, 0x18, 0x00, 0xA8, 0x2C, 0x70, 0xE7, 0x18, 0x00, 0xD8, 0x24, 0x00,
-        0x00, 0x00, 0x00, 0x40, 0x1A, 0x78, 0x6E, 0x1D, 0x00, 0x78, 0x0B, 0x18, 0x00, 0x18, 0x00, 0xA8,
-        0x2C, 0xE0, 0xC8, 0x18, 0x00, 0xD8, 0x24, 0x00, 0x00, 0x70, 0x15, 0x42, 0x1A, 0xC8, 0x01, 0x1D,
-        0x01, 0x18, 0x00, 0xA8, 0x2C, 0xC0, 0xC8, 0x18, 0x00, 0xD8, 0x24, 0x00, 0x00, 0x00, 0x08, 0x42,
-        0x1A, 0x78, 0x6E, 0x1D, 0x00, 0x18, 0x00, 0xA8, 0x2C, 0x20, 0xC9, 0x18, 0x00, 0xD8, 0x24, 0x00,
-        0x00, 0x00, 0xFC, 0x41, 0x1A, 0x78, 0x6E, 0x1D, 0x00, 0xE8, 0xB0, 0x05, 0x80, 0xAD, 0x45, 0x00,
-        0x07, 0x00, 0xA4, 0x81, 0x1C, 0xD0, 0x11, 0x00, 0x47, 0x01, 0x00, 0x00, 0x00, 0x00, 0xC2, 0x00,
-        0x00, 0x00, 0x00, 0x80, 0x19, 0x00, 0x00, 0x00, 0x00, 0x00, 0x69, 0x80, 0x3F, 0x04, 0x00, 0x80,
-        0x4A, 0x80, 0x4E, 0x03, 0x00, 0x80, 0x65, 0x82, 0xDE, 0x38, 0x00, 0x80, 0x63, 0x82, 0x68, 0x00,
-        0x00, 0x80, 0x02, 0x83, 0x68, 0x00, 0x00, 0x00, 0x60, 0x02, 0x1A, 0x00, 0x00, 0x00, 0x03, 0x03,
-        0x41, 0x00, 0x00, 0x80, 0x82, 0x82, 0xC3, 0x00, 0x00, 0x00, 0xB8, 0x80, 0x02, 0x00, 0x01, 0x80,
-        0xCA, 0x82, 0x70, 0x8E, 0x01, 0x80, 0x4D, 0x02, 0x00, 0xF8, 0x83, 0x22, 0x01, 0x80, 0xCA, 0x82,
-        0x73, 0x8E, 0x01, 0x80, 0x4D, 0x02, 0x00, 0x00, 0x00, 0x00, 0x01, 0x80, 0xCA, 0x02, 0x76, 0x8E,
-        0x01, 0x80, 0x4D, 0x02, 0x00, 0x00, 0x57, 0x21, 0x01, 0x80, 0xCA, 0x02, 0x77, 0x8E, 0x01, 0x80,
-        0x4D, 0x02, 0x00, 0x00, 0x00, 0x00, 0x01, 0x80, 0xCA, 0x82, 0x77, 0x8E, 0x01, 0x80, 0x4D, 0x02,
-        0x00, 0x00, 0x12, 0xA1, 0xB7, 0x00, 0x01, 0x00, 0x01, 0x80, 0xCA, 0x02, 0x8E, 0x8C, 0x01, 0x80,
-        0x4D, 0x02, 0x00, 0x00, 0x57, 0x21, 0x01, 0x80, 0xCA, 0x02, 0x92, 0x8C, 0x01, 0x80, 0x4D, 0x02,
-        0x00, 0x00, 0xC0, 0x9F
-    };
-
 
     static EndGameFunction realEndGameFunction = 0;
     static Level6Function realLevel6Function = 0;
@@ -122,25 +83,10 @@ namespace MatchSummary
         fprintf(pFile, "\n");
     }
 
-//#define DOPRINTS
-
     void __cdecl fakeLevel8Function(void* pWriteBuffer, int writeOffsetInBits, void* pReadBuffer, int readOffsetInBits, int bitsToCopy)
     {
         //OutputDebugString(L"tamods: fakeLevel8Function\n");
         bool modifyEdi = false;
-
-#ifdef DOPRINTS
-        FILE* pFile = fopen(logFileName, "at");
-#endif
-
-#ifdef DOPRINTS
-        char text[1000];
-
-        if (readOffsetInBits != 0)
-        {
-            fprintf(pFile, "tamods: readoffsetinbits was %d\n", readOffsetInBits);
-        }
-#endif
 
         ClientData& clientData = clientMap[pWriteBuffer];
 
@@ -149,20 +95,11 @@ namespace MatchSummary
         {
             firstLevel8SinceLevel6 = false;
 
-#ifdef DOPRINTS
-            fprintf(pFile, "tamods: that was the first level8 since level6\n");
-#endif
-
             // Track sequence number of messages on channel 0
             unsigned int channel0data = *(unsigned int*)pReadBuffer;
             if ((channel0data & 0x00001ff8) == 0)
             {
                 clientData.seqnr = (channel0data >> 13) & 0x1f;
-#ifdef DOPRINTS
-                sprintf(text, "tamods: channel 0 seqnr = %lu\n", clientData.seqnr);
-                OutputDebugStringA(text);
-                fprintf(pFile, text);
-#endif
             }
 
             if (gameEnded >= 2 && !clientData.fragmentInserted)
@@ -179,21 +116,6 @@ namespace MatchSummary
                     // first write for a new piece of data. That is when we can insert our own data.
                     if (writeOffsetInBits != clientData.previousWriteOffset)
                     {
-#ifdef DOPRINTS
-                        sprintf(text, "tamods: Sending fragment to client with buffer %p\n", pWriteBuffer);
-                        OutputDebugStringA(text);
-                        fprintf(pFile, text);
-#endif
-
-
-#ifdef DOPRINTS
-                        sprintf(text, "tamods:   first player %d copy %08X bits from %p+%08X to %p+%08X\n", currentPlayer, fragmentSizeInBits, &fragment[0], 0, pWriteBuffer, writeOffsetInBits);
-                        OutputDebugStringA(text);
-                        fprintf(pFile, text);
-
-                        writeBits(pFile, fragment, fragmentSizeInBits);
-#endif
-
                         clientData.fragmentInserted = true;
                         clientData.insertionOffset = writeOffsetInBits;
                     }
@@ -202,13 +124,6 @@ namespace MatchSummary
             }
         }
 
-#ifdef DOPRINTS
-        sprintf(text, "tamods:   player %d copy %08X bits from %p+%08X to %p+%08X\n", currentPlayer, bitsToCopy, pReadBuffer, readOffsetInBits, pWriteBuffer, writeOffsetInBits);
-        OutputDebugStringA(text);
-        fprintf(pFile, text);
-        writeBits(pFile, (unsigned char*)pReadBuffer, readOffsetInBits + bitsToCopy);
-        fclose(pFile);
-#endif
         realLevel8Function(pWriteBuffer, writeOffsetInBits, pReadBuffer, readOffsetInBits, bitsToCopy);
         clientData.maxNumberOfBits = max(clientData.maxNumberOfBits, writeOffsetInBits + bitsToCopy);
     }
@@ -239,10 +154,6 @@ namespace MatchSummary
 
     int __stdcall fakeSendtoFunction(SOCKET s, char* buf, int len, int flags, const sockaddr* to, int tolen)
     {
-#ifdef DOPRINTS
-        FILE* pFile = fopen(logFileName, "at");
-#endif
-
         ClientData& clientData = clientMap[(void *)buf];
         if (clientData.fragmentInserted && !clientData.fragmentSent)
         {
@@ -305,28 +216,11 @@ namespace MatchSummary
             unsigned int payloadsizesize = 13;
 
 
-//#define FRAGMENT
-
-#ifdef FRAGMENT
-            clientData.insertionCount = fragmentSizeInBits;
-#else
             clientData.insertionCount = part1size + countersize + part2size + payloadsizesize + payloadsize;
-#endif
 
-#ifdef DOPRINTS
-            fprintf(pFile, "tamods: sendto before, aftermove and aftercopy\n");
-            writeBits(pFile, (unsigned char*)buf, len * 8);
-#endif
-            *(unsigned int*)fragment |= (clientData.seqnr + 1) << 13;
             memMoveBits((unsigned char *)buf, clientData.insertionOffset, clientData.insertionOffset + clientData.insertionCount, len * 8 - clientData.insertionOffset);
 
             len = (clientData.maxNumberOfBits + clientData.insertionCount) / 8 + 1;
-#ifdef DOPRINTS
-            writeBits(pFile, (unsigned char*)buf, len * 8);
-#endif
-#ifdef FRAGMENT
-            realLevel8Function(buf, clientData.insertionOffset, &fragment[0], 0, fragmentSizeInBits);
-#else
             unsigned int writeOffset = clientData.insertionOffset;
             realLevel8Function(buf, writeOffset, &part1, 0, part1size);             writeOffset += part1size;
 
@@ -343,24 +237,12 @@ namespace MatchSummary
             realLevel8Function(buf, writeOffset, &prefix2, 0, prefix2size);         writeOffset += prefix2size;
             playerStats.toBytes(pBuffer);
             realLevel8Function(buf, writeOffset, &pBuffer, 0, playerStatsSize);     writeOffset += playerStatsSize;
-#endif
-
-
-#ifdef DOPRINTS
-            writeBits(pFile, (unsigned char*)buf, len * 8);
-#endif
 
             clientData.fragmentSent = true;
             clientData.insertionOffset = 0;
             clientData.insertionCount = 0;
         }
         clientData.maxNumberOfBits = 0;
-
-#ifdef DOPRINTS
-        fprintf(pFile, "tamods:   sendto %08X bytes (%08X bits) from %p:\n", len, len * 8, buf);
-        //writeBits(pFile, (unsigned char *)buf, len * 8);
-        fclose(pFile);
-#endif
 
         return realSendtoFunction(s, buf, len, flags, to, tolen);
     }
