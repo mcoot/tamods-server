@@ -61,7 +61,49 @@ static void GenericLoggingUScriptHook(UObject* that, void* params, void* result,
     Logger::debug("<UScript hook blackholed>");
 }
 
+static void addStatsFunctionHooks() {
+    Hooks::addUScript(&TrStatsInterface_AddKill, "Function TribesGame.TrStatsInterface.AddKill");
+    Hooks::addUScript(&TrStatsInterface_AddDeath, "Function TribesGame.TrStatsInterface.AddDeath");
+    Hooks::addUScript(&TrStatsInterface_AddAssist, "Function TribesGame.TrStatsInterface.AddAssist");
+    Hooks::addUScript(&TrStatsInterface_AddAccolade, "Function TribesGame.TrStatsInterface.AddAccolade");
+    Hooks::addUScript(&TrStatsInterface_AddCredits, "Function TribesGame.TrStatsInterface.AddCredits");
+    Hooks::addUScript(&TrStatsInterface_UpdateTimePlayed, "Function TribesGame.TrStatsInterface.UpdateTimePlayed");
+    Hooks::addUScript(&TrStatsInterface_UpdateWeapon, "Function TribesGame.TrStatsInterface.UpdateWeapon");
+    Hooks::addUScript(&TrStatsInterface_UpdateDamage, "Function TribesGame.TrStatsInterface.UpdateDamage");
 
+    Hooks::addUScript(&TrStatsInterface_AddRepair, "Function TribesGame.TrStatsInterface.AddRepair");
+    Hooks::addUScript(&TrStatsInterface_AddFlagCap, "Function TribesGame.TrStatsInterface.AddFlagCap");
+    Hooks::addUScript(&TrStatsInterface_AddFlagGrab, "Function TribesGame.TrStatsInterface.AddFlagGrab");
+    Hooks::addUScript(&TrStatsInterface_AddFlagReturn, "Function TribesGame.TrStatsInterface.AddFlagReturn");
+    Hooks::addUScript(&TrStatsInterface_AddMidairKill, "Function TribesGame.TrStatsInterface.AddMidairKill");
+    Hooks::addUScript(&TrStatsInterface_AddVehicleKill, "Function TribesGame.TrStatsInterface.AddVehicleKill");
+    Hooks::addUScript(&TrStatsInterface_SetXP, "Function TribesGame.TrStatsInterface.SetXP");
+    Hooks::addUScript(&TrStatsInterface_SetTeam, "Function TribesGame.TrStatsInterface.SetTeam");
+    Hooks::addUScript(&TrStatsInterface_AddVehicleDestruction, "Function TribesGame.TrStatsInterface.AddVehicleDestruction");
+    Hooks::addUScript(&TrStatsInterface_SetSpeedSkied, "Function TribesGame.TrStatsInterface.SetSpeedSkied");
+    Hooks::addUScript(&TrStatsInterface_AddDeployableDestruction, "Function TribesGame.TrStatsInterface.AddDeployableDestruction");
+    Hooks::addUScript(&TrStatsInterface_AddCreditsSpent, "Function TribesGame.TrStatsInterface.AddCreditsSpent");
+    Hooks::addUScript(&TrStatsInterface_SetDistanceKill, "Function TribesGame.TrStatsInterface.SetDistanceKill");
+    Hooks::addUScript(&TrStatsInterface_SetSpeedFlagCap, "Function TribesGame.TrStatsInterface.SetSpeedFlagCap");
+    Hooks::addUScript(&TrStatsInterface_AddCreditsEarned, "Function TribesGame.TrStatsInterface.AddCreditsEarned");
+    Hooks::addUScript(&TrStatsInterface_AddDistanceSkied, "Function TribesGame.TrStatsInterface.AddDistanceSkied");
+    Hooks::addUScript(&TrStatsInterface_SetSpeedFlagGrab, "Function TribesGame.TrStatsInterface.SetSpeedFlagGrab");
+    Hooks::addUScript(&TrStatsInterface_SetDistanceHeadshot, "Function TribesGame.TrStatsInterface.SetDistanceHeadshot");
+
+    Hooks::addUScript(&TrStatsInterface_FallingDeath, "Function TribesGame.TrStatsInterface.FallingDeath");
+    Hooks::addUScript(&TrStatsInterface_SkiDistance, "Function TribesGame.TrStatsInterface.SkiDistance");
+    Hooks::addUScript(&TrStatsInterface_BeltKill, "Function TribesGame.TrStatsInterface.BeltKill");
+    Hooks::addUScript(&TrStatsInterface_CallIn, "Function TribesGame.TrStatsInterface.CallIn");
+    Hooks::addUScript(&TrStatsInterface_CallInKill, "Function TribesGame.TrStatsInterface.CallInKill");
+    Hooks::addUScript(&TrStatsInterface_RegeneratedToFull, "Function TribesGame.TrStatsInterface.RegeneratedToFull");
+    Hooks::addUScript(&TrStatsInterface_FlagGrabSpeed, "Function TribesGame.TrStatsInterface.FlagGrabSpeed");
+    // TODO: Verify if below needs to be VEHICLEKILL uppercase - the generated SDK has this for some reason?
+    // Requires testing in-game if the hook works
+    Hooks::addUScript(&TrStatsInterface_VehicleKill, "Function TribesGame.TrStatsInterface.VehicleKill");
+    Hooks::addUScript(&TrStatsInterface_InvStationVisited, "Function TribesGame.TrStatsInterface.InvStationVisited");
+    Hooks::addUScript(&TrStatsInterface_SkiSpeed, "Function TribesGame.TrStatsInterface.SkiSpeed");
+    Hooks::addUScript(&TrStatsInterface_BaseUpgrade, "Function TribesGame.TrStatsInterface.BaseUpgrade");
+}
 
 // Desired hooks should be added here
 static void addHooks() {
@@ -156,6 +198,8 @@ static void addHooks() {
     // Vehicles cost credits
     Hooks::addUScript(&TrVehicleStation_AbleToSpawnVehicleType, "Function TribesGame.TrVehicleStation.AbleToSpawnVehicleType");
     Hooks::add(&TrPlayerController_ServerRequestSpawnVehicle, "Function TribesGame.TrPlayerController.ServerRequestSpawnVehicle");
+
+    addStatsFunctionHooks();
 }
 
 #define CLI_FLAG_CONTROLPORT L"-controlport"

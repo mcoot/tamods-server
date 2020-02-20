@@ -240,6 +240,7 @@
     <ClCompile Include="Mod_Loadouts.cpp" />
     <ClCompile Include="Mod_Reimpl.cpp" />
     <ClCompile Include="Mod_ServerSettings.cpp" />
+    <ClCompile Include="Mod_StatsSaving.cpp" />
     <ClCompile Include="NameCryptor.cpp" />
     <ClCompile Include="Profiler.cpp" />
     <ClCompile Include="SDK_SOURCES\Core_functions.cpp" />
