@@ -1,5 +1,6 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "dllmain.h"
+#include <shellapi.h>
 
 static void fixPingDependencies() {
     std::vector<UClass*> toFix = {
@@ -157,6 +158,27 @@ static void addHooks() {
     Hooks::add(&TrPlayerController_ServerRequestSpawnVehicle, "Function TribesGame.TrPlayerController.ServerRequestSpawnVehicle");
 }
 
+#define CLI_FLAG_CONTROLPORT L"-controlport"
+
+int determineControlPort() {
+    int numArgs;
+    wchar_t** args = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+
+    if (args) {
+        // Only check up to the second last argument
+        // Since we need both the flag and the path
+        for (int i = 0; i < numArgs - 1; ++i) {
+            if (wcscmp(args[i], CLI_FLAG_CONTROLPORT) == 0) {
+                // This won't work if there are non-ascii characters in the path but yolo
+                std::wstring portWString(args[i + 1]);
+                std::string portString(portWString.begin(), portWString.end());
+                return std::stoi(portString);
+            }
+        }
+    }
+    return 9002;
+}
+
 void onDLLProcessAttach() {
     
 #ifdef RELEASE
@@ -181,8 +203,11 @@ void onDLLProcessAttach() {
     //g_config.serverSettings.ApplyAsDefaults();
 
     if (g_config.connectToTAServer) {
-        Logger::info("Connecting to TAServer...");
-        if (g_TAServerClient.connect("127.0.0.1", 9002)) {
+        int controlPort = determineControlPort();
+
+        Logger::info("Connecting to TAServer on port %d...", controlPort);
+
+        if (g_TAServerClient.connect("127.0.0.1", controlPort)) {
             Logger::debug("Connected to TAServer!");
         } else {
             Logger::error("Failed to connect to TAServer launcher.");
