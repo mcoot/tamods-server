@@ -6191,6 +6191,10 @@ class ATrPlayerReplicationInfo* ATrPawn::GetTribesReplicationInfo ( )
 
     ATrPawn_execGetTribesReplicationInfo_Parms GetTribesReplicationInfo_Parms;
 
+    // Bug fix: initialize ReturnValue to 0, because if this->PlayerReplicationInfo and 
+    // this->DrivenVehicle are 0 GetTribesReplicationInfo will leave ReturnValue untouched.
+    GetTribesReplicationInfo_Parms.ReturnValue = 0;
+
     this->ProcessEvent ( pFnGetTribesReplicationInfo, &GetTribesReplicationInfo_Parms, NULL );
 
     return GetTribesReplicationInfo_Parms.ReturnValue;
