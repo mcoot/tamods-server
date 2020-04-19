@@ -86887,7 +86887,7 @@ bool ATrVehicleStation::AbleToSpawnVehicleType ( unsigned char VehicleType )
     static UFunction* pFnAbleToSpawnVehicleType = NULL;
 
     if ( ! pFnAbleToSpawnVehicleType )
-        pFnAbleToSpawnVehicleType = (UFunction*) UObject::GObjObjects()->Data[ 121609 ];
+        pFnAbleToSpawnVehicleType = (UFunction*) UObject::GObjObjects()->Data[ 121608 ];
 
     ATrVehicleStation_execAbleToSpawnVehicleType_Parms AbleToSpawnVehicleType_Parms;
     AbleToSpawnVehicleType_Parms.VehicleType = VehicleType;
