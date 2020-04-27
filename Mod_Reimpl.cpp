@@ -262,37 +262,34 @@ void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, voi
         return;
     }
 
-    if (!params->EventInstigator) {
-        ev.collection_return_point = 5;
-        EventLogger::log(ev);
-        return;
-    }
-
-    if (params->EventInstigator->IsA(ATrDeployableController::StaticClass())) {
-        TrEventInstigator = ((ATrDeployableController*)params->EventInstigator)->m_SpawnedFromController;
-        bIsEventInstigatorDeployableController = true;
-    }
-    else {
-        TrEventInstigator = (ATrPlayerController*)params->EventInstigator;
-
-        if (that->Role == ROLE_Authority && params->EventInstigator != that->Controller && TrEventInstigator->GetTeamNum() == that->GetTeamNum()) {
-            // Track the friendly fire the instigator has done, which may be used to kick them
-            TrEventInstigator->FriendlyFireDamage += ScaledDamage;
-            TrEventInstigator->CheckFriendlyFireDamage();
+    if (params->EventInstigator)
+    {
+        if (params->EventInstigator->IsA(ATrDeployableController::StaticClass())) {
+            TrEventInstigator = ((ATrDeployableController*)params->EventInstigator)->m_SpawnedFromController;
+            bIsEventInstigatorDeployableController = true;
         }
-    }
+        else {
+            TrEventInstigator = (ATrPlayerController*)params->EventInstigator;
 
-    if (TrEventInstigator && TrEventInstigator->IsA(ATrPlayerController::StaticClass()) && TrEventInstigator->PlayerReplicationInfo) {
-        ev.damaging_player_name = Utils::f2std(TrEventInstigator->PlayerReplicationInfo->PlayerName);
-    }
+            if (that->Role == ROLE_Authority && params->EventInstigator != that->Controller && TrEventInstigator->GetTeamNum() == that->GetTeamNum()) {
+                // Track the friendly fire the instigator has done, which may be used to kick them
+                TrEventInstigator->FriendlyFireDamage += ScaledDamage;
+                TrEventInstigator->CheckFriendlyFireDamage();
+            }
+        }
 
-    if (TrEventInstigator && TrEventInstigator != that->Controller) {
-        // Play effects for hitting someone
-        TrEventInstigator->ServerShowOverheadNumber(DamageWithoutNewPlayerAssist,
-            ((UTrDmgType_Base*)TrDamageType->Default)->ModifyOverheadNumberLocation(that->Location), that->Location.Z, that->bShieldAbsorb);
+        if (TrEventInstigator && TrEventInstigator->IsA(ATrPlayerController::StaticClass()) && TrEventInstigator->PlayerReplicationInfo) {
+            ev.damaging_player_name = Utils::f2std(TrEventInstigator->PlayerReplicationInfo->PlayerName);
+        }
 
-        if (!bIsEventInstigatorDeployableController) {
-            TrEventInstigator->FlashShooterHitReticule(DamageWithoutNewPlayerAssist, false, that->GetTeamNum());
+        if (TrEventInstigator && TrEventInstigator != that->Controller) {
+            // Play effects for hitting someone
+            TrEventInstigator->ServerShowOverheadNumber(DamageWithoutNewPlayerAssist,
+                ((UTrDmgType_Base*)TrDamageType->Default)->ModifyOverheadNumberLocation(that->Location), that->Location.Z, that->bShieldAbsorb);
+
+            if (!bIsEventInstigatorDeployableController) {
+                TrEventInstigator->FlashShooterHitReticule(DamageWithoutNewPlayerAssist, false, that->GetTeamNum());
+            }
         }
     }
 
@@ -436,7 +433,7 @@ void TrPawn_RememberLastDamager(ATrPawn* that, ATrPawn_execRememberLastDamager_P
     }
 
     // If we damaged ourselves, always apply a timestamp
-    if (params->Damager && params->Damager == OwnerController) {
+    if (!params->Damager || params->Damager == OwnerController) {
         if (params->DamageAmount > 0) {
             that->m_fLastDamagerTimeStamp = that->WorldInfo->TimeSeconds;
         }
