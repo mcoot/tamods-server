@@ -652,7 +652,7 @@ namespace LuaAPI {
                     .addVariable("Temple", &mapCodeCTFTempleRuins, false)
                     .addVariable("Stonehenge", &mapCodeCTFStonehenge, false)
                     .addVariable("Sunstar", &mapCodeCTFSunstar, false)
-                    .addVariable("BellaOmega", &mapCodeCTFBellaOmegaNS, false)
+                    .addVariable("BellaOmega", &mapCodeCTFBellaOmega, false)
                     .addVariable("Bella", &mapCodeCTFBellaOmegaNS, false)
                     .addVariable("BellaOmegaNS", &mapCodeCTFBellaOmegaNS, false)
                     .addVariable("BellaOmegaSandstorm", &mapCodeCTFBellaOmega, false)
