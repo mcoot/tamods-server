@@ -144,8 +144,8 @@ struct ServerSettings {
 
     // OOTB style - generation time
     int GravCycleSpawnTime = 30;
-    int BeowulfSpawnTime = 120;
-    int ShrikeSpawnTime = 120;
+    int BeowulfSpawnTime = 60;
+    int ShrikeSpawnTime = 90;
     int HERCSpawnTime = 120;
     int HavocSpawnTime = 120;
 
