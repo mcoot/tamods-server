@@ -184,11 +184,12 @@ namespace TAServer {
         tcpClient->send(msg.getMessageKind(), j);
     }
 
-    void Client::sendMatchEnded(int nextMatchIdx, std::string nextMapOverride, int waitTime, std::map<long long, PlayerTimePlayedRecord> playerTimePlayed) {
+    void Client::sendMatchEnded(int nextMatchIdx, const std::vector<std::string> &votableMaps, std::string nextMapOverride, int waitTime, std::map<long long, PlayerTimePlayedRecord> playerTimePlayed) {
         Game2LauncherMatchEndMessage msg;
         msg.controllerContext.hasContext = true;
         msg.controllerContext.nextMapIndex = nextMatchIdx;
         msg.controllerContext.nextMapOverride = nextMapOverride;
+        msg.votableMaps = votableMaps;
         msg.playersTimePlayed = playerTimePlayed;
         msg.nextMapWaitTime = waitTime;
 

@@ -334,6 +334,8 @@ SETTING_GETTERSETTER(float, InventoryCallInMeshMaxAngle)
 SETTING_GETTERSETTER(float, BE_SensorRadius)
 SETTING_GETTERSETTER(float, DS_SensorRadius)
 
+SETTING_GETTERSETTER(bool, VotingEnabled)
+
 static void addCustomToMapRotation(std::string mapName) {
     g_config.serverSettings.mapRotation.push_back(mapName);
 }
@@ -601,6 +603,7 @@ namespace LuaAPI {
                         .addVariable("Sequential", &mapRotationModeSequential, false)
                         .addVariable("Random", &mapRotationModeRandom, false)
                     .endNamespace()
+                    .SETTING_LUAPROP(VotingEnabled)
                     .addFunction("add", &addToMapRotation)
                     .addFunction("addCustom", &addCustomToMapRotation)
                 .endNamespace()

@@ -88,10 +88,9 @@ bool UTGame_MatchInProgress_BeginState(int ID, UObject *dwCallingObject, UFuncti
     return false;
 }
 
-static int getNextMapIdx() {
-    if (bNextMapOverrideValue != 0 && Data::map_id_to_filename.find(bNextMapOverrideValue) != Data::map_id_to_filename.end()) {
+static int chooseNextMapIdx() {
+    if (bNextMapOverrideValue != 0) {
         // Override for next map has been set
-        // Shouldn
         return bNextMapOverrideValue;
     }
     else if (g_config.serverSettings.mapRotationMode == MapRotationMode::RANDOM) {
@@ -107,24 +106,6 @@ static int getNextMapIdx() {
     else {
         return (g_config.serverSettings.mapRotationIndex + 1) % g_config.serverSettings.mapRotation.size();
     }
-}
-
-static std::string getNextMapName() {
-    std::string nextMapName;
-    if (bNextMapOverrideValue != 0 && Data::map_id_to_filename.find(bNextMapOverrideValue) != Data::map_id_to_filename.end()) {
-        // Override for next map has been set
-        nextMapName = Data::map_id_to_filename[bNextMapOverrideValue];
-        bNextMapOverrideValue = 0;
-    }
-    else {
-        int nextIdx = getNextMapIdx();
-        if (nextIdx >= 0 && nextIdx < g_config.serverSettings.mapRotation.size()) {
-            nextMapName = g_config.serverSettings.mapRotation[nextIdx];
-        }
-        
-    }
-
-    return nextMapName;
 }
 
 static std::map<long long, TAServer::PlayerTimePlayedRecord> getPlayersTimePlayed(ATrGameReplicationInfo* gri) {
@@ -172,9 +153,15 @@ void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* resu
         }
 
         // If a map override has been issued, we need to explicitly give the map name
-        std::string nextMapOverrideName = bNextMapOverrideValue == 0 ? "" : getNextMapName();
+        std::string nextMapOverrideName = bNextMapOverrideValue == 0 ? "" : g_config.serverSettings.mapRotation[bNextMapOverrideValue];
+
+        std::vector<std::string> votableMaps;
+        if(g_config.serverSettings.VotingEnabled)
+        {
+            votableMaps = g_config.serverSettings.mapRotation;
+        }
         
-        g_TAServerClient.sendMatchEnded(getNextMapIdx(), nextMapOverrideName, g_config.serverSettings.EndMatchWaitTime, playersTimePlayed);
+        g_TAServerClient.sendMatchEnded(chooseNextMapIdx(), votableMaps, nextMapOverrideName, g_config.serverSettings.EndMatchWaitTime, playersTimePlayed);
     }
 }
 
@@ -389,7 +376,7 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
                     nextMapName = g_config.serverSettings.mapRotation[0];
                 }
                 else {                    
-                    nextMapName = getNextMapName();
+                    nextMapName = g_config.serverSettings.mapRotation[controllerContext.nextMapIndex];
                     Logger::debug("Changing to the map... %s", nextMapName.c_str());
                 }
             }

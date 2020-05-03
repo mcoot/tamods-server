@@ -57,7 +57,7 @@ namespace TAServer {
         void sendScoreInfo(int beScore, int dsScore);
         void sendMapInfo(int mapId);
         void sendMatchTime(long long matchSecondsLeft, bool counting);
-        void sendMatchEnded(int nextMapIdx, std::string nextMapOverride, int waitTime, std::map<long long, PlayerTimePlayedRecord> playerTimePlayed);
+        void sendMatchEnded(int nextMapIdx, const std::vector<std::string> &votableMaps, std::string nextMapOverride, int waitTime, std::map<long long, PlayerTimePlayedRecord> playerTimePlayed);
 
         void handler_OnConnect();
         void handler_Launcher2GameLoadoutMessage(const json& msgBody);
