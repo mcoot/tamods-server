@@ -199,6 +199,9 @@ struct ServerSettings {
     float InventoryCallInTerrainMaxAngle = 70;
     float InventoryCallInMeshMaxAngle = 40;
 
+    // Whether map voting is enabled
+    bool VotingEnabled = false;
+
     MapRotationMode mapRotationMode = MapRotationMode::SEQUENTIAL;
     std::vector<std::string> mapRotation;
     int mapRotationIndex = -1;

@@ -330,6 +330,7 @@ namespace TAServer {
     class Game2LauncherMatchEndMessage : public Message {
     public:
         PersistentContext controllerContext;
+        std::vector<std::string> votableMaps;
         std::map<long long, PlayerTimePlayedRecord> playersTimePlayed;
         int nextMapWaitTime;
     public:
@@ -343,6 +344,7 @@ namespace TAServer {
             controllerContext.toJson(contextJson);
 
             j["controller_context"] = contextJson;
+            j["votable_maps"] = votableMaps;
 
             json timePlayedJson = json::object();
 
@@ -376,6 +378,9 @@ namespace TAServer {
 
                 playersTimePlayed[playerIdLong] = rec;
             }
+
+            if (j.find("votable_maps") == j.end()) return false;
+            votableMaps = j["votable_maps"].get<std::vector<std::string>>();
 
             if (j.find("next_map_wait_time") == j.end()) return false;
             nextMapWaitTime = j["next_map_wait_time"];
