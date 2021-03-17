@@ -5,11 +5,20 @@
 
 #include "detours.h"
 
+
+#ifdef _DEBUG
+namespace Logger
+{
+    extern void error(const char *format, ...);
+}
+#endif
+
 #pragma warning (disable : 4996)
 
 
 namespace MatchSummary
 {
+    StatsCollector sStatsCollector;
 
     typedef void(__thiscall* EndGameFunction)(void*, int);
     typedef int(__thiscall* Level6Function)(void*, int, int);
@@ -45,9 +54,9 @@ namespace MatchSummary
     static SendtoFunction realSendtoFunction = 0;
 
     static int gameEnded = 0;
-    static unsigned int currentPlayer = 0;
     static bool firstLevel8SinceLevel6 = false;
     static std::map<void*, ClientData> clientMap;
+    static std::map<char *, unsigned int> bufferToPlayerId;
 
     void __fastcall fakeEndGameFunction(void* pThis, void*, int a)
     {
@@ -60,7 +69,18 @@ namespace MatchSummary
     {
         //OutputDebugString(L"tamods: fakeLevel6Function\n");
         firstLevel8SinceLevel6 = true;
-        currentPlayer = *((unsigned int*)pThis + 0xb8 / sizeof(unsigned int));
+        unsigned int playerId = *((unsigned int*)pThis + 0xb8 / sizeof(unsigned int));
+        char *pSendBuffer = *((char **)pThis + 0x2e8 / sizeof(char *));
+
+#ifdef _DEBUG
+        auto it = bufferToPlayerId.find(pSendBuffer);
+        if(it != bufferToPlayerId.end() && it->second != playerId)
+        {
+            Logger::error("First player %08X and then player 0x%X was using buffer %08X", it->second, playerId, pSendBuffer);
+        }
+#endif
+        bufferToPlayerId[pSendBuffer] = playerId;
+
         return realLevel6Function(pThis, a, b);
     }
 
@@ -158,28 +178,19 @@ namespace MatchSummary
         if (clientData.fragmentInserted && !clientData.fragmentSent)
         {
             OverallMatchStats overallStats;
-            overallStats.addStatistic(0x3adcf, 0x31ce1, 4000.0);
-            overallStats.addStatistic(0x3adcf, 0x31cef, 124.0);
-            overallStats.addStatistic(0x23a039, 0x31cec, 87.0);
-            overallStats.addStatistic(0x3adcf, 0x31ce7, 71.0);
-            overallStats.addStatistic(0x3adcf, 0x31cee, 0.0);
+            PlayerMatchStats playerStats;
 
-            overallStats.addAccolade(0x23a039, 0x3191c, 87.0);
-            overallStats.addAccolade(0x3adcf, 0x31918, 8.0);
-            overallStats.addAccolade(0x3adcf, 0x31924, 1.0);
+            if(bufferToPlayerId.count(buf) == 0)
+            {
+                Logger::error("Unable to find player ID for send buffer %08p", buf);
+            }
+            sStatsCollector.getSummary(bufferToPlayerId.at(buf), playerStats, overallStats);
+
+#ifdef _DEBUG
+            Logger::error("logging match summary stuff for player 0x%X", bufferToPlayerId.at(buf));
+#endif
 
             char pBuffer[4096];
-
-            PlayerMatchStats playerStats;
-            playerStats.addStatistic(0, 0x31ce1, 2175.0);
-            playerStats.addStatistic(0, 0x31ce7, 0.0);
-            playerStats.addStatistic(0, 0x31cec, 87.0);
-            playerStats.addStatistic(0, 0x31cee, 0.0);
-            playerStats.addStatistic(0, 0x31cef, 41.0);
-
-            playerStats.addAccolade(0, 0x3191C, 87.0);
-            playerStats.addAccolade(0, 0x31924, 1.0);
-
 
             // 0 (flag1 = 0)
             //  01 (flag1a = 2)
@@ -198,23 +209,22 @@ namespace MatchSummary
             //                                         10111000 (property = interestingproperty)
             unsigned int prop = 0x0000001d;
             unsigned int propsize = 8;
-            //                                      00000111000000000000000011100101000100000000 (prefix)
-            unsigned long long prefix1 = 0x008a70000e0;
-            unsigned int prefix1size = 44;
-
-            //                                      01101101000000000000110110101101000100000000 (prefix)
-            unsigned long long prefix2 = 0x008b5b000b6;
-            unsigned int prefix2size = 44;
 
             unsigned int overallStatsSize = overallStats.size() * 8;
             unsigned int playerStatsSize = playerStats.size() * 8;
+
+            //                                      0000011100000000000000001110 (prefix)
+            unsigned int prefix1 = (overallStatsSize / 8) | (overallStatsSize / 8) << 19;
+            unsigned int prefix1size = 28;
+
+            unsigned int prefix2 = (playerStatsSize / 8) | (playerStatsSize / 8) << 19;
+            unsigned int prefix2size = 28;
 
             //                           0001111100110 (payloadsize = 3320)
             //                                        x (object = FirstServerObject_0)
             unsigned int payloadsize = propsize + prefix1size + overallStatsSize + 
                                        propsize + prefix2size + playerStatsSize;
-            unsigned int payloadsizesize = 13;
-
+            unsigned int payloadsizesize = (payloadsize > 3000) ? 13 : 14;
 
             clientData.insertionCount = part1size + countersize + part2size + payloadsizesize + payloadsize;
 
@@ -237,6 +247,18 @@ namespace MatchSummary
             realLevel8Function(buf, writeOffset, &prefix2, 0, prefix2size);         writeOffset += prefix2size;
             playerStats.toBytes(pBuffer);
             realLevel8Function(buf, writeOffset, &pBuffer, 0, playerStatsSize);     writeOffset += playerStatsSize;
+
+            boost::dynamic_bitset<unsigned char> insertedbits;
+            insertedbits.append(&buf[clientData.insertionOffset/8], &buf[writeOffset/8 + 1]);
+
+#ifdef _DEBUG
+            static char bitstring[65535] = {0};
+            for (unsigned int i = 0; i < insertedbits.size(); i++)
+            {
+                bitstring[i] = insertedbits[i] ? '1' : '0';
+            }
+            Logger::error("Insertedbits are more or less: %s", bitstring);
+#endif
 
             clientData.fragmentSent = true;
             clientData.insertionOffset = 0;
@@ -264,6 +286,90 @@ namespace MatchSummary
         DetourRemove((PBYTE)realLevel6Function, (PBYTE)&fakeLevel6Function);
         DetourRemove((PBYTE)realLevel8Function, (PBYTE)&fakeLevel8Function);
         DetourRemove((PBYTE)realSendtoFunction, (PBYTE)&fakeSendtoFunction);
+    }
+
+
+    void StatsCollector::addAccolade(int who, int accoladeId)
+    {
+        auto key = std::make_pair(who, accoladeId);
+        auto it = mAccolades.find(key);
+        if(it == mAccolades.end())
+        {
+            mAccolades[key] = 1;
+        }
+        else
+        {
+            it->second += 1;
+        }
+    }
+
+    void StatsCollector::updateStat(int who, int statId, float newValue)
+    {
+        mStats[std::make_pair(who, statId)] = newValue;
+    }
+
+    void StatsCollector::getSummary(int thisPlayerId, PlayerMatchStats &playerStats, OverallMatchStats &overallStats)
+    {
+        int available_overall_stats_slots = 4;
+        int available_overall_accolade_slots = 6;
+        int available_player_stats_slots = 8;
+        int available_player_accolade_slots = 21;
+
+        for(const auto &kv: mStats)
+        {
+            int statPlayerId = kv.first.first;
+            int stat = kv.first.second;
+            float value = kv.second;
+
+            if(value == 0.0)
+            {
+                continue;
+            }
+
+            if(available_overall_stats_slots > 0)
+            {
+                overallStats.addStatistic(statPlayerId, stat, value);
+                available_overall_stats_slots--;
+
+#ifdef _DEBUG
+                Logger::error("MVP stat player 0x%X, stat %d, value %f", statPlayerId, stat, value);
+#endif
+            }
+            if(thisPlayerId == statPlayerId)
+            {
+                if(available_player_stats_slots > 0)
+                {
+                    playerStats.addStatistic(statPlayerId, stat, value);
+                    available_player_stats_slots--;
+                }
+            }
+        }
+
+        for(const auto &kv: mAccolades)
+        {
+            int accPlayerId = kv.first.first;
+            int acc = kv.first.second;
+            float value = kv.second;
+
+            if(value == 0.0)
+            {
+                continue;
+            }
+
+            if(available_overall_accolade_slots > 0)
+            {
+                overallStats.addAccolade(accPlayerId, acc, value);
+                available_overall_accolade_slots--;
+            }
+            if(thisPlayerId == accPlayerId)
+            {
+                if(available_player_accolade_slots > 0)
+                {
+                    playerStats.addAccolade(accPlayerId, acc, value);
+                    available_player_accolade_slots--;
+                }
+            }
+        }
     }
 
 }

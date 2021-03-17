@@ -51,6 +51,11 @@ namespace MatchSummary
     class MatchStats
     {
     public:
+        MatchStats(unsigned short id):
+            mId(id)
+        {
+        }
+
         void addStatistic(int who, int what, float howMuch)
         {
             statistics.push_back(std::make_tuple(who, what, howMuch));
@@ -63,7 +68,7 @@ namespace MatchSummary
 
         size_t size()
         {
-            size_t size = 2;
+            size_t size = 4;
             for (auto item : dataMap)
             {
                 switch (s_typeMap.at(item.first))
@@ -86,6 +91,7 @@ namespace MatchSummary
 
         void toBytes(void* pBuffer)
         {
+            pBuffer = serializeInt16(pBuffer, mId);
             pBuffer = serializeInt16(pBuffer, (unsigned short)dataMap.size() + 2);
 
             for (auto& item : dataMap)
@@ -177,6 +183,7 @@ namespace MatchSummary
         virtual void* serializeStat(void*, int who, int what, float howMuch) = 0;
 
     private:
+        unsigned short mId;
         std::map<int, FieldData> dataMap;
         std::vector<std::tuple<int, int, float>> statistics;
         std::vector<std::tuple<int, int, float>> accolades;
@@ -185,14 +192,15 @@ namespace MatchSummary
     class OverallMatchStats : public MatchStats
     {
     public:
-        OverallMatchStats()
+        OverallMatchStats():
+            MatchStats(0x008a)
         {
-            addInt32(0x04be, 0);
-            addInt32(0x02c4, 0);
-            addInt32(0x02c2, 0);
-            addInt64(0x046c, 0);
-            addInt32(0x02b4, 0);
-            addInt32(0x02b2, 0);
+            addInt32(0x04be, 13);
+            addInt32(0x02c4, 14);
+            addInt32(0x02c2, 60);
+            addInt64(0x046c, 16);
+            addInt32(0x02b4, 17);
+            addInt32(0x02b2, 18);
             addInt32(0x0596, 0);
             addInt32(0x0597, 0);
         }
@@ -219,20 +227,21 @@ namespace MatchSummary
     class PlayerMatchStats : public MatchStats
     {
     public:
-        PlayerMatchStats()
+        PlayerMatchStats():
+            MatchStats(0x008b)
         {
-            addInt32(0x0348, 0);
+            addInt32(0x0348, 1);
             addInt32(0x028e, 0);
             addInt32(0x0184, 0);
             addInt32(0x0033, 0);
             addInt32(0x00d2, 0);
-            addInt32(0x0095, 0);
-            addInt32(0x04cb, 0);
-            addInt32(0x04c7, 0);
+            addInt32(0x0095, 2);
+            addInt32(0x04cb, 3);
+            addInt32(0x04c7, 8);
             addInt32(0x0605, 0);
             addInt32(0x04c0, 0);
-            addInt32(0x0606, 0);
-            addInt32(0x0505, 0);
+            addInt32(0x0606, 4);
+            addInt32(0x0505, 5);
         }
 
     private:
@@ -253,4 +262,19 @@ namespace MatchSummary
     };
 
     void memMoveBits(unsigned char* pWriteBuffer, int fromOffsetInBits, int toOffsetInBits, int bitsToMove);
+
+    class StatsCollector
+    {
+    public:
+        void addAccolade(int who, int accoladeId);
+        void updateStat(int who, int statId, float newValue);
+        void getSummary(int thisPlayerId, PlayerMatchStats &playerStats, OverallMatchStats &overallStats);
+
+    private:
+        std::map<std::pair<int, int>, float> mAccolades;
+        std::map<std::pair<int, int>, float> mStats;
+    };
+
+    extern StatsCollector sStatsCollector;
+
 };

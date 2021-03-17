@@ -4,12 +4,19 @@
 #include <boost/test/data/monomorphic.hpp>
 #include "../MatchSummary.h"
 
+namespace Logger
+{
+    void error(char const *, ...)
+    {
+    }
+}
+
 BOOST_AUTO_TEST_CASE(MatchStatsTest)
 {
     char buffer[1024];
     MatchSummary::OverallMatchStats overallStats;
 
-    unsigned int initialSize = 2 + 7 * (2 + 4) + 1 * (2 + 8) + 2 * (2 + 2);
+    unsigned int initialSize = 4 + 7 * (2 + 4) + 1 * (2 + 8) + 2 * (2 + 2);
 
     BOOST_CHECK_EQUAL(overallStats.size(), initialSize);
 

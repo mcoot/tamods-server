@@ -16,10 +16,60 @@ static std::vector<int> absoluteStats = {
 template <typename T>
 static void updateStat(ATrPlayerController* pc, int statId, T value) {
     // TODO: Update the stat
+    /*
+    TArray<FDeviceModification>();
+    void UTrSummaryHelper::SortMVPAwards ( TArray< struct FMVPAward >* AwardArray )
+    void UTrSummaryHelper::SortPlayerAwards ( TArray< struct FPropertyPair >* AwardArray );
+    struct FMVPAward
+    {
+        int                                                Value;                                                    // 0x0000 (0x0004) [0x0000000000000000]              
+        int                                                PlayerID;                                                 // 0x0004 (0x0004) [0x0000000000000000]              
+        int                                                AwardId;                                                  // 0x0008 (0x0004) [0x0000000000000000]              
+    };
+    struct FPropertyPair
+    {
+        int                                                PropertyId;                                               // 0x0000 (0x0004) [0x0000000000000000]              
+        int                                                Value;                                                    // 0x0004 (0x0004) [0x0000000000000000]              
+    };
+
+    TArray<FMVPAward> awardArray;
+    FMVPAward award;
+    award.PlayerID = pc->Pawn->PlayerReplicationInfo->UniqueId;
+    award.AwardId = statId;
+    award.Value = value;
+    awardArray.Add(award);
+    */
+
+    if(pc && pc->Pawn)
+    {
+        MatchSummary::sStatsCollector.updateStat(pc->Pawn->PlayerReplicationInfo->UniqueId.Uid.A, statId, (float)value);
+#ifdef _DEBUG
+        Logger::error("updateStat(playercontroller = 0x%X, stat = 0x%X, value = %f)", pc->Pawn->PlayerReplicationInfo->UniqueId.Uid.A, statId, value);
+#endif
+    }
+    else
+    {
+#ifdef _DEBUG
+        Logger::error("updateStat(NULL, stat = 0x%X, value = %f)", statId, value);
+#endif
+    }
 }
 
 static void addAccolade(ATrPlayerController* pc, int accoladeId) {
     // TODO: Save the accolade
+    if(pc && pc->Pawn)
+    {
+        MatchSummary::sStatsCollector.addAccolade(pc->Pawn->PlayerReplicationInfo->UniqueId.Uid.A, accoladeId);
+#ifdef _DEBUG
+        Logger::error("addAccolade(playercontroller = 0x%X, stat = 0x%X, value = %f)", pc->Pawn->PlayerReplicationInfo->UniqueId.Uid.A, accoladeId, 1.0);
+#endif
+    }
+    else
+    {
+#ifdef _DEBUG
+        Logger::error("addAccolade(NULL, stat = 0x%X, value = %f)", accoladeId, 1.0);
+#endif
+    }
 }
 
 // Hooked stats functions
