@@ -1,10 +1,10 @@
+#include "Mods.h"
 #include "MatchSummary.h"
 
 #include <boost/dynamic_bitset.hpp>
 #include <windows.h>
 
 #include "detours.h"
-
 
 #ifdef _DEBUG
 namespace Logger
@@ -18,6 +18,96 @@ namespace Logger
 
 namespace MatchSummary
 {
+    static const std::map<int,int> cStatValueMap = {
+        { CONST_STAT_ACO_KS_FIVE                     , 300 },
+        { CONST_STAT_ACO_KS_TEN                      , 500 },
+        { CONST_STAT_ACO_KS_FIFTEEN                  , 1000 },
+        { CONST_STAT_ACO_KS_TWENTY                   , 2000 },
+        { CONST_STAT_ACO_KS_TWENTYFIVE               , 3000 },
+        { CONST_STAT_ACO_KS_FIVE_SNIPING             , 300 },
+        { CONST_STAT_ACO_KS_TEN_SNIPING              , 500 },
+        { CONST_STAT_ACO_KS_FIFTEEN_SNIPING          , 1000 },
+        { CONST_STAT_ACO_KS_FIVE_EXPLOSIVE           , 300 },
+        { CONST_STAT_ACO_KS_TEN_EXPLOSIVE            , 500 },
+        { CONST_STAT_ACO_KS_FIFTEEN_EXPLOSIVE        , 1000 },
+        { CONST_STAT_ACO_KS_FIVE_SPINFUSOR           , 300 },
+        { CONST_STAT_ACO_KS_TEN_SPINFUSOR            , 500 },
+        { CONST_STAT_ACO_KS_FIFTEEN_SPINFUSOR        , 1000 },
+        { CONST_STAT_ACO_MK_DOUBLE                   , 500 },
+        { CONST_STAT_ACO_MK_TRIPLE                   , 1000 },
+        { CONST_STAT_ACO_MK_QUATRA                   , 2000 },
+        { CONST_STAT_ACO_MK_ULTRA                    , 3000 },
+        { CONST_STAT_ACO_MK_TEAM                     , 4000 },
+        { CONST_STAT_ACO_NOJOY                       , 300 },
+        { CONST_STAT_ACO_REVENGE                     , 200 },
+        { CONST_STAT_ACO_AFTERMATH                   , 200 },
+        { CONST_STAT_ACO_FIRSTBLOOD                  , 500 },
+        { CONST_STAT_ACO_BLUEPLATESPECIAL            , 200 },
+        { CONST_STAT_ACO_STICKYKILL                  , 200 },
+        { CONST_STAT_ACO_HEADSHOT                    , 10000 },
+        { CONST_STAT_ACO_ARTILLERYSTRIKE             , 500 },
+        { CONST_STAT_ACO_MELEE                       , 200 },
+        { CONST_STAT_ACO_ROADKILL                    , 100 },
+        { CONST_STAT_ACO_FLAG_CAPTURE                , 2000 },
+        { CONST_STAT_ACO_FLAG_GRAB                   , 200 },
+        { CONST_STAT_ACO_BK_GEN                      , 500 },
+        { CONST_STAT_ACO_RABBITKILL                  , 10000 },
+        { CONST_STAT_ACO_KILLASRABBIT                , 10000 },
+        { CONST_STAT_ACO_FINALBLOW                   , 500 },
+        { CONST_STAT_ACO_REPAIR                      , 25 },
+        { CONST_STAT_ACO_BK_TURRET                   , 200 },
+        { CONST_STAT_ACO_ASSIST                      , 250 },
+        { CONST_STAT_ACO_FLAG_RETURN                 , 250 },
+        { CONST_STAT_ACO_BK_RADAR                    , 200 },
+        { CONST_STAT_ACO_FLAG_ASSIST                 , 500 },
+        { CONST_STAT_ACO_AIRMAIL                     , 200 },
+        { CONST_STAT_ACO_GAME_COMPLETE               , 50 },
+        { CONST_STAT_ACO_GAME_WINNER                 , 1200 },
+        { CONST_STAT_ACO_FLAG_GRABDM                 , 10000 },
+        { CONST_STAT_ACO_FLAG_HOLDER                 , 10000 },
+        { CONST_STAT_ACO_FLAG_KILLER                 , 10000 },
+        { CONST_STAT_ACO_FLAG_GRABFAST               , 250 },
+        { CONST_STAT_ACO_DEFENSE_GEN                 , 500 },
+        { CONST_STAT_ACO_DEFENSE_FLAG                , 300 },
+        { CONST_STAT_ACO_VD_BIKE                     , 200 },
+        { CONST_STAT_ACO_VD_TANK                     , 500 },
+        { CONST_STAT_ACO_VD_SHRIKE                   , 700 },
+        { CONST_STAT_ACO_FLAG_GRABE                  , 500 },
+        { CONST_STAT_ACO_FLAG_GRABLLAMA              , 150 },
+        { CONST_STAT_ACO_ASSIST_VEHICLE              , 10000 },
+        { CONST_STAT_ACO_FLAG_GRABULTRA              , 300 },
+        { CONST_STAT_ACO_BENCHEM                     , 200 },
+        { CONST_STAT_ACO_DOUBLEDOWN                  , 2000 },
+        { CONST_STAT_ACO_LASTMANSTANDING             , 200 },
+        { CONST_STAT_ACO_MIRACLE                     , 10000 },
+        { CONST_STAT_ACO_NOTAMONGEQUALS              , 10000 },
+        { CONST_STAT_ACO_ONEMANARMY                  , 10000 },
+        { CONST_STAT_ACO_TRIBALHONOR                 , 200 },
+        { CONST_STAT_ACO_UNITEDWESTAND               , 1000 },
+        { CONST_STAT_ACO_HOLDTHELINE                 , 10000 },
+        { CONST_STAT_ACO_CAPTUREANDHOLD              , 10000 },
+        { CONST_STAT_ACO_BASEASSIST                  , 10000 },
+        { CONST_STAT_ACO_TURRETASSIST                , 10000 },
+        { CONST_STAT_ACO_HOTAIR                      , 150 },
+        { CONST_STAT_AWD_CREDITS_EARNED              , 10000 },
+        { CONST_STAT_AWD_CREDITS_SPENT               , 10000 },
+        { CONST_STAT_AWD_DESTRUCTION_DEPLOYABLE      , 10000 },
+        { CONST_STAT_AWD_DESTRUCTION_VEHICLE         , 10000 },
+        { CONST_STAT_AWD_DISTANCE_HEADSHOT           , 200 },
+        { CONST_STAT_AWD_DISTANCE_KILL               , 10000 },
+        { CONST_STAT_AWD_DISTANCE_SKIED              , 10000 },
+        { CONST_STAT_AWD_KILLS                       , 10000 },
+        { CONST_STAT_AWD_KILLS_DEPLOYABLE            , 10000 },
+        { CONST_STAT_AWD_KILLS_MIDAIR                , 10000 },
+        { CONST_STAT_AWD_KILLS_VEHICLE               , 10000 },
+        { CONST_STAT_AWD_REPAIRS                     , 10000 },
+        { CONST_STAT_AWD_SPEED_FLAGCAP               , 10000 },
+        { CONST_STAT_AWD_SPEED_FLAGGRAB              , 10000 },
+        { CONST_STAT_AWD_SPEED_SKIED                 , 10000 },
+        { CONST_STAT_AWD_FLAG_RETURNS                , 10000 },
+        { CONST_STAT_AWD_DEATHS                      , 10000 },
+    };
+
     StatsCollector sStatsCollector;
 
     typedef void(__thiscall* EndGameFunction)(void*, int);
@@ -308,6 +398,11 @@ namespace MatchSummary
         mStats[std::make_pair(who, statId)] = newValue;
     }
 
+    void StatsCollector::setField(int who, int fieldId, int value)
+    {
+        mFields[std::make_pair(who, fieldId)] = value;
+    }
+
     void StatsCollector::getSummary(int thisPlayerId, PlayerMatchStats &playerStats, OverallMatchStats &overallStats)
     {
         int available_overall_stats_slots = 4;
@@ -315,7 +410,101 @@ namespace MatchSummary
         int available_player_stats_slots = 8;
         int available_player_accolade_slots = 21;
 
-        for(const auto &kv: mStats)
+        auto sortFunc = [](const std::pair<std::pair<int, int>, float> &stat1,
+                           const std::pair<std::pair<int, int>, float> &stat2)
+        {
+            auto it = cStatValueMap.find(stat1.first.second);
+            int value1 = (it != cStatValueMap.end()) ? it->second : 20000;
+            float count1 = stat1.second;
+
+            it = cStatValueMap.find(stat2.first.second);
+            int value2 = (it != cStatValueMap.end()) ? it->second : 20000;
+            float count2 = stat2.second;
+
+            return value1 * count1 < value2 * count2;
+        };
+
+        std::vector<std::pair<std::pair<int, int>, float>> sortedAccolades(mAccolades.begin(), mAccolades.end());
+        std::sort(sortedAccolades.begin(), sortedAccolades.end(), sortFunc);
+
+        std::vector<std::pair<std::pair<int, int>, float>> sortedStats(mStats.begin(), mStats.end());
+        std::sort(sortedStats.begin(), sortedStats.end(), sortFunc);
+
+        const int overallFields[] =
+        {
+            CONST_UNKNOWN_04BE,
+            CONST_MATCH_ID,
+            CONST_MAP_DURATION,
+            CONST_UNKNOWN_046C,
+            CONST_UNKNOWN_02B4,
+            CONST_MAP_ID,
+            CONST_BE_SCORE,
+            CONST_DS_SCORE
+        };
+        for(auto& fieldId : overallFields)
+        {
+            int value = 0;
+            auto it = mFields.find(std::make_pair(0, fieldId));
+            if(it != mFields.end())
+            {
+                value = it->second;
+            }
+
+            switch(s_typeMap.at(fieldId))
+            {
+            case FieldType::INT32:
+                overallStats.addInt32(fieldId, value);
+                break;
+            case FieldType::INT64:
+                overallStats.addInt64(fieldId, value);
+                break;
+            case FieldType::FLOAT:
+                overallStats.addFloat(fieldId, (float)value);
+                break;
+            }
+        }
+
+        const int playerFields[] =
+        {
+            CONST_PLAYER_ID,
+            CONST_PLAYER_KILLS,
+            CONST_PLAYER_DEATHS,
+            CONST_PLAYER_ASSISTS,
+            CONST_PLAYER_SCORE,
+            CONST_UNKNOWN_0095,
+            CONST_STARTING_XP,
+            CONST_UNKNOWN_04C7,
+            CONST_BASE_XP,
+            CONST_BONUS_XP,
+            CONST_UNKNOWN_0606,
+            CONST_UNKNOWN_0505,
+        };
+        for(auto& fieldId : playerFields)
+        {
+            int value = 0;
+            auto it = mFields.find(std::make_pair(thisPlayerId, fieldId));
+            if(it != mFields.end())
+            {
+                value = it->second;
+            }
+
+            switch(s_typeMap.at(fieldId))
+            {
+            case FieldType::INT32:
+                playerStats.addInt32(fieldId, value);
+                break;
+            case FieldType::INT64:
+                playerStats.addInt64(fieldId, value);
+                break;
+            case FieldType::FLOAT:
+                playerStats.addFloat(fieldId, (float)value);
+                break;
+            }
+        }
+
+
+        std::set<int> alreadyAddedStats;
+        for(const auto &kv: sortedStats)
         {
             int statPlayerId = kv.first.first;
             int stat = kv.first.second;
@@ -326,10 +515,11 @@ namespace MatchSummary
                 continue;
             }
 
-            if(available_overall_stats_slots > 0)
+            if(available_overall_stats_slots > 0 && alreadyAddedStats.count(stat) == 0)
             {
                 overallStats.addStatistic(statPlayerId, stat, value);
                 available_overall_stats_slots--;
+                alreadyAddedStats.insert(stat);
 
 #ifdef _DEBUG
                 Logger::error("MVP stat player 0x%X, stat %d, value %f", statPlayerId, stat, value);
@@ -345,7 +535,8 @@ namespace MatchSummary
             }
         }
 
-        for(const auto &kv: mAccolades)
+        std::set<int> alreadyAddedAccolades;
+        for(const auto &kv: sortedAccolades)
         {
             int accPlayerId = kv.first.first;
             int acc = kv.first.second;
@@ -356,10 +547,11 @@ namespace MatchSummary
                 continue;
             }
 
-            if(available_overall_accolade_slots > 0)
+            if(available_overall_accolade_slots > 0 && alreadyAddedAccolades.count(acc) == 0)
             {
                 overallStats.addAccolade(accPlayerId, acc, value);
                 available_overall_accolade_slots--;
+                alreadyAddedAccolades.insert(acc);
             }
             if(thisPlayerId == accPlayerId)
             {

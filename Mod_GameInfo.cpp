@@ -1,4 +1,5 @@
 #include "Mods.h"
+#include "MatchSummary.h"
 
 // Sneaky state used to force a map switch for initialisation
 // With a timer so that things can process, to avoid race conditions during init
@@ -16,6 +17,10 @@ static void checkForScoreChange() {
         EventLogger::log_basic(EventLogger::Kind::SCORE_CHANGE);
         beScoreCached = beScoreCurrent;
         dsScoreCached = dsScoreCurrent;
+
+        MatchSummary::sStatsCollector.setField(0, CONST_BE_SCORE, beScoreCurrent);
+        MatchSummary::sStatsCollector.setField(0, CONST_DS_SCORE, dsScoreCurrent);
+
         if (g_config.connectToTAServer && g_TAServerClient.isConnected()) {
             g_TAServerClient.sendScoreInfo(beScoreCurrent, dsScoreCurrent);
         }
@@ -470,6 +475,7 @@ void TAServer::Client::handler_Launcher2GamePlayerInfoMessage(const json& msgBod
 
     std::lock_guard<std::mutex> rankXpLock(unsetPlayerRankXpsMutex);
     unsetPlayerRankXps[msg.playerId] = msg.rankXp;
+    MatchSummary::sStatsCollector.setField((int)msg.playerId, CONST_STARTING_XP, msg.rankXp);
 
     // Figure out if the player is eligible for a first win of the day this match
     TenantedDataStore::PlayerSpecificData pData = TenantedDataStore::playerData.get(msg.playerId);
@@ -518,6 +524,8 @@ void pollForGameInfoChanges() {
     
     // Score polling
     checkForScoreChange();
+
+    MatchSummary::sStatsCollector.setField(0, CONST_MAP_DURATION, Utils::tr_gri->ElapsedTime);
 
     // Ensure match time is updated when overtime is entered
     if (Utils::tr_gri->WorldInfo && Utils::tr_gri->WorldInfo->Game) {

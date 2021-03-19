@@ -40,12 +40,17 @@ static void updateStat(ATrPlayerController* pc, int statId, T value) {
     awardArray.Add(award);
     */
 
+
     if(pc && pc->Pawn)
     {
         MatchSummary::sStatsCollector.updateStat(pc->Pawn->PlayerReplicationInfo->UniqueId.Uid.A, statId, (float)value);
 #ifdef _DEBUG
         Logger::error("updateStat(playercontroller = 0x%X, stat = 0x%X, value = %f)", pc->Pawn->PlayerReplicationInfo->UniqueId.Uid.A, statId, value);
 #endif
+        if(statId == CONST_STAT_AWD_CREDITS_EARNED)
+        {
+            MatchSummary::sStatsCollector.setField(pc->Pawn->PlayerReplicationInfo->UniqueId.Uid.A, CONST_PLAYER_SCORE, (int)value);
+        }
     }
     else
     {

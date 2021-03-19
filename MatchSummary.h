@@ -4,6 +4,27 @@
 #include <tuple>
 #include <vector>
 
+#define CONST_PLAYER_ASSISTS    0x0033
+#define CONST_UNKNOWN_0095      0x0095
+#define CONST_PLAYER_SCORE      0x00d2
+#define CONST_PLAYER_DEATHS     0x0184
+#define CONST_PLAYER_KILLS      0x028e
+#define CONST_MAP_ID            0x02b2
+#define CONST_UNKNOWN_02B4      0x02b4
+#define CONST_MAP_DURATION      0x02c2
+#define CONST_MATCH_ID          0x02c4
+#define CONST_PLAYER_ID         0x0348
+#define CONST_UNKNOWN_046C      0x046c
+#define CONST_UNKNOWN_04BE      0x04be
+#define CONST_BONUS_XP          0x04c0
+#define CONST_UNKNOWN_04C7      0x04c7
+#define CONST_STARTING_XP       0x04cb
+#define CONST_UNKNOWN_0505      0x0505
+#define CONST_BE_SCORE          0x0596
+#define CONST_DS_SCORE          0x0597
+#define CONST_BASE_XP           0x0605
+#define CONST_UNKNOWN_0606      0x0606
+
 namespace MatchSummary
 {
     void registerHooks();
@@ -64,6 +85,11 @@ namespace MatchSummary
         void addAccolade(int who, int what, float howMuch)
         {
             accolades.push_back(std::make_tuple(who, what, howMuch));
+        }
+
+        void setField(int fieldId, int value)
+        {
+            mFields[fieldId] = value;
         }
 
         size_t size()
@@ -132,7 +158,6 @@ namespace MatchSummary
             }
         }
 
-    protected:
         void addInt32(int id, unsigned int value)
         {
             //assert(s_typeMap.at(id) == FieldType::INT32);
@@ -151,6 +176,7 @@ namespace MatchSummary
             dataMap[id].float_ = value;
         }
 
+    protected:
         void* serializeInt16(void* pBuffer, unsigned short value)
         {
             unsigned short* pInt16Buffer = static_cast<unsigned short*>(pBuffer);
@@ -187,6 +213,7 @@ namespace MatchSummary
         std::map<int, FieldData> dataMap;
         std::vector<std::tuple<int, int, float>> statistics;
         std::vector<std::tuple<int, int, float>> accolades;
+        std::map<int, int> mFields;
     };
 
     class OverallMatchStats : public MatchStats
@@ -195,14 +222,6 @@ namespace MatchSummary
         OverallMatchStats():
             MatchStats(0x008a)
         {
-            addInt32(0x04be, 13);
-            addInt32(0x02c4, 14);
-            addInt32(0x02c2, 60);
-            addInt64(0x046c, 16);
-            addInt32(0x02b4, 17);
-            addInt32(0x02b2, 18);
-            addInt32(0x0596, 0);
-            addInt32(0x0597, 0);
         }
 
     private:
@@ -230,18 +249,6 @@ namespace MatchSummary
         PlayerMatchStats():
             MatchStats(0x008b)
         {
-            addInt32(0x0348, 1);
-            addInt32(0x028e, 0);
-            addInt32(0x0184, 0);
-            addInt32(0x0033, 0);
-            addInt32(0x00d2, 0);
-            addInt32(0x0095, 2);
-            addInt32(0x04cb, 3);
-            addInt32(0x04c7, 8);
-            addInt32(0x0605, 0);
-            addInt32(0x04c0, 0);
-            addInt32(0x0606, 4);
-            addInt32(0x0505, 5);
         }
 
     private:
@@ -268,11 +275,13 @@ namespace MatchSummary
     public:
         void addAccolade(int who, int accoladeId);
         void updateStat(int who, int statId, float newValue);
+        void setField(int who, int fieldId, int value);
         void getSummary(int thisPlayerId, PlayerMatchStats &playerStats, OverallMatchStats &overallStats);
 
     private:
         std::map<std::pair<int, int>, float> mAccolades;
         std::map<std::pair<int, int>, float> mStats;
+        std::map<std::pair<int, int>, int> mFields;
     };
 
     extern StatsCollector sStatsCollector;
