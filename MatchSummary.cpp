@@ -421,7 +421,7 @@ namespace MatchSummary
             int value2 = (it != cStatValueMap.end()) ? it->second : 20000;
             float count2 = stat2.second;
 
-            return value1 * count1 < value2 * count2;
+            return value1 * count1 > value2 * count2;
         };
 
         std::vector<std::pair<std::pair<int, int>, float>> sortedAccolades(mAccolades.begin(), mAccolades.end());
