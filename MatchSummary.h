@@ -19,11 +19,11 @@
 #define CONST_BONUS_XP          0x04c0
 #define CONST_UNKNOWN_04C7      0x04c7
 #define CONST_STARTING_XP       0x04cb
-#define CONST_UNKNOWN_0505      0x0505
+#define CONST_XP_BAR_LENGTH     0x0505
 #define CONST_BE_SCORE          0x0596
 #define CONST_DS_SCORE          0x0597
 #define CONST_BASE_XP           0x0605
-#define CONST_UNKNOWN_0606      0x0606
+#define CONST_VIP_XP            0x0606
 
 namespace MatchSummary
 {

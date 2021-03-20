@@ -476,8 +476,8 @@ namespace MatchSummary
             CONST_UNKNOWN_04C7,
             CONST_BASE_XP,
             CONST_BONUS_XP,
-            CONST_UNKNOWN_0606,
-            CONST_UNKNOWN_0505,
+            CONST_VIP_XP,
+            CONST_XP_BAR_LENGTH,
         };
         for(auto& fieldId : playerFields)
         {
