@@ -303,6 +303,9 @@
     <ClInclude Include="EventLogger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MatchSummary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TAMods-Server.cpp">
@@ -523,6 +526,12 @@
     </ClCompile>
     <ClCompile Include="EventLogger.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MatchSummary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mod_StatsSaving.cpp">
+      <Filter>Source Files\Mods</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
