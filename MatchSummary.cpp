@@ -1,3 +1,4 @@
+#include <limits>
 #include "Mods.h"
 #include "MatchSummary.h"
 
@@ -18,94 +19,109 @@ namespace Logger
 
 namespace MatchSummary
 {
-    static const std::map<int,int> cStatValueMap = {
-        { CONST_STAT_ACO_KS_FIVE                     , 300 },
-        { CONST_STAT_ACO_KS_TEN                      , 500 },
-        { CONST_STAT_ACO_KS_FIFTEEN                  , 1000 },
-        { CONST_STAT_ACO_KS_TWENTY                   , 2000 },
-        { CONST_STAT_ACO_KS_TWENTYFIVE               , 3000 },
-        { CONST_STAT_ACO_KS_FIVE_SNIPING             , 300 },
-        { CONST_STAT_ACO_KS_TEN_SNIPING              , 500 },
-        { CONST_STAT_ACO_KS_FIFTEEN_SNIPING          , 1000 },
-        { CONST_STAT_ACO_KS_FIVE_EXPLOSIVE           , 300 },
-        { CONST_STAT_ACO_KS_TEN_EXPLOSIVE            , 500 },
-        { CONST_STAT_ACO_KS_FIFTEEN_EXPLOSIVE        , 1000 },
-        { CONST_STAT_ACO_KS_FIVE_SPINFUSOR           , 300 },
-        { CONST_STAT_ACO_KS_TEN_SPINFUSOR            , 500 },
-        { CONST_STAT_ACO_KS_FIFTEEN_SPINFUSOR        , 1000 },
-        { CONST_STAT_ACO_MK_DOUBLE                   , 500 },
-        { CONST_STAT_ACO_MK_TRIPLE                   , 1000 },
-        { CONST_STAT_ACO_MK_QUATRA                   , 2000 },
-        { CONST_STAT_ACO_MK_ULTRA                    , 3000 },
-        { CONST_STAT_ACO_MK_TEAM                     , 4000 },
-        { CONST_STAT_ACO_NOJOY                       , 300 },
-        { CONST_STAT_ACO_REVENGE                     , 200 },
-        { CONST_STAT_ACO_AFTERMATH                   , 200 },
-        { CONST_STAT_ACO_FIRSTBLOOD                  , 500 },
-        { CONST_STAT_ACO_BLUEPLATESPECIAL            , 200 },
-        { CONST_STAT_ACO_STICKYKILL                  , 200 },
-        { CONST_STAT_ACO_HEADSHOT                    , 200 },
-        { CONST_STAT_ACO_ARTILLERYSTRIKE             , 500 },
-        { CONST_STAT_ACO_MELEE                       , 200 },
-        { CONST_STAT_ACO_ROADKILL                    , 100 },
-        { CONST_STAT_ACO_FLAG_CAPTURE                , 2000 },
-        { CONST_STAT_ACO_FLAG_GRAB                   , 200 },
-        { CONST_STAT_ACO_BK_GEN                      , 500 },
-        { CONST_STAT_ACO_RABBITKILL                  , 200 },
-        { CONST_STAT_ACO_KILLASRABBIT                , 300 },
-        { CONST_STAT_ACO_FINALBLOW                   , 500 },
-        { CONST_STAT_ACO_REPAIR                      , 25 },
-        { CONST_STAT_ACO_BK_TURRET                   , 200 },
-        { CONST_STAT_ACO_ASSIST                      , 250 },
-        { CONST_STAT_ACO_FLAG_RETURN                 , 250 },
-        { CONST_STAT_ACO_BK_RADAR                    , 200 },
-        { CONST_STAT_ACO_FLAG_ASSIST                 , 500 },
-        { CONST_STAT_ACO_AIRMAIL                     , 200 },
-        { CONST_STAT_ACO_GAME_COMPLETE               , 50 },
-        { CONST_STAT_ACO_GAME_WINNER                 , 1200 },
-        { CONST_STAT_ACO_FLAG_GRABDM                 , 250 },
-        { CONST_STAT_ACO_FLAG_HOLDER                 , 100 },
-        { CONST_STAT_ACO_FLAG_KILLER                 , 250 },
-        { CONST_STAT_ACO_FLAG_GRABFAST               , 250 },
-        { CONST_STAT_ACO_DEFENSE_GEN                 , 500 },
-        { CONST_STAT_ACO_DEFENSE_FLAG                , 300 },
-        { CONST_STAT_ACO_VD_BIKE                     , 200 },
-        { CONST_STAT_ACO_VD_TANK                     , 500 },
-        { CONST_STAT_ACO_VD_SHRIKE                   , 700 },
-        { CONST_STAT_ACO_FLAG_GRABE                  , 500 },
-        { CONST_STAT_ACO_FLAG_GRABLLAMA              , 150 },
-        { CONST_STAT_ACO_ASSIST_VEHICLE              , 250 },
-        { CONST_STAT_ACO_FLAG_GRABULTRA              , 300 },
-        { CONST_STAT_ACO_BENCHEM                     , 200 },
-        { CONST_STAT_ACO_DOUBLEDOWN                  , 2000 },
-        { CONST_STAT_ACO_LASTMANSTANDING             , 200 },
-        { CONST_STAT_ACO_MIRACLE                     , 10000 },
-        { CONST_STAT_ACO_NOTAMONGEQUALS              , 4000 },
-        { CONST_STAT_ACO_ONEMANARMY                  , 6000 },
-        { CONST_STAT_ACO_TRIBALHONOR                 , 200 },
-        { CONST_STAT_ACO_UNITEDWESTAND               , 1000 },
-        { CONST_STAT_ACO_HOLDTHELINE                 , 100 },
-        { CONST_STAT_ACO_CAPTUREANDHOLD              , 200 },
-        { CONST_STAT_ACO_BASEASSIST                  , 99999 },
-        { CONST_STAT_ACO_TURRETASSIST                , 99999 },
-        { CONST_STAT_ACO_HOTAIR                      , 150 },
-        { CONST_STAT_AWD_CREDITS_EARNED              , 99999 },
-        { CONST_STAT_AWD_CREDITS_SPENT               , 99999 },
-        { CONST_STAT_AWD_DESTRUCTION_DEPLOYABLE      , 99999 },
-        { CONST_STAT_AWD_DESTRUCTION_VEHICLE         , 99999 },
-        { CONST_STAT_AWD_DISTANCE_HEADSHOT           , 99999 },
-        { CONST_STAT_AWD_DISTANCE_KILL               , 99999 },
-        { CONST_STAT_AWD_DISTANCE_SKIED              , 99999 },
-        { CONST_STAT_AWD_KILLS                       , 99999 },
-        { CONST_STAT_AWD_KILLS_DEPLOYABLE            , 99999 },
-        { CONST_STAT_AWD_KILLS_MIDAIR                , 99999 },
-        { CONST_STAT_AWD_KILLS_VEHICLE               , 99999 },
-        { CONST_STAT_AWD_REPAIRS                     , 99999 },
-        { CONST_STAT_AWD_SPEED_FLAGCAP               , 99999 },
-        { CONST_STAT_AWD_SPEED_FLAGGRAB              , 99999 },
-        { CONST_STAT_AWD_SPEED_SKIED                 , 99999 },
-        { CONST_STAT_AWD_FLAG_RETURNS                , 99999 },
-        { CONST_STAT_AWD_DEATHS                      , 99999 },
+
+    struct AwardData
+    {
+        int tierlimit[3];
+        int weight;
+    };
+
+    // Get rid of the max macro from some Windows header file
+    #ifdef max
+    #undef max
+    #endif
+    #define no_tiers {1, std::numeric_limits<int>::max(), std::numeric_limits<int>::max()}
+
+    const int defaultWeight = 1;
+
+    static const std::map<int,AwardData> cStatValueMap = {
+        { CONST_STAT_AWD_CREDITS_EARNED              , {{1, 10000, 20000}, 95} },
+        { CONST_STAT_AWD_CREDITS_SPENT               , {{1, 5000, 15000}, 89} },
+        { CONST_STAT_AWD_DESTRUCTION_DEPLOYABLE      , {{1, 3, 10}, 84} },
+        { CONST_STAT_AWD_DESTRUCTION_VEHICLE         , {{1, 2, 4}, 88} },
+        { CONST_STAT_AWD_DISTANCE_HEADSHOT           , {{1, 300, 600}, 87} },
+        { CONST_STAT_AWD_DISTANCE_KILL               , {{1, 400, 1000}, 93} },
+        { CONST_STAT_AWD_DISTANCE_SKIED              , {{1, 40000, 100000}, 90} },
+        { CONST_STAT_AWD_KILLS                       , {{1, 6, 15}, 86} },
+        { CONST_STAT_AWD_KILLS_DEPLOYABLE            , {{1, 3, 8}, 92} },
+        { CONST_STAT_AWD_KILLS_MIDAIR                , {{1, 3, 8}, 94} },
+        { CONST_STAT_AWD_KILLS_VEHICLE               , {{1, 4, 10}, 81} },
+        { CONST_STAT_AWD_REPAIRS                     , {{1, 8, 40}, 96} },
+        { CONST_STAT_AWD_SPEED_FLAGCAP               , {{-99999, -60, -25}, -100} },
+        { CONST_STAT_AWD_SPEED_FLAGGRAB              , {{1, 100, 200}, 97} },
+        { CONST_STAT_AWD_SPEED_SKIED                 , {{1, 200, 260}, 95} },
+        { CONST_STAT_AWD_FLAG_RETURNS                , {{1, 3, 7}, 85} },
+        { CONST_STAT_AWD_DEATHS                      , {{1, 6, 15}, 1} },
+        { CONST_STAT_ACO_KS_FIVE                     , {no_tiers, CONST_STAT_ACOW_KS_FIVE               } },
+        { CONST_STAT_ACO_KS_TEN                      , {no_tiers, CONST_STAT_ACOW_KS_TEN                } },
+        { CONST_STAT_ACO_KS_FIFTEEN                  , {no_tiers, CONST_STAT_ACOW_KS_FIFTEEN            } },
+        { CONST_STAT_ACO_KS_TWENTY                   , {no_tiers, CONST_STAT_ACOW_KS_TWENTY             } },
+        { CONST_STAT_ACO_KS_TWENTYFIVE               , {no_tiers, CONST_STAT_ACOW_KS_TWENTYFIVE         } },
+        { CONST_STAT_ACO_KS_FIVE_SNIPING             , {no_tiers, CONST_STAT_ACOW_KS_FIVE_SNIPING       } },
+        { CONST_STAT_ACO_KS_TEN_SNIPING              , {no_tiers, CONST_STAT_ACOW_KS_TEN_SNIPING        } },
+        { CONST_STAT_ACO_KS_FIFTEEN_SNIPING          , {no_tiers, CONST_STAT_ACOW_KS_FIFTEEN_SNIPING    } },
+        { CONST_STAT_ACO_KS_FIVE_EXPLOSIVE           , {no_tiers, CONST_STAT_ACOW_KS_FIVE_EXPLOSIVE     } },
+        { CONST_STAT_ACO_KS_TEN_EXPLOSIVE            , {no_tiers, CONST_STAT_ACOW_KS_TEN_EXPLOSIVE      } },
+        { CONST_STAT_ACO_KS_FIFTEEN_EXPLOSIVE        , {no_tiers, CONST_STAT_ACOW_KS_FIFTEEN_EXPLOSIVE  } },
+        { CONST_STAT_ACO_KS_FIVE_SPINFUSOR           , {no_tiers, CONST_STAT_ACOW_KS_FIVE_SPINFUSOR     } },
+        { CONST_STAT_ACO_KS_TEN_SPINFUSOR            , {no_tiers, CONST_STAT_ACOW_KS_TEN_SPINFUSOR      } },
+        { CONST_STAT_ACO_KS_FIFTEEN_SPINFUSOR        , {no_tiers, CONST_STAT_ACOW_KS_FIFTEEN_SPINFUSOR  } },
+        { CONST_STAT_ACO_MK_DOUBLE                   , {no_tiers, CONST_STAT_ACOW_MK_DOUBLE             } },
+        { CONST_STAT_ACO_MK_TRIPLE                   , {no_tiers, CONST_STAT_ACOW_MK_TRIPLE             } },
+        { CONST_STAT_ACO_MK_QUATRA                   , {no_tiers, CONST_STAT_ACOW_MK_QUATRA             } },
+        { CONST_STAT_ACO_MK_ULTRA                    , {no_tiers, CONST_STAT_ACOW_MK_ULTRA              } },
+        { CONST_STAT_ACO_MK_TEAM                     , {no_tiers, CONST_STAT_ACOW_MK_TEAM               } },
+        { CONST_STAT_ACO_NOJOY                       , {no_tiers, CONST_STAT_ACOW_NOJOY                 } },
+        { CONST_STAT_ACO_REVENGE                     , {no_tiers, CONST_STAT_ACOW_REVENGE               } },
+        { CONST_STAT_ACO_AFTERMATH                   , {no_tiers, CONST_STAT_ACOW_AFTERMATH             } },
+        { CONST_STAT_ACO_FIRSTBLOOD                  , {no_tiers, CONST_STAT_ACOW_FIRSTBLOOD            } },
+        { CONST_STAT_ACO_BLUEPLATESPECIAL            , {no_tiers, CONST_STAT_ACOW_BLUEPLATESPECIAL      } },
+        { CONST_STAT_ACO_STICKYKILL                  , {no_tiers, CONST_STAT_ACOW_STICKYKILL            } },
+        { CONST_STAT_ACO_HEADSHOT                    , {no_tiers, CONST_STAT_ACOW_HEADSHOT              } },
+        { CONST_STAT_ACO_ARTILLERYSTRIKE             , {no_tiers, CONST_STAT_ACOW_ARTILLERYSTRIKE       } },
+        { CONST_STAT_ACO_MELEE                       , {no_tiers, CONST_STAT_ACOW_MELEE                 } },
+        { CONST_STAT_ACO_ROADKILL                    , {no_tiers, CONST_STAT_ACOW_ROADKILL              } },
+        { CONST_STAT_ACO_FLAG_CAPTURE                , {no_tiers, CONST_STAT_ACOW_FLAG_CAPTURE          } },
+        { CONST_STAT_ACO_FLAG_GRAB                   , {no_tiers, CONST_STAT_ACOW_FLAG_GRAB             } },
+        { CONST_STAT_ACO_BK_GEN                      , {no_tiers, CONST_STAT_ACOW_BK_GEN                } },
+        { CONST_STAT_ACO_RABBITKILL                  , {no_tiers, CONST_STAT_ACOW_RABBITKILL            } },
+        { CONST_STAT_ACO_KILLASRABBIT                , {no_tiers, CONST_STAT_ACOW_KILLASRABBIT          } },
+        { CONST_STAT_ACO_FINALBLOW                   , {no_tiers, CONST_STAT_ACOW_FINALBLOW             } },
+        { CONST_STAT_ACO_REPAIR                      , {no_tiers, CONST_STAT_ACOW_REPAIR                } },
+        { CONST_STAT_ACO_BK_TURRET                   , {no_tiers, CONST_STAT_ACOW_BK_TURRET             } },
+        { CONST_STAT_ACO_ASSIST                      , {no_tiers, CONST_STAT_ACOW_ASSIST                } },
+        { CONST_STAT_ACO_FLAG_RETURN                 , {no_tiers, CONST_STAT_ACOW_FLAG_RETURN           } },
+        { CONST_STAT_ACO_BK_RADAR                    , {no_tiers, CONST_STAT_ACOW_BK_RADAR              } },
+        { CONST_STAT_ACO_FLAG_ASSIST                 , {no_tiers, CONST_STAT_ACOW_FLAG_ASSIST           } },
+        { CONST_STAT_ACO_AIRMAIL                     , {no_tiers, CONST_STAT_ACOW_AIRMAIL               } },
+        { CONST_STAT_ACO_GAME_COMPLETE               , {no_tiers, CONST_STAT_ACOW_GAME_COMPLETE         } },
+        { CONST_STAT_ACO_GAME_WINNER                 , {no_tiers, CONST_STAT_ACOW_GAME_WINNER           } },
+        { CONST_STAT_ACO_FLAG_GRABDM                 , {no_tiers, CONST_STAT_ACOW_FLAG_GRABDM           } },
+        { CONST_STAT_ACO_FLAG_HOLDER                 , {no_tiers, CONST_STAT_ACOW_FLAG_HOLDER           } },
+        { CONST_STAT_ACO_FLAG_KILLER                 , {no_tiers, CONST_STAT_ACOW_FLAG_KILLER           } },
+        { CONST_STAT_ACO_FLAG_GRABFAST               , {no_tiers, CONST_STAT_ACOW_FLAG_GRABFAST         } },
+        { CONST_STAT_ACO_DEFENSE_GEN                 , {no_tiers, CONST_STAT_ACOW_DEFENSE_GEN           } },
+        { CONST_STAT_ACO_DEFENSE_FLAG                , {no_tiers, CONST_STAT_ACOW_DEFENSE_FLAG          } },
+        { CONST_STAT_ACO_VD_BIKE                     , {no_tiers, CONST_STAT_ACOW_VD_BIKE               } },
+        { CONST_STAT_ACO_VD_TANK                     , {no_tiers, CONST_STAT_ACOW_VD_TANK               } },
+        { CONST_STAT_ACO_VD_SHRIKE                   , {no_tiers, CONST_STAT_ACOW_VD_SHRIKE             } },
+        { CONST_STAT_ACO_FLAG_GRABE                  , {no_tiers, CONST_STAT_ACOW_FLAG_GRABE            } },
+        { CONST_STAT_ACO_FLAG_GRABLLAMA              , {no_tiers, CONST_STAT_ACOW_FLAG_GRABLLAMA        } },
+        { CONST_STAT_ACO_ASSIST_VEHICLE              , {no_tiers, CONST_STAT_ACOW_ASSIST_VEHICLE        } },
+        { CONST_STAT_ACO_FLAG_GRABULTRA              , {no_tiers, CONST_STAT_ACOW_FLAG_GRABULTRA        } },
+        { CONST_STAT_ACO_BENCHEM                     , {no_tiers, 2                                     } },
+        { CONST_STAT_ACO_DOUBLEDOWN                  , {no_tiers, 20                                    } },
+        { CONST_STAT_ACO_LASTMANSTANDING             , {no_tiers, 2                                     } },
+        { CONST_STAT_ACO_MIRACLE                     , {no_tiers, 100                                   } },
+        { CONST_STAT_ACO_NOTAMONGEQUALS              , {no_tiers, 40                                    } },
+        { CONST_STAT_ACO_ONEMANARMY                  , {no_tiers, 60                                    } },
+        { CONST_STAT_ACO_TRIBALHONOR                 , {no_tiers, 2                                     } },
+        { CONST_STAT_ACO_UNITEDWESTAND               , {no_tiers, 10                                    } },
+        { CONST_STAT_ACO_HOLDTHELINE                 , {no_tiers, 1                                     } },
+        { CONST_STAT_ACO_CAPTUREANDHOLD              , {no_tiers, 2                                     } },
+        { CONST_STAT_ACO_BASEASSIST                  , {no_tiers, CONST_STAT_ACOW_BASEASSIST            } },
+        { CONST_STAT_ACO_TURRETASSIST                , {no_tiers, CONST_STAT_ACOW_TURRETASSIST          } },
+        { CONST_STAT_ACO_HOTAIR                      , {no_tiers, CONST_STAT_ACOW_HOTAIR                } },
     };
 
     StatsCollector sStatsCollector;
@@ -235,7 +251,7 @@ namespace MatchSummary
         }
 
         realLevel8Function(pWriteBuffer, writeOffsetInBits, pReadBuffer, readOffsetInBits, bitsToCopy);
-        clientData.maxNumberOfBits = max(clientData.maxNumberOfBits, writeOffsetInBits + bitsToCopy);
+        clientData.maxNumberOfBits = std::max(clientData.maxNumberOfBits, writeOffsetInBits + bitsToCopy);
     }
 
     void memMoveBits(unsigned char* pWriteBuffer, int fromOffsetInBits, int toOffsetInBits, int bitsToMove)
@@ -403,6 +419,36 @@ namespace MatchSummary
         mFields[std::make_pair(who, fieldId)] = value;
     }
 
+    float StatsCollector::GetMinTierValue(int statId)
+    {
+        auto it = cStatValueMap.find(statId);
+        return (it == cStatValueMap.end()) ? 0.0f : it->second.tierlimit[0];
+    }
+
+    float StatsCollector::GetTieredWeight(int statId, float val)
+    {
+        float retVal = 0;
+
+        auto it = cStatValueMap.find(statId);
+        if (it != cStatValueMap.end())
+        {
+            if (val > it->second.tierlimit[2])
+            {
+                retVal = val * it->second.weight * 10000;
+            }
+            else if (val > it->second.tierlimit[1])
+            {
+                retVal = val * it->second.weight * 100;
+            }
+            else
+            {
+                retVal = val * it->second.weight;
+            }
+        }
+    
+        return retVal;
+    }
+
     void StatsCollector::getSummary(int thisPlayerId, PlayerMatchStats &playerStats, OverallMatchStats &overallStats)
     {
         int available_overall_stats_slots = 4;
@@ -410,18 +456,10 @@ namespace MatchSummary
         int available_player_stats_slots = 8;
         int available_player_accolade_slots = 21;
 
-        auto sortFunc = [](const std::pair<std::pair<int, int>, float> &stat1,
-                           const std::pair<std::pair<int, int>, float> &stat2)
+        auto sortFunc = [this](const std::pair<std::pair<int, int>, float> &stat1,
+                               const std::pair<std::pair<int, int>, float> &stat2)
         {
-            auto it = cStatValueMap.find(stat1.first.second);
-            int value1 = (it != cStatValueMap.end()) ? it->second : 20000;
-            float count1 = stat1.second;
-
-            it = cStatValueMap.find(stat2.first.second);
-            int value2 = (it != cStatValueMap.end()) ? it->second : 20000;
-            float count2 = stat2.second;
-
-            return value1 * count1 > value2 * count2;
+            return GetTieredWeight(stat1.first.second, stat1.second) > GetTieredWeight(stat2.first.second, stat2.second);
         };
 
         std::vector<std::pair<std::pair<int, int>, float>> sortedAccolades(mAccolades.begin(), mAccolades.end());
@@ -429,6 +467,19 @@ namespace MatchSummary
 
         std::vector<std::pair<std::pair<int, int>, float>> sortedStats(mStats.begin(), mStats.end());
         std::sort(sortedStats.begin(), sortedStats.end(), sortFunc);
+
+#ifdef DEBUG
+        Logger::error("Logging ordered accolades:");
+        for(auto &stat: sortedAccolades)
+        {
+            Logger::error("  %d x %d for player %d with value %f", stat.first.second, (int)stat.second, stat.first.first, GetTieredWeight(stat.first.second, stat.second));
+        }
+        Logger::error("Logging ordered stats:");
+        for(auto &stat: sortedStats)
+        {
+            Logger::error("  %d x %d for player %d with value %f", stat.first.second, (int)stat.second, stat.first.first, GetTieredWeight(stat.first.second, stat.second));
+        }
+#endif
 
         const int overallFields[] =
         {
@@ -510,7 +561,7 @@ namespace MatchSummary
             int stat = kv.first.second;
             float value = kv.second;
 
-            if(value == 0.0)
+            if(value < GetMinTierValue(stat))
             {
                 continue;
             }
@@ -520,10 +571,6 @@ namespace MatchSummary
                 overallStats.addStatistic(statPlayerId, stat, value);
                 available_overall_stats_slots--;
                 alreadyAddedStats.insert(stat);
-
-#ifdef _DEBUG
-                Logger::error("MVP stat player 0x%X, stat %d, value %f", statPlayerId, stat, value);
-#endif
             }
             if(thisPlayerId == statPlayerId)
             {

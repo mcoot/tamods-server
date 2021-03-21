@@ -279,6 +279,9 @@ namespace MatchSummary
         void getSummary(int thisPlayerId, PlayerMatchStats &playerStats, OverallMatchStats &overallStats);
 
     private:
+        float GetMinTierValue(int statId);
+        float GetTieredWeight(int statId, float val);
+
         std::map<std::pair<int, int>, float> mAccolades;
         std::map<std::pair<int, int>, float> mStats;
         std::map<std::pair<int, int>, int> mFields;

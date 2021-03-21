@@ -23,19 +23,18 @@ static void updateStat(ATrPlayerController* pc, int statId, T value)
 
         MatchSummary::sStatsCollector.updateStat(playerId, statId, (float)value);
 #ifdef _DEBUG
-        Logger::error("updateStat(playercontroller = 0x%X, stat = 0x%X, value = %f)", playerId, statId, (float)value);
+        Logger::error("updateStat(playercontroller = 0x%X, stat = %d, value = %f)", playerId, statId, (float)value);
 #endif
     }
     else
     {
 #ifdef _DEBUG
-        Logger::error("updateStat(NULL, stat = 0x%X, value = %f)", statId, value);
+        Logger::error("updateStat(NULL, stat = %d, value = %f)", statId, value);
 #endif
     }
 }
 
 static void addAccolade(ATrPlayerController* pc, int accoladeId) {
-    // TODO: Save the accolade
     if(pc)
     {
         auto pri = (ATrPlayerReplicationInfo *)pc->PlayerReplicationInfo;
