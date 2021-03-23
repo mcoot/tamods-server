@@ -446,7 +446,11 @@ namespace DCServer {
             float time;
             int priority;
         public:
-            IngameMsgDetails() {}
+            IngameMsgDetails():
+                doShow(false),
+                time(0.0),
+                priority(3)
+            {}
             IngameMsgDetails(std::string message, float time, int priority = 3) :
                 doShow(true),
                 message(message),
