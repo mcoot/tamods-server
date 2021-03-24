@@ -375,7 +375,7 @@ void TAServer::Client::handler_Launcher2GameNextMapMessage(const json& msgBody) 
             }
             else {
                 // No override, use the rotation index
-                if (controllerContext.nextMapIndex < 0 || controllerContext.nextMapIndex >= g_config.serverSettings.mapRotation.size()) {
+                if (controllerContext.nextMapIndex < 0 || (size_t)controllerContext.nextMapIndex >= g_config.serverSettings.mapRotation.size()) {
                     // Out of bounds, swap to the start of the rotation
                     Logger::error("Context message rotation index %d is out of rotation bounds", controllerContext.nextMapIndex);
                     nextMapName = g_config.serverSettings.mapRotation[0];
@@ -430,7 +430,7 @@ void TAServer::Client::handler_Launcher2GamePingsMessage(const json& msgBody) {
 
         pri->c_fCurrentPingMS = (float)it->second;
         pri->Ping = (it->second) / 4;
-        pri->ExactPing = (it->second) / 4;
+        pri->ExactPing = (it->second) / 4.0f;
     }
 }
 

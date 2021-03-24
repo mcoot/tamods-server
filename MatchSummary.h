@@ -274,7 +274,8 @@ namespace MatchSummary
     {
     public:
         void addAccolade(int who, int accoladeId);
-        void updateStat(int who, int statId, float newValue);
+        void addToStat(int who, int statId, float value);
+        void updateStat(int who, int statId, float value);
         void setField(int who, int fieldId, int value);
         void getSummary(int thisPlayerId, PlayerMatchStats &playerStats, OverallMatchStats &overallStats);
 

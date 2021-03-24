@@ -394,7 +394,6 @@ namespace MatchSummary
         DetourRemove((PBYTE)realSendtoFunction, (PBYTE)&fakeSendtoFunction);
     }
 
-
     void StatsCollector::addAccolade(int who, int accoladeId)
     {
         auto key = std::make_pair(who, accoladeId);
@@ -409,9 +408,23 @@ namespace MatchSummary
         }
     }
 
-    void StatsCollector::updateStat(int who, int statId, float newValue)
+    void StatsCollector::addToStat(int who, int statId, float value)
     {
-        mStats[std::make_pair(who, statId)] = newValue;
+        auto key = std::make_pair(who, statId);
+        auto it = mStats.find(key);
+        if(it == mStats.end())
+        {
+            mStats[key] = value;
+        }
+        else
+        {
+            it->second += value;
+        }
+    }
+
+    void StatsCollector::updateStat(int who, int statId, float value)
+    {
+        mStats[std::make_pair(who, statId)] = value;
     }
 
     void StatsCollector::setField(int who, int fieldId, int value)
@@ -480,6 +493,75 @@ namespace MatchSummary
             Logger::error("  %d x %d for player %d with value %f", stat.first.second, (int)stat.second, stat.first.first, GetTieredWeight(stat.first.second, stat.second));
         }
 #endif
+
+        std::set<int> alreadyAddedStats;
+        for(const auto &kv: sortedStats)
+        {
+            int statPlayerId = kv.first.first;
+            int stat = kv.first.second;
+            float value = kv.second;
+
+            static const std::map<int,int> cStatIdToFieldId = {
+                { CONST_STAT_AWD_KILLS, CONST_PLAYER_KILLS },
+                { CONST_STAT_AWD_DEATHS, CONST_PLAYER_DEATHS },
+                { CONST_STAT_CLASS_ASSISTS, CONST_PLAYER_ASSISTS },
+                { CONST_STAT_AWD_CREDITS_EARNED, CONST_PLAYER_SCORE },
+            };
+
+            if(thisPlayerId == statPlayerId &&
+               cStatIdToFieldId.count(stat) != 0)
+            {
+                setField(thisPlayerId, cStatIdToFieldId.at(stat), (int)value);
+            }
+
+            if(value < GetMinTierValue(stat))
+            {
+                continue;
+            }
+
+            if(available_overall_stats_slots > 0 && alreadyAddedStats.count(stat) == 0)
+            {
+                overallStats.addStatistic(statPlayerId, stat, value);
+                available_overall_stats_slots--;
+                alreadyAddedStats.insert(stat);
+            }
+            if(thisPlayerId == statPlayerId)
+            {
+                if(available_player_stats_slots > 0)
+                {
+                    playerStats.addStatistic(statPlayerId, stat, value);
+                    available_player_stats_slots--;
+                }
+            }
+        }
+
+        std::set<int> alreadyAddedAccolades;
+        for(const auto &kv: sortedAccolades)
+        {
+            int accPlayerId = kv.first.first;
+            int acc = kv.first.second;
+            float value = kv.second;
+
+            if(value == 0.0)
+            {
+                continue;
+            }
+
+            if(available_overall_accolade_slots > 0 && alreadyAddedAccolades.count(acc) == 0)
+            {
+                overallStats.addAccolade(accPlayerId, acc, value);
+                available_overall_accolade_slots--;
+                alreadyAddedAccolades.insert(acc);
+            }
+            if(thisPlayerId == accPlayerId)
+            {
+                if(available_player_accolade_slots > 0)
+                {
+                    playerStats.addAccolade(accPlayerId, acc, value);
+                    available_player_accolade_slots--;
+                }
+            }
+        }
 
         const int overallFields[] =
         {
@@ -550,63 +632,6 @@ namespace MatchSummary
             case FieldType::FLOAT:
                 playerStats.addFloat(fieldId, (float)value);
                 break;
-            }
-        }
-
-
-        std::set<int> alreadyAddedStats;
-        for(const auto &kv: sortedStats)
-        {
-            int statPlayerId = kv.first.first;
-            int stat = kv.first.second;
-            float value = kv.second;
-
-            if(value < GetMinTierValue(stat))
-            {
-                continue;
-            }
-
-            if(available_overall_stats_slots > 0 && alreadyAddedStats.count(stat) == 0)
-            {
-                overallStats.addStatistic(statPlayerId, stat, value);
-                available_overall_stats_slots--;
-                alreadyAddedStats.insert(stat);
-            }
-            if(thisPlayerId == statPlayerId)
-            {
-                if(available_player_stats_slots > 0)
-                {
-                    playerStats.addStatistic(statPlayerId, stat, value);
-                    available_player_stats_slots--;
-                }
-            }
-        }
-
-        std::set<int> alreadyAddedAccolades;
-        for(const auto &kv: sortedAccolades)
-        {
-            int accPlayerId = kv.first.first;
-            int acc = kv.first.second;
-            float value = kv.second;
-
-            if(value == 0.0)
-            {
-                continue;
-            }
-
-            if(available_overall_accolade_slots > 0 && alreadyAddedAccolades.count(acc) == 0)
-            {
-                overallStats.addAccolade(accPlayerId, acc, value);
-                available_overall_accolade_slots--;
-                alreadyAddedAccolades.insert(acc);
-            }
-            if(thisPlayerId == accPlayerId)
-            {
-                if(available_player_accolade_slots > 0)
-                {
-                    playerStats.addAccolade(accPlayerId, acc, value);
-                    available_player_accolade_slots--;
-                }
             }
         }
     }
