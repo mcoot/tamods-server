@@ -12,10 +12,10 @@ bool ServerRole::isCommandAllowed(std::string commandName) {
     return allowedCommands.count(commandName) != 0;
 }
 
-ServerCommand::ArgValidationResult ServerCommand::validateArguments(std::vector<std::string> receivedParameters) {
+ServerCommand::ArgValidationResult ServerCommand::validateArguments(const std::vector<std::string>& receivedParameters) {
     std::vector<ParsedArg> parsedParams;
     std::vector<std::string> errors;
-    
+    boost::variant<int, std::string> foo;
     if (receivedParameters.size() != arguments.size()) {
         errors.push_back((boost::format("Expected %1% arguments, got %2%") % arguments.size() % receivedParameters.size()).str());
         return ArgValidationResult(errors);
@@ -71,16 +71,17 @@ ServerCommand::ArgValidationResult ServerCommand::validateArguments(std::vector<
         return ArgValidationResult(errors);
     }
     else {
-        return ArgValidationResult(parsedParams);
+        auto result = ArgValidationResult(parsedParams);
+        return result;
     }
 }
 
 std::vector<std::string> ServerCommand::execute(std::string playerName, std::string rolename, std::vector<std::string> receivedParameters) {
     ArgValidationResult v = validateArguments(receivedParameters);
     // Don't execute if params are invalid; also validated that we have at most 6 args
-    if (!v.success) return v.validationFailures;
+    if (v.which() == 0) return boost::get<ValidationErrors>(v);
 
-    std::vector<ParsedArg> args = v.parsedArguments;
+    std::vector<ParsedArg> args = boost::get<std::vector<ParsedArg>>(v);
 
     std::vector<LuaRef> refArgs;
     // Add the arguments for the playerId and role name
@@ -90,21 +91,18 @@ std::vector<std::string> ServerCommand::execute(std::string playerName, std::str
     for (int i = 0; i < 6; ++i) {
 
         if (i < args.size()) {
-            switch (args[i].type) {
-            case CommandArgType::BOOL:
-                refArgs.push_back(LuaRef(g_config.lua.getState(), args[i].boolValue));
-                break;
-            case CommandArgType::INT:
-                refArgs.push_back(LuaRef(g_config.lua.getState(), args[i].intValue));
-                break;
-            case CommandArgType::FLOAT:
-                refArgs.push_back(LuaRef(g_config.lua.getState(), args[i].floatValue));
-                break; 
-            case CommandArgType::STRING:
-                refArgs.push_back(LuaRef(g_config.lua.getState(), args[i].stringValue));
-                break;
+            if (args[i].type() == typeid(bool)) {
+                refArgs.push_back(LuaRef(g_config.lua.getState(), boost::get<bool>(args[i])));
             }
-            
+            else if (args[i].type() == typeid(int)) {
+                refArgs.push_back(LuaRef(g_config.lua.getState(), boost::get<int>(args[i])));
+            }
+            else if (args[i].type() == typeid(double)) {
+                refArgs.push_back(LuaRef(g_config.lua.getState(), boost::get<double>(args[i])));
+            }
+            else if (args[i].type() == typeid(std::string)) {
+                refArgs.push_back(LuaRef(g_config.lua.getState(), boost::get<std::string>(args[i])));
+            }
         }
         else {
             // Nil for this argument
@@ -437,14 +435,20 @@ static void startCurrentMap() {
     }
 }
 
-int bNextMapOverrideValue;
-static bool setNextMap(int mapId) {
-    if (Data::map_id_to_name.find(mapId) == Data::map_id_to_name.end()) {
+std::string g_nextMapOverride;
+static bool setNextMapById(int mapId) {
+    if (Data::map_id_to_filename.find(mapId) == Data::map_id_to_filename.end()) {
         Logger::info("Can't set next map to unknown ID %d", mapId);
         return false;
     }
 
-    bNextMapOverrideValue = mapId;
+    g_nextMapOverride = Data::map_id_to_filename[mapId];
+    return true;
+}
+
+// TODO: Validation / partial matching here
+static bool setNextMapByFilename(std::string name) {
+    g_nextMapOverride = name;
     return true;
 }
 
@@ -478,7 +482,9 @@ namespace LuaAPI {
                 .beginNamespace("Game")
                     .addFunction("StartMap", &startCurrentMap)
                     .addFunction("EndMap", &endCurrentMap)
-                    .addFunction("NextMap", &setNextMap)
+                    .addFunction("NextMap", &setNextMapById)
+                    .addFunction("NextMapById", &setNextMapById)
+                    .addFunction("NextMapByFilename", &setNextMapByFilename)
                 .endNamespace()
             .endNamespace();
     }

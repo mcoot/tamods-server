@@ -4,7 +4,7 @@
 #include <set>
 #include <map>
 #include <memory>
-//#include <variant>
+#include <boost/variant.hpp>
 #include "Lua.h"
 
 struct ServerRole {
@@ -49,97 +49,10 @@ struct ServerCommand {
         {}
     };
 
-    struct ParsedArg {
-        CommandArgType type;
-        union {
-            bool boolValue;
-            int intValue;
-            double floatValue;
-            std::string stringValue;
-        };
-    public:
-        ParsedArg(bool b) : 
-            type(CommandArgType::BOOL), 
-            boolValue(b) 
-        {}
-        ParsedArg(int i) :
-            type(CommandArgType::INT),
-            intValue(i)
-        {}
-        ParsedArg(double f) :
-            type(CommandArgType::FLOAT),
-            floatValue(f)
-        {}
-        ParsedArg(std::string s) :
-            type(CommandArgType::STRING),
-            stringValue(s)
-        {}
+    typedef boost::variant<bool, int, double, std::string> ParsedArg;
+    typedef std::vector<std::string> ValidationErrors;
 
-        ParsedArg(const ParsedArg& other) : type(other.type) {
-            switch (other.type) {
-            case CommandArgType::BOOL:
-                boolValue = other.boolValue;
-                break;
-            case CommandArgType::INT:
-                intValue = other.intValue;
-                break;
-            case CommandArgType::FLOAT:
-                floatValue = other.floatValue;
-                break;
-            case CommandArgType::STRING:
-                stringValue = other.stringValue;
-                break;
-            }
-        }
-
-        ParsedArg& operator=(const ParsedArg& other) {
-            type = other.type;
-            switch (other.type) {
-            case CommandArgType::BOOL:
-                boolValue = other.boolValue;
-                break;
-            case CommandArgType::INT:
-                intValue = other.intValue;
-                break;
-            case CommandArgType::FLOAT:
-                floatValue = other.floatValue;
-                break;
-            case CommandArgType::STRING:
-                stringValue = other.stringValue;
-                break;
-            }
-            return *this;
-        }
-
-        ~ParsedArg() {}
-    };
-
-    struct ArgValidationResult {
-        bool success;
-        union {
-            std::vector<std::string> validationFailures;
-            std::vector<ParsedArg> parsedArguments;
-        };
-    public:
-        ArgValidationResult(std::vector<std::string> validationFailures) :
-            success(false),
-            validationFailures(validationFailures)
-        {}
-        ArgValidationResult(std::vector<ParsedArg> parsedArguments) :
-            success(true),
-            parsedArguments(parsedArguments)
-        {}
-        ArgValidationResult(const ArgValidationResult& other) : success(other.success) {
-            if (other.success) {
-                parsedArguments = other.parsedArguments;
-            }
-            else {
-                validationFailures = other.validationFailures;
-            }
-        }
-
-        ~ArgValidationResult() {}
-    };
+    typedef boost::variant<ValidationErrors, std::vector<ParsedArg>> ArgValidationResult;
 
     std::string commandName;
     std::vector<ServerCommandArg> arguments;
@@ -162,7 +75,7 @@ public:
     }
 
     // Returns a vector of validation errors; empty if successful
-    ArgValidationResult validateArguments(std::vector<std::string> receivedParameters);
+    ArgValidationResult validateArguments(const std::vector<std::string>& receivedParameters);
     // Returns empty vec on success, list of errors on failure
     std::vector<std::string> execute(std::string playerName, std::string rolename, std::vector<std::string> receivedParameters);
 

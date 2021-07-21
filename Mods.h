@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <chrono>
 #include <boost/format.hpp>
+#include <boost/variant.hpp>
 
 #include "FunctionalUtils.h"
 
@@ -73,7 +74,8 @@ void TrDevice_NovaSlug_FireAmmunition(ATrDevice_NovaSlug* that, ATrDevice_NovaSl
 void UTGame_ChangeName(AUTGame* that, AUTGame_execChangeName_Parms* params);
 
 // Server admin commands
-extern int bNextMapOverrideValue;
+// Global value for the override for the next map
+extern std::string g_nextMapOverride;
 
 // Reimplemented TakeDamage to revert Shield Pack behaviour
 void TrPawn_TakeDamage(ATrPawn* that, ATrPawn_eventTakeDamage_Parms* params, void* result, Hooks::CallInfo* callinfo);

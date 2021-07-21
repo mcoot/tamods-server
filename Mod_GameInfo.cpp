@@ -94,11 +94,7 @@ bool UTGame_MatchInProgress_BeginState(int ID, UObject *dwCallingObject, UFuncti
 }
 
 static int chooseNextMapIdx() {
-    if (bNextMapOverrideValue != 0) {
-        // Override for next map has been set
-        return bNextMapOverrideValue;
-    }
-    else if (g_config.serverSettings.mapRotationMode == MapRotationMode::RANDOM) {
+    if (g_config.serverSettings.mapRotationMode == MapRotationMode::RANDOM) {
         int idx = g_config.serverSettings.mapRotationIndex;
         while (idx == g_config.serverSettings.mapRotationIndex) {
             std::random_device rd;
@@ -157,16 +153,13 @@ void UTGame_EndGame(AUTGame* that, AUTGame_execEndGame_Parms* params, void* resu
             playersTimePlayed = getPlayersTimePlayed(Utils::tr_gri);
         }
 
-        // If a map override has been issued, we need to explicitly give the map name
-        std::string nextMapOverrideName = bNextMapOverrideValue == 0 ? "" : g_config.serverSettings.mapRotation[bNextMapOverrideValue];
-
         std::vector<std::string> votableMaps;
         if(g_config.serverSettings.VotingEnabled)
         {
             votableMaps = g_config.serverSettings.mapRotation;
         }
         
-        g_TAServerClient.sendMatchEnded(chooseNextMapIdx(), votableMaps, nextMapOverrideName, g_config.serverSettings.EndMatchWaitTime, playersTimePlayed);
+        g_TAServerClient.sendMatchEnded(chooseNextMapIdx(), votableMaps, g_nextMapOverride, g_config.serverSettings.EndMatchWaitTime, playersTimePlayed);
     }
 }
 
