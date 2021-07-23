@@ -27,6 +27,8 @@ namespace GameBalance {
         ValueType type;
 
         // The value (an anonymous union)
+        // TODO: std::string in a union isn't safe! Should be replaced with boost::variant, but would have to change clientside too
+        // Also unlike other usage this at least defines a copy assignment constructor and so ought to crash less
         union {
             bool valBool;
             int valInt;
