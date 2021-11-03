@@ -1,4 +1,7 @@
 #include "DirectConnectionServer.h"
+#include <shellapi.h>
+
+#define CLI_FLAG_NO_PORT_OFFSET L"-noportoffset"
 
 DCServer::Server g_DCServer;
 
@@ -7,14 +10,28 @@ namespace DCServer {
     int getServerPort(AWorldInfo* worldInfo) {
         std::string url = Utils::f2std(worldInfo->GetAddressURL());
 
+
+        // Server will be connected through UDP proxy
+        // We subtract 100 from the proxied port to get the 'real' UDP port clients are connecting to
+        // and run the DC Server on the TCP port equivalent to that UDP port
+        int offset = -100;
+
+        int numArgs;
+        wchar_t** args = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+        // no args, if the flag is present, we don't apply the port offset
+        for (int i = 0; i < numArgs; ++i) {
+            if (wcscmp(args[i], CLI_FLAG_NO_PORT_OFFSET) == 0) {
+                // User has specified no port offset
+                offset = 0;
+                break;
+            }
+        }
+
         int port = 0;
         size_t portPos = url.rfind(':');
         if (portPos != std::string::npos) {
             try {
-                // Server will be connected through UDP proxy
-                // We subtract 100 from the proxied port to get the 'real' UDP port clients are connecting to
-                // and run the DC Server on the TCP port equivalent to that UDP port
-                port = std::stoi(url.substr(portPos + 1)) - 100;
+                port = std::stoi(url.substr(portPos + 1)) + offset;
             }
             catch (std::invalid_argument&) {}
         }
