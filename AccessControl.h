@@ -10,25 +10,41 @@
 struct ServerRole {
     std::string name;
     std::string password;
+    bool isLoginless;
     bool canExecuteArbitraryLua;
     std::set<std::string> allowedCommands;
+    std::set<std::string> members;
 public:
     ServerRole() :
         name("default"),
         password("default"),
-        canExecuteArbitraryLua(false)
+        isLoginless(false),
+        canExecuteArbitraryLua(false),
+        members()
     {}
 
     ServerRole(std::string name, std::string password, bool canExecuteArbitraryLua) :
         name(name),
         password(password),
+        isLoginless(false),
         canExecuteArbitraryLua(canExecuteArbitraryLua),
-        allowedCommands()
+        allowedCommands(),
+        members()
+    {}
+
+    ServerRole(std::string name, bool canExecuteArbitraryLua) :
+        name(name),
+        password("default"),
+        isLoginless(true),
+        canExecuteArbitraryLua(canExecuteArbitraryLua),
+        allowedCommands(),
+        members()
     {}
 
     void addAllowedCommand(std::string commandName);
     void removeAllowedCommand(std::string commandName);
     bool isCommandAllowed(std::string commandName);
+    void addMember(std::string name);
 };
 
 struct ServerCommand {
