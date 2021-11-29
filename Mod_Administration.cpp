@@ -1,3 +1,4 @@
+#include <boost/algorithm/string.hpp>
 #include "Mods.h"
 
 void ServerRole::addAllowedCommand(std::string commandName) {
@@ -169,7 +170,7 @@ void DCServer::Server::handler_ExecuteCommandMessage(std::shared_ptr<PlayerConne
     {
         ATrPlayerReplicationInfo* pri = Utils::getPRIForPlayerId(pconn->playerId);
         if (pri) {
-            playerName = Utils::f2std(pri->PlayerName);
+            playerName = boost::to_lower_copy(Utils::f2std(pri->PlayerName));
         }
     }
 
@@ -180,7 +181,6 @@ void DCServer::Server::handler_ExecuteCommandMessage(std::shared_ptr<PlayerConne
     }
 
     for (auto& it : g_config.serverAccessControl.roles) {
-        std::string roleName = it.first;
         std::shared_ptr<ServerRole> role = it.second;
         if (role->members.find(playerName) != role->members.end()) {
             pconn->role = role->name;
@@ -350,7 +350,7 @@ static void addMemberToRole(std::string roleName, std::string memberName) {
         return;
     }
 
-    g_config.serverAccessControl.roles[roleName]->addMember(memberName);
+    g_config.serverAccessControl.roles[roleName]->addMember(boost::to_lower_copy(memberName));
 }
 
 static void removeAllowedCommandFromRole(std::string roleName, std::string commandName) {
