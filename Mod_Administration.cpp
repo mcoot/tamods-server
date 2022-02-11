@@ -1,3 +1,4 @@
+#include <boost/algorithm/string.hpp>
 #include "Mods.h"
 
 void ServerRole::addAllowedCommand(std::string commandName) {
@@ -10,6 +11,10 @@ void ServerRole::removeAllowedCommand(std::string commandName) {
 
 bool ServerRole::isCommandAllowed(std::string commandName) {
     return allowedCommands.count(commandName) != 0;
+}
+
+void ServerRole::addMember(std::string name) {
+    members.insert(name);
 }
 
 ServerCommand::ArgValidationResult ServerCommand::validateArguments(const std::vector<std::string>& receivedParameters) {
@@ -141,7 +146,7 @@ void DCServer::Server::handler_RoleLoginMessage(std::shared_ptr<PlayerConnection
         sendMessageToClient(pconn, v, MessageToClientMessage::IngameMsgDetails());
         return;
     }
-    if (msg.password != g_config.serverAccessControl.roles[msg.role]->password) {
+    if (g_config.serverAccessControl.roles[msg.role]->isLoginless || msg.password != g_config.serverAccessControl.roles[msg.role]->password) {
         Logger::info("Failed login attempt to role %s by player %d", msg.role.c_str(), pconn->playerId);
         std::vector<MessageToClientMessage::ConsoleMsgDetails> v;
         v.push_back(MessageToClientMessage::ConsoleMsgDetails("Login failed"));
@@ -159,6 +164,29 @@ void DCServer::Server::handler_RoleLoginMessage(std::shared_ptr<PlayerConnection
 
 void DCServer::Server::handler_ExecuteCommandMessage(std::shared_ptr<PlayerConnection> pconn, const json& j) {
     ExecuteCommandMessage msg;
+
+    /* check loginless role */
+    std::string playerName;
+    {
+        ATrPlayerReplicationInfo* pri = Utils::getPRIForPlayerId(pconn->playerId);
+        if (pri) {
+            playerName = boost::to_lower_copy(Utils::f2std(pri->PlayerName));
+        }
+    }
+
+    // remove clan tag for checking role membership
+    if (playerName[0] == '[') {
+        // +2 to remove the ] and the space after it
+        playerName = playerName.substr(playerName.find_last_of(']') + 2);
+    }
+
+    for (auto& it : g_config.serverAccessControl.roles) {
+        std::shared_ptr<ServerRole> role = it.second;
+        if (role->members.find(playerName) != role->members.end()) {
+            pconn->role = role->name;
+        }
+    }
+
 
     if (!msg.fromJson(j)) {
         Logger::warn("Failed to parse execute command message from client %d: %s", pconn->playerId, j.dump().c_str());
@@ -295,6 +323,14 @@ static void addRole(std::string roleName, std::string password, bool canExecuteL
     g_config.serverAccessControl.roles[roleName] = std::make_shared<ServerRole>(roleName, password, canExecuteLua);
 }
 
+static void addLoginlessRole(std::string roleName, bool canExecuteLua) {
+    if (g_config.serverAccessControl.roles.find(roleName) != g_config.serverAccessControl.roles.end()) {
+        Logger::warn("Attempted to create role %s which already exists", roleName.c_str());
+        return;
+    }
+    g_config.serverAccessControl.roles[roleName] = std::make_shared<ServerRole>(roleName, canExecuteLua);
+}
+
 static void removeRole(std::string roleName) {
     g_config.serverAccessControl.roles.erase(roleName);
 }
@@ -306,6 +342,15 @@ static void addAllowedCommandToRole(std::string roleName, std::string commandNam
     }
 
     g_config.serverAccessControl.roles[roleName]->addAllowedCommand(commandName);
+}
+
+static void addMemberToRole(std::string roleName, std::string memberName) {
+    if (g_config.serverAccessControl.roles.find(roleName) == g_config.serverAccessControl.roles.end()) {
+        Logger::warn("Failed to add member to role %s; role does not exist", roleName.c_str());
+        return;
+    }
+
+    g_config.serverAccessControl.roles[roleName]->addMember(boost::to_lower_copy(memberName));
 }
 
 static void removeAllowedCommandFromRole(std::string roleName, std::string commandName) {
@@ -463,9 +508,11 @@ namespace LuaAPI {
             .beginNamespace("Admin")
                 .beginNamespace("Roles")
                     .addFunction("add", &addRole)
+                    .addFunction("addLoginlessRole", &addLoginlessRole)
                     .addFunction("remove", &addRole)
                     .addFunction("addAllowedCommand", &addAllowedCommandToRole)
                     .addFunction("removeAllowedCommand", &removeAllowedCommandFromRole)
+                    .addFunction("addMember", &addMemberToRole)
                 .endNamespace()
                 .beginNamespace("Command")
                     .addFunction("define", &defineCommand)
