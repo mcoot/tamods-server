@@ -318,6 +318,7 @@ SETTING_GETTERSETTER(bool, ShieldPackBlocksRegen)
 SETTING_GETTERSETTER(bool, UseGOTYBXTCharging)
 SETTING_GETTERSETTER(bool, UseGOTYJackalAirburst)
 SETTING_GETTERSETTER(bool, RageThrustPackDependsOnCapperSpeed)
+SETTING_GETTERSETTER(float, RageThrustMultiplier)
 SETTING_GETTERSETTER(bool, InventoryStationsRestoreEnergy)
 
 SETTING_GETTERSETTER(bool, EnableInventoryCallIn)
@@ -578,6 +579,7 @@ namespace LuaAPI {
                 .SETTING_LUAPROP(UseGOTYBXTCharging)
                 .SETTING_LUAPROP(UseGOTYJackalAirburst)
                 .SETTING_LUAPROP(RageThrustPackDependsOnCapperSpeed)
+                .SETTING_LUAPROP(RageThrustMultiplier)
                 .SETTING_LUAPROP(InventoryStationsRestoreEnergy)
 
                 .SETTING_LUAPROP(EnableInventoryCallIn)
