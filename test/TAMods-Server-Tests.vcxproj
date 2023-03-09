@@ -102,6 +102,8 @@
     <Import Project="..\packages\boost_system-vc140.1.68.0.0\build\boost_system-vc140.targets" Condition="Exists('..\packages\boost_system-vc140.1.68.0.0\build\boost_system-vc140.targets')" />
     <Import Project="..\packages\boost_date_time-vc140.1.68.0.0\build\boost_date_time-vc140.targets" Condition="Exists('..\packages\boost_date_time-vc140.1.68.0.0\build\boost_date_time-vc140.targets')" />
     <Import Project="..\packages\boost_regex-vc140.1.68.0.0\build\boost_regex-vc140.targets" Condition="Exists('..\packages\boost_regex-vc140.1.68.0.0\build\boost_regex-vc140.targets')" />
+    <Import Project="..\packages\nlohmann.json.3.11.2\build\native\nlohmann.json.targets" Condition="Exists('..\packages\nlohmann.json.3.11.2\build\native\nlohmann.json.targets')" />
+    <Import Project="..\packages\boost_unit_test_framework-vc140.1.68.0.0\build\boost_unit_test_framework-vc140.targets" Condition="Exists('..\packages\boost_unit_test_framework-vc140.1.68.0.0\build\boost_unit_test_framework-vc140.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -111,5 +113,7 @@
     <Error Condition="!Exists('..\packages\boost_system-vc140.1.68.0.0\build\boost_system-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_system-vc140.1.68.0.0\build\boost_system-vc140.targets'))" />
     <Error Condition="!Exists('..\packages\boost_date_time-vc140.1.68.0.0\build\boost_date_time-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_date_time-vc140.1.68.0.0\build\boost_date_time-vc140.targets'))" />
     <Error Condition="!Exists('..\packages\boost_regex-vc140.1.68.0.0\build\boost_regex-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_regex-vc140.1.68.0.0\build\boost_regex-vc140.targets'))" />
+    <Error Condition="!Exists('..\packages\nlohmann.json.3.11.2\build\native\nlohmann.json.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nlohmann.json.3.11.2\build\native\nlohmann.json.targets'))" />
+    <Error Condition="!Exists('..\packages\boost_unit_test_framework-vc140.1.68.0.0\build\boost_unit_test_framework-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_unit_test_framework-vc140.1.68.0.0\build\boost_unit_test_framework-vc140.targets'))" />
   </Target>
 </Project>
