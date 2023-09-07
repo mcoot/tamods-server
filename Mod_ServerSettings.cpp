@@ -171,6 +171,7 @@ static int mapCodeCTFAscent = CONST_MAP_ID_CTF_ASCENT;
 static int mapCodeCTFEclipse = CONST_MAP_ID_CTF_ECLIPSE;
 static int mapCodeCTFPolaris = CONST_MAP_ID_CTF_POLARIS;
 static int mapCodeCTFCrash = CONST_MAP_ID_CTF_CRASH;
+static int mapCodeCTFAndromeda = CONST_MAP_ID_CTF_ANDROMEDA;
 
 static int mapCodeRabbitOutskirts = CONST_MAP_ID_RABBIT_OUTSKIRTS;
 static int mapCodeRabbitQuicksand = CONST_MAP_ID_RABBIT_QUICKSAND;
@@ -218,6 +219,8 @@ static int mapCodeBlitzDrydock = CONST_MAP_ID_BLITZ_DRYDOCK;
 static int mapCodeBlitzIceCoaster = CONST_MAP_ID_BLITZ_ICECOASTER;
 static int mapCodeBlitzTerminus = CONST_MAP_ID_BLITZ_TERMINUS;
 static int mapCodeBlitzBroadside = CONST_MAP_ID_BLITZ_BROADSIDE;
+static int mapCodeBlitzAirArena = CONST_MAP_ID_BLITZ_AIRARENA;
+static int mapCodeBlitzMazeRunner = CONST_MAP_ID_BLITZ_MAZERUNNER;
 
 static int mapRotationModeSequential = (int)MapRotationMode::SEQUENTIAL;
 static int mapRotationModeRandom = (int)MapRotationMode::RANDOM;
@@ -700,6 +703,7 @@ namespace LuaAPI {
                     .addVariable("Eclipse", &mapCodeCTFEclipse, false)
                     .addVariable("Polaris", &mapCodeCTFPolaris, false)
                     .addVariable("Crash", &mapCodeCTFCrash, false)
+                    .addVariable("Andromeda", &mapCodeCTFAndromeda, false)
                 .endNamespace()
                 .beginNamespace("TDM")
                     .addVariable("DrydockNight", &mapCodeTDMDrydockNight, false)
@@ -777,6 +781,9 @@ namespace LuaAPI {
                     .addVariable("IceCoaster", &mapCodeBlitzIceCoaster, false)
                     .addVariable("Terminus", &mapCodeBlitzTerminus, false)
                     .addVariable("Broadside", &mapCodeBlitzBroadside, false)
+                    .addVariable("AirArena", &mapCodeBlitzAirArena, false)
+                    .addVariable("Air", &mapCodeBlitzAirArena, false)
+                    .addVariable("MazeRunner", &mapCodeBlitzMazeRunner, false)
                 .endNamespace()
             .endNamespace()
             ;

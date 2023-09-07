@@ -1085,7 +1085,9 @@ namespace Data
         { R"rx(^blitz[-_]?d.*$)rx",                     CONST_MAP_ID_BLITZ_DRYDOCK },
         { R"rx(^blitz[-_]?h.*$)rx",                     CONST_MAP_ID_BLITZ_HELLFIRE },
         { R"rx(^blitz[-_]?(k|ba).*$)rx",                CONST_MAP_ID_BLITZ_KATABATIC },
-        { R"rx(^blitz[-_]?(broa|ide).*$)rx",             CONST_MAP_ID_BLITZ_BROADSIDE },
+        { R"rx(^blitz[-_]?(broa|ide).*$)rx",            CONST_MAP_ID_BLITZ_BROADSIDE },
+        { R"rx(^blitz[-_]?a.*$)rx",                     CONST_MAP_ID_BLITZ_AIRARENA },
+        { R"rx(^blitz[-_]?(maze|nner.*$)rx",            CONST_MAP_ID_BLITZ_MAZERUNNER },
 
         { R"rx(^cah[-_]?(c[^o]|re).*$)rx",              CONST_MAP_ID_CAH_CANYONCRUSADEREVIVAL },
         { R"rx(^cah[-_]?(d[^a]|ni).*$)rx",              CONST_MAP_ID_CAH_DRYDOCKNIGHT },
@@ -1129,6 +1131,7 @@ namespace Data
         { R"rx(^ctf[-_]?(elc|pse).*$)rx",               CONST_MAP_ID_CTF_ECLIPSE },
         { R"rx(^ctf[-_]?(pol|ris).*$)rx",               CONST_MAP_ID_CTF_POLARIS },
         { R"rx(^ctf[-_]?(cr|sh).*$)rx",                 CONST_MAP_ID_CTF_CRASH },
+        { R"rx(^ctf[-_]?(and|eda).*$)rx",               CONST_MAP_ID_CTF_ANDROMEDA },
 
         { R"rx(^rabbit[-_]?(cr|x|c?fi).*$)rx",          CONST_MAP_ID_RABBIT_CROSSFIRE },
         { R"rx(^rabbit[-_]?(i|fe).*$)rx",               CONST_MAP_ID_RABBIT_INFERNO },
@@ -1218,9 +1221,12 @@ namespace Data
         { CONST_MAP_ID_CTF_ECLIPSE,                "[CTF] Eclipse" },
         { CONST_MAP_ID_CTF_POLARIS,                "[CTF] Polaris" },
         { CONST_MAP_ID_CTF_CRASH,                  "[CTF] Crash" },
+        { CONST_MAP_ID_CTF_ANDROMEDA,              "[CTF] Andromeda" },
         { CONST_MAP_ID_ARENA_RUINS,                "[Arena] Ruins" },
         { CONST_MAP_ID_ARENA_ELYSIANBATTLEGROUND,  "[Arena] Elysian Battleground" },
         { CONST_MAP_ID_BLITZ_BROADSIDE,            "[Blitz] Broadside" },
+        { CONST_MAP_ID_BLITZ_AIRARENA,             "[Blitz] Air Arena" },
+        { CONST_MAP_ID_BLITZ_MAZERUNNER,           "[Blitz] Maze Runner" },
     };
 
     std::map<int, std::string> map_id_to_filename = {
@@ -1297,9 +1303,12 @@ namespace Data
         { CONST_MAP_ID_CTF_ECLIPSE,                "TrCTF-Eclipse" },
         { CONST_MAP_ID_CTF_POLARIS,                "TrCTF-Polaris" },
         { CONST_MAP_ID_CTF_CRASH,                  "TrCTF-Crash" },
+        { CONST_MAP_ID_CTF_ANDROMEDA,              "TrCTF-Andromeda" },
         { CONST_MAP_ID_ARENA_RUINS,                "TrArena-Ruins" },
         { CONST_MAP_ID_ARENA_ELYSIANBATTLEGROUND,  "TrArena-Elysian Battleground" },
         { CONST_MAP_ID_BLITZ_BROADSIDE,            "TrCTFBlitz-Broadside" },
+        { CONST_MAP_ID_BLITZ_AIRARENA,             "TrCTFBlitz-AirArena" },
+        { CONST_MAP_ID_BLITZ_MAZERUNNER,           "TrCTFBlitz-MazeRunner" },
     };
 
 }
