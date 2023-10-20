@@ -156,6 +156,23 @@ static int mapCodeCTFPerdition = CONST_MAP_ID_CTF_PERDITION;
 static int mapCodeCTFHellfire = CONST_MAP_ID_CTF_HELLFIRE;
 static int mapCodeCTFBlueshift = CONST_MAP_ID_CTF_BLUESHIFT;
 
+static int mapCodeCTFAcheron = CONST_MAP_ID_CTF_ACHERON;
+static int mapCodeCTFBlues = CONST_MAP_ID_CTF_BLUES;
+static int mapCodeCTFDesertedValley = CONST_MAP_ID_CTF_DESERTEDVALLEY;
+static int mapCodeCTFFracture = CONST_MAP_ID_CTF_FRACTURE;
+static int mapCodeCTFIncidamus = CONST_MAP_ID_CTF_INCIDAMUS;
+static int mapCodeCTFPericulo = CONST_MAP_ID_CTF_PERICULO;
+static int mapCodeCTFPhlegathon = CONST_MAP_ID_CTF_PHLEGATHON;
+static int mapCodeCTFStyx = CONST_MAP_ID_CTF_STYX;
+static int mapCodeCTFOceanus = CONST_MAP_ID_CTF_OCEANUS;
+static int mapCodeCTFTreacherousPass = CONST_MAP_ID_CTF_TREACHEROUSPASS;
+static int mapCodeCTFMeridian = CONST_MAP_ID_CTF_MERIDIAN;
+static int mapCodeCTFAscent = CONST_MAP_ID_CTF_ASCENT;
+static int mapCodeCTFEclipse = CONST_MAP_ID_CTF_ECLIPSE;
+static int mapCodeCTFPolaris = CONST_MAP_ID_CTF_POLARIS;
+static int mapCodeCTFCrash = CONST_MAP_ID_CTF_CRASH;
+static int mapCodeCTFAndromeda = CONST_MAP_ID_CTF_ANDROMEDA;
+
 static int mapCodeRabbitOutskirts = CONST_MAP_ID_RABBIT_OUTSKIRTS;
 static int mapCodeRabbitQuicksand = CONST_MAP_ID_RABBIT_QUICKSAND;
 static int mapCodeRabbitCrossfire = CONST_MAP_ID_RABBIT_CROSSFIRE;
@@ -180,6 +197,8 @@ static int mapCodeArenaHinterlands = CONST_MAP_ID_ARENA_HINTERLANDS;
 static int mapCodeArenaWhiteOut = CONST_MAP_ID_ARENA_WHITEOUT;
 static int mapCodeArenaFraytown = CONST_MAP_ID_ARENA_FRAYTOWN;
 static int mapCodeArenaUndercroft = CONST_MAP_ID_ARENA_UNDERCROFT;
+static int mapCodeArenaRuins = CONST_MAP_ID_ARENA_RUINS;
+static int mapCodeArenaElysianBattleground = CONST_MAP_ID_ARENA_ELYSIANBATTLEGROUND;
 
 static int mapCodeCaHKatabatic = CONST_MAP_ID_CAH_KATABATIC;
 static int mapCodeCaHOutskirts = CONST_MAP_ID_CAH_OUTSKIRTS3P;
@@ -199,6 +218,9 @@ static int mapCodeBlitzKatabatic = CONST_MAP_ID_BLITZ_KATABATIC;
 static int mapCodeBlitzDrydock = CONST_MAP_ID_BLITZ_DRYDOCK;
 static int mapCodeBlitzIceCoaster = CONST_MAP_ID_BLITZ_ICECOASTER;
 static int mapCodeBlitzTerminus = CONST_MAP_ID_BLITZ_TERMINUS;
+static int mapCodeBlitzBroadside = CONST_MAP_ID_BLITZ_BROADSIDE;
+static int mapCodeBlitzAirArena = CONST_MAP_ID_BLITZ_AIRARENA;
+static int mapCodeBlitzMazeRunner = CONST_MAP_ID_BLITZ_MAZERUNNER;
 
 static int mapRotationModeSequential = (int)MapRotationMode::SEQUENTIAL;
 static int mapRotationModeRandom = (int)MapRotationMode::RANDOM;
@@ -318,6 +340,7 @@ SETTING_GETTERSETTER(bool, ShieldPackBlocksRegen)
 SETTING_GETTERSETTER(bool, UseGOTYBXTCharging)
 SETTING_GETTERSETTER(bool, UseGOTYJackalAirburst)
 SETTING_GETTERSETTER(bool, RageThrustPackDependsOnCapperSpeed)
+SETTING_GETTERSETTER(float, RageThrustMultiplier)
 SETTING_GETTERSETTER(bool, InventoryStationsRestoreEnergy)
 
 SETTING_GETTERSETTER(bool, EnableInventoryCallIn)
@@ -578,6 +601,7 @@ namespace LuaAPI {
                 .SETTING_LUAPROP(UseGOTYBXTCharging)
                 .SETTING_LUAPROP(UseGOTYJackalAirburst)
                 .SETTING_LUAPROP(RageThrustPackDependsOnCapperSpeed)
+                .SETTING_LUAPROP(RageThrustMultiplier)
                 .SETTING_LUAPROP(InventoryStationsRestoreEnergy)
 
                 .SETTING_LUAPROP(EnableInventoryCallIn)
@@ -664,6 +688,22 @@ namespace LuaAPI {
                     .addVariable("Perdition", &mapCodeCTFPerdition, false)
                     .addVariable("Hellfire", &mapCodeCTFHellfire, false)
                     .addVariable("Blueshift", &mapCodeCTFBlueshift, false)
+                    .addVariable("Acheron", &mapCodeCTFAcheron, false)
+                    .addVariable("Blues", &mapCodeCTFBlues, false)
+                    .addVariable("DesertedValley", &mapCodeCTFDesertedValley, false)
+                    .addVariable("Fracture", &mapCodeCTFFracture, false)
+                    .addVariable("Incidamus", &mapCodeCTFIncidamus, false)
+                    .addVariable("Periculo", &mapCodeCTFPericulo, false)
+                    .addVariable("Phlegathon", &mapCodeCTFPhlegathon, false)
+                    .addVariable("Styx", &mapCodeCTFStyx, false)
+                    .addVariable("Oceanus", &mapCodeCTFOceanus, false)
+                    .addVariable("TreacherousPass", &mapCodeCTFTreacherousPass, false)
+                    .addVariable("Meridian", &mapCodeCTFMeridian, false)
+                    .addVariable("Ascent", &mapCodeCTFAscent, false)
+                    .addVariable("Eclipse", &mapCodeCTFEclipse, false)
+                    .addVariable("Polaris", &mapCodeCTFPolaris, false)
+                    .addVariable("Crash", &mapCodeCTFCrash, false)
+                    .addVariable("Andromeda", &mapCodeCTFAndromeda, false)
                 .endNamespace()
                 .beginNamespace("TDM")
                     .addVariable("DrydockNight", &mapCodeTDMDrydockNight, false)
@@ -693,6 +733,8 @@ namespace LuaAPI {
                     .addVariable("FrayTown", &mapCodeArenaFraytown, false)
                     .addVariable("Fraytown", &mapCodeArenaFraytown, false)
                     .addVariable("Undercroft", &mapCodeArenaUndercroft, false)
+                    .addVariable("Ruins", &mapCodeArenaRuins, false)
+                    .addVariable("ElysianBattleground", &mapCodeArenaElysianBattleground, false)
                 .endNamespace()
                 .beginNamespace("Rabbit")
                     .addVariable("Outskirts", &mapCodeRabbitOutskirts, false)
@@ -738,6 +780,10 @@ namespace LuaAPI {
                     .addVariable("DD", &mapCodeBlitzDrydock, false)
                     .addVariable("IceCoaster", &mapCodeBlitzIceCoaster, false)
                     .addVariable("Terminus", &mapCodeBlitzTerminus, false)
+                    .addVariable("Broadside", &mapCodeBlitzBroadside, false)
+                    .addVariable("AirArena", &mapCodeBlitzAirArena, false)
+                    .addVariable("Air", &mapCodeBlitzAirArena, false)
+                    .addVariable("MazeRunner", &mapCodeBlitzMazeRunner, false)
                 .endNamespace()
             .endNamespace()
             ;

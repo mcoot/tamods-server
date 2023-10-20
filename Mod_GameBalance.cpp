@@ -649,6 +649,7 @@ namespace LuaAPI {
                     .addProperty<int, int>("JammerPackRange", &getPropId<Items::PropId, Items::PropId::JAMMER_PACK_RANGE>)
                     .addProperty<int, int>("PackBuffAmount", &getPropId<Items::PropId, Items::PropId::PACK_BUFF_AMOUNT>)
                     .addProperty<int, int>("StealthPackMaxSpeed", &getPropId<Items::PropId, Items::PropId::STEALTH_PACK_MAX_SPEED>)
+                    .addProperty<int, int>("ThrustPackRageMultiplier", &getPropId<Items::PropId, Items::PropId::THRUST_PACK_SPEED_RAGE_MULTIPLIER>)
                     // Deployable
                     .addProperty<int, int>("DeployableRange", &getPropId<Items::PropId, Items::PropId::DEPLOYABLE_RANGE>)
                     .addProperty<int, int>("DeployableMaxAllowed", &getPropId<Items::PropId, Items::PropId::DEPLOYABLE_MAX_ALLOWED>)

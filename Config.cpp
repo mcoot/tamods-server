@@ -32,6 +32,7 @@ GameBalance::ReplicatedSettings Config::getReplicatedSettings() {
     repSet["InventoryCallInMeshMaxAngle"] = serverSettings.InventoryCallInMeshMaxAngle;
 
     repSet["RageThrustPackDependsOnCapperSpeed"] = serverSettings.RageThrustPackDependsOnCapperSpeed;
+    repSet["RageThrustMultiplier"] = serverSettings.RageThrustMultiplier;
 
     repSet["UseGOTYBXTCharging"] = serverSettings.UseGOTYBXTCharging;
 

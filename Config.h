@@ -184,6 +184,7 @@ struct ServerSettings {
 
     // Whether the speed given by the Thrust pack should depend on capper speed during Rage
     bool RageThrustPackDependsOnCapperSpeed = true;
+    float RageThrustMultiplier = 1.0f;
 
     // Whether to convert the Laser Targeter into an Inv Station call-in
     bool EnableInventoryCallIn = false;
